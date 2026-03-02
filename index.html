@@ -1133,12 +1133,24 @@
     });
   }
 
+  // ─── Get language code from voice name ─────────────
+  function getLangCode(voice) {
+    // Voice names start with language code: af_, bf_, am_, bm_, etc.
+    // a = American English, b = British English
+    const prefix = voice.charAt(0);
+    // For English voices (American or British), use 'en-us' or 'en-gb'
+    // But Kokoro uses single-letter codes: 'a' for American, 'b' for British
+    return prefix; // 'a' or 'b'
+  }
+
   // ─── Generate Audio for a Sentence ─────────────────
   async function generateAudio(text, voice, speed) {
     // Yield before heavy computation to keep UI responsive
     await yieldToMain();
 
-    const result = await tts.generate(text, { voice, speed });
+    // Get language code from voice prefix (a=American, b=British)
+    const langCode = getLangCode(voice);
+    const result = await tts.generate(text, { voice, speed, lang: langCode });
 
     // Yield after heavy computation too
     await yieldToMain();
