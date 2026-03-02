@@ -563,6 +563,113 @@
   }
 
   .footer a:hover { color: var(--accent); }
+
+  /* Feedback form */
+  .feedback {
+    margin-top: 32px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: left;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .feedback h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .feedback .feedback-sub {
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+
+  .feedback textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.25s;
+  }
+
+  .feedback textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .feedback textarea::placeholder {
+    color: var(--ink-faint);
+  }
+
+  .feedback-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: center;
+  }
+
+  .feedback-row input[type="email"] {
+    flex: 1;
+    padding: 9px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.25s;
+  }
+
+  .feedback-row input[type="email"]:focus { border-color: var(--accent); }
+  .feedback-row input[type="email"]::placeholder { color: var(--ink-faint); }
+
+  .send-btn {
+    padding: 9px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .send-btn:hover { opacity: 0.9; }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .feedback-sent {
+    display: none;
+    text-align: center;
+    padding: 16px 0;
+    font-size: 0.85rem;
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  .contact-line {
+    margin-top: 20px;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -698,8 +805,66 @@
       Voice powered by <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a>, an open-source model (Apache 2.0).<br>
       No data is collected. No text leaves your browser. Ever.
     </p>
+
+    <div class="feedback" id="feedbackForm">
+      <h3>Feedback</h3>
+      <p class="feedback-sub">Found a bug? Have a suggestion? Let us know.</p>
+      <textarea id="feedbackText" placeholder="What's on your mind..."></textarea>
+      <div class="feedback-row">
+        <input type="email" id="feedbackEmail" placeholder="Your email (optional)">
+        <button class="send-btn" id="feedbackSend" onclick="sendFeedback()">Send</button>
+      </div>
+    </div>
+    <div class="feedback-sent" id="feedbackSent">
+      ✓ Thanks for your feedback!
+    </div>
+
+    <p class="contact-line">
+      Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
+    </p>
   </div>
 </div>
+
+<script>
+  function sendFeedback() {
+    const text = document.getElementById('feedbackText').value.trim();
+    const email = document.getElementById('feedbackEmail').value.trim();
+    const btn = document.getElementById('feedbackSend');
+
+    if (!text) {
+      document.getElementById('feedbackText').focus();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const form = new FormData();
+    form.append('message', text);
+    form.append('email', email || '(not provided)');
+    form.append('_subject', 'Manuscript Reader Feedback');
+    form.append('_captcha', 'false');
+    form.append('_template', 'box');
+
+    fetch('https://formsubmit.co/ajax/manuscriptreadercontact@gmail.com', {
+      method: 'POST',
+      body: form
+    })
+    .then(r => r.json())
+    .then(() => {
+      document.getElementById('feedbackForm').style.display = 'none';
+      document.getElementById('feedbackSent').style.display = 'block';
+    })
+    .catch(() => {
+      // Fallback: open mailto
+      const subject = encodeURIComponent('Manuscript Reader Feedback');
+      const body = encodeURIComponent(text + (email ? '\n\nFrom: ' + email : ''));
+      window.open('mailto:manuscriptreadercontact@gmail.com?subject=' + subject + '&body=' + body);
+      btn.disabled = false;
+      btn.textContent = 'Send';
+    });
+  }
+</script>
 
 <script type="module">
   import { KokoroTTS } from "https://esm.sh/kokoro-js@1.2.1";
@@ -717,7 +882,7 @@
 
   // Pre-generated audio cache: index -> AudioBuffer
   const audioCache = new Map();
-  let prefetchIndex = -1;
+  const prefetchInFlight = new Set(); // track which indices are currently being generated
 
   // ─── Elements ──────────────────────────────────────
   const modelStatus = document.getElementById('modelStatus');
@@ -835,17 +1000,39 @@
     return audioBuffer;
   }
 
-  // ─── Prefetch Next Sentence ────────────────────────
-  async function prefetch(index) {
-    if (index >= sentences.length || audioCache.has(index) || prefetchIndex === index) return;
-    prefetchIndex = index;
+  // ─── Prefetch Pipeline ──────────────────────────────
+  // Generate audio for a specific index, with deduplication
+  async function ensureGenerated(index) {
+    if (index >= sentences.length || audioCache.has(index)) return audioCache.get(index);
+    if (prefetchInFlight.has(index)) {
+      // Already generating — wait for it
+      while (!audioCache.has(index) && !stopRequested) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return audioCache.get(index);
+    }
+
+    prefetchInFlight.add(index);
     try {
       const voice = voiceSelect.value;
       const speed = parseFloat(speedRange.value);
       const buffer = await generateAudio(sentences[index].text, voice, speed);
       if (!stopRequested) audioCache.set(index, buffer);
+      return buffer;
     } catch (e) {
-      console.warn('Prefetch failed for sentence', index, e);
+      console.warn('Generation failed for sentence', index, e);
+      return null;
+    } finally {
+      prefetchInFlight.delete(index);
+    }
+  }
+
+  // Fire-and-forget prefetch for upcoming sentences
+  function prefetchAhead(fromIndex, count = 3) {
+    for (let i = fromIndex; i < Math.min(fromIndex + count, sentences.length); i++) {
+      if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
+        ensureGenerated(i); // intentionally not awaited
+      }
     }
   }
 
@@ -914,44 +1101,50 @@
     stopRequested = false;
     updateUI();
 
+    // Pre-buffer: generate first sentence (and start prefetching next ones)
+    // before playing anything, so the user doesn't wait during playback
+    if (!audioCache.has(index)) {
+      statusEl.textContent = 'Preparing first sentence...';
+      currentIndex = index;
+      updateHighlight(index);
+    }
+    prefetchAhead(index, 3);
+    await ensureGenerated(index);
+
+    if (stopRequested) return;
+    statusEl.textContent = '';
+
     for (let i = index; i < sentences.length; i++) {
       if (stopRequested) break;
 
       currentIndex = i;
-      updateHighlight(i);
-
-      // Generate current sentence audio (or use cache)
-      let buffer = audioCache.get(i);
-      if (!buffer) {
-        statusEl.textContent = 'Generating voice...';
-        try {
-          const voice = voiceSelect.value;
-          const speed = parseFloat(speedRange.value);
-          buffer = await generateAudio(sentences[i].text, voice, speed);
-          audioCache.set(i, buffer);
-        } catch (err) {
-          console.error('Generation error:', err);
-          statusEl.textContent = 'Error generating audio. Skipping...';
-          continue;
-        }
-      }
-
-      if (stopRequested) break;
-
-      statusEl.textContent = '';
       updateHighlight();
 
-      // Start prefetching next sentence while playing current
-      prefetch(i + 1);
+      // Get the buffer (should be cached from prefetch, but generate if not)
+      let buffer = audioCache.get(i);
+      if (!buffer) {
+        statusEl.textContent = 'Generating...';
+        updateHighlight(i);
+        buffer = await ensureGenerated(i);
+        if (!buffer || stopRequested) {
+          statusEl.textContent = '';
+          continue;
+        }
+        statusEl.textContent = '';
+        updateHighlight();
+      }
+
+      // Kick off prefetch for upcoming sentences while we play this one
+      prefetchAhead(i + 1, 3);
 
       // Play
       await playBuffer(buffer);
 
       if (stopRequested) break;
 
-      // Small pause between sentences (longer at paragraph breaks)
+      // Intentional pause between sentences
       const pause = sentences[i].paragraphEnd ? parseInt(paraPauseRange.value) : parseInt(pauseRange.value);
-      await new Promise(r => setTimeout(r, pause));
+      if (pause > 0) await new Promise(r => setTimeout(r, pause));
     }
 
     if (!stopRequested) {
@@ -1016,6 +1209,7 @@
     isPaused = false;
     currentIndex = 0;
     audioCache.clear();
+    prefetchInFlight.clear();
     readingView.classList.remove('active');
     manuscriptEl.parentElement.classList.remove('hidden');
     progressWrap.classList.remove('active');
@@ -1045,6 +1239,7 @@
     // Clear cache when speed changes during playback
     if (isPlaying || isPaused) {
       audioCache.clear();
+      prefetchInFlight.clear();
     }
   });
 
