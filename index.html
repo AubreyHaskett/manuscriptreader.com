@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuscript Reader — Kokoro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f1eb;
+    --bg-deep: #ede6dc;
+    --paper: #fffdf9;
+    --ink: #2c2520;
+    --ink-soft: #6b5e53;
+    --ink-faint: #a89888;
+    --accent: #b44a2d;
+    --accent-glow: rgba(180, 74, 45, 0.12);
+    --highlight-active: rgba(180, 74, 45, 0.13);
+    --border: rgba(44, 37, 32, 0.1);
+    --shadow: rgba(44, 37, 32, 0.06);
+    --radius: 10px;
+    --green: #3a7d5c;
+    --green-bg: rgba(58, 125, 92, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 180px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .header p {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+
+  .header .badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    background: var(--green-bg);
+    color: var(--green);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border-radius: 20px;
+  }
+
+  /* Model status */
+  .model-status {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    text-align: center;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .model-status.ready { border-color: rgba(58, 125, 92, 0.25); }
+
+  .model-status .status-text {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .model-status .status-text.ready-text { color: var(--green); font-weight: 500; }
+
+  .model-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-deep);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+
+  .model-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .model-progress-fill.ready { background: var(--green); }
+
+  .model-detail {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Text area */
+  .input-area {
+    position: relative;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .input-area label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+
+  #manuscript {
+    width: 100%;
+    min-height: 220px;
+    max-height: 400px;
+    padding: 24px 28px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    line-height: 1.85;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+
+  #manuscript:focus {
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px var(--shadow), 0 0 0 3px var(--accent-glow);
+  }
+
+  #manuscript::placeholder {
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  /* Reading view */
+  .reading-view {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px var(--shadow);
+    max-height: 55vh;
+    overflow-y: auto;
+    display: none;
+    scroll-behavior: smooth;
+  }
+
+  .reading-view.active { display: block; animation: fadeUp 0.4s ease; }
+
+  .reading-view .sentence {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.18rem;
+    line-height: 1.9;
+    color: var(--ink-soft);
+    transition: color 0.3s, background 0.3s;
+    border-radius: 3px;
+    padding: 1px 3px;
+    cursor: pointer;
+  }
+
+  .reading-view .sentence.spoken { color: var(--ink-faint); }
+  .reading-view .sentence.active { color: var(--ink); background: var(--highlight-active); }
+  .reading-view .sentence.upcoming { color: var(--ink); }
+  .reading-view .sentence.generating {
+    color: var(--ink);
+    background: rgba(180, 74, 45, 0.06);
+    animation: pulse 1.5s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .reading-view .paragraph-break { display: block; height: 1.2em; }
+
+  /* Controls */
+  .controls-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(180, 74, 45, 0.25);
+    letter-spacing: 0.02em;
+  }
+
+  .play-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(180, 74, 45, 0.3); }
+  .play-btn:active { transform: translateY(0); }
+  .play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .play-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  .stop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 22px;
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .stop-btn:hover { background: var(--bg); color: var(--ink); }
+  .stop-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  /* Settings */
+  .settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .settings .setting.full-width { grid-column: 1 / -1; }
+
+  @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
+
+  .setting {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+
+  .setting-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .setting-label span {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+  }
+
+  .setting-label .value {
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  select {
+    width: 100%;
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  select:focus { border-color: var(--accent); }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg-deep);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(180, 74, 45, 0.3);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin: 20px 0 8px;
+    display: none;
+  }
+
+  .progress-wrap.active { display: block; }
+
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--bg-deep);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+
+  .status {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin-top: 14px;
+    min-height: 20px;
+    font-style: italic;
+  }
+
+  .kbd-hint {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .kbd-hint.show { opacity: 1; }
+
+  kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scrollbar */
+  .reading-view::-webkit-scrollbar { width: 6px; }
+  .reading-view::-webkit-scrollbar-track { background: transparent; }
+  .reading-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Manuscript Reader</h1>
+    <p>Paste a chapter. Press play. Hear your words.</p>
+    <span class="badge">Kokoro AI Voice — runs locally in your browser</span>
+  </div>
+
+  <div class="model-status" id="modelStatus">
+    <div class="status-text" id="modelStatusText">
+      <span class="spinner"></span>
+      Loading Kokoro voice model...
+    </div>
+    <div class="model-progress" id="modelProgressWrap">
+      <div class="model-progress-fill" id="modelProgressFill"></div>
+    </div>
+    <div class="model-detail" id="modelDetail">First load downloads ~86 MB (cached after)</div>
+  </div>
+
+  <div class="input-area">
+    <label>Your text</label>
+    <textarea id="manuscript" placeholder="Paste your chapter here..."></textarea>
+  </div>
+
+  <div class="reading-view" id="readingView"></div>
+
+  <div class="controls-row">
+    <button class="play-btn" id="playBtn" disabled>
+      <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      <span id="playLabel">Play</span>
+    </button>
+    <button class="stop-btn hidden" id="stopBtn">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+      Stop
+    </button>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-info">
+      <span id="progressCurrent">0 / 0</span>
+      <span id="progressEta"></span>
+    </div>
+  </div>
+
+  <div class="settings">
+    <div class="setting">
+      <div class="setting-label"><span>Voice</span></div>
+      <select id="voiceSelect">
+        <optgroup label="American Female">
+          <option value="af_heart" selected>Heart ★</option>
+          <option value="af_bella">Bella</option>
+          <option value="af_nicole">Nicole</option>
+          <option value="af_sarah">Sarah</option>
+          <option value="af_sky">Sky</option>
+          <option value="af_nova">Nova</option>
+          <option value="af_river">River</option>
+          <option value="af_alloy">Alloy</option>
+        </optgroup>
+        <optgroup label="American Male">
+          <option value="am_adam">Adam</option>
+          <option value="am_michael">Michael</option>
+        </optgroup>
+        <optgroup label="British Female">
+          <option value="bf_emma">Emma</option>
+          <option value="bf_isabella">Isabella</option>
+        </optgroup>
+        <optgroup label="British Male">
+          <option value="bm_george">George</option>
+          <option value="bm_lewis">Lewis</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Speed</span>
+        <span class="value" id="speedVal">1.0×</span>
+      </div>
+      <input type="range" id="speedRange" min="0.5" max="1.5" step="0.05" value="1">
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Sentence pause</span>
+        <span class="value" id="pauseVal">100ms</span>
+      </div>
+      <input type="range" id="pauseRange" min="0" max="800" step="25" value="100">
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Paragraph pause</span>
+        <span class="value" id="paraPauseVal">350ms</span>
+      </div>
+      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="350">
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="kbd-hint" id="kbdHint">
+    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stop
+  </div>
+</div>
+
+<script type="module">
+  import { KokoroTTS } from "https://esm.sh/kokoro-js@1.2.1";
+
+  // ─── State ─────────────────────────────────────────
+  let tts = null;
+  let modelReady = false;
+  let sentences = [];
+  let currentIndex = 0;
+  let isPlaying = false;
+  let isPaused = false;
+  let audioContext = null;
+  let currentSource = null;
+  let stopRequested = false;
+
+  // Pre-generated audio cache: index -> AudioBuffer
+  const audioCache = new Map();
+  let prefetchIndex = -1;
+
+  // ─── Elements ──────────────────────────────────────
+  const modelStatus = document.getElementById('modelStatus');
+  const modelStatusText = document.getElementById('modelStatusText');
+  const modelProgressFill = document.getElementById('modelProgressFill');
+  const modelProgressWrap = document.getElementById('modelProgressWrap');
+  const modelDetail = document.getElementById('modelDetail');
+  const manuscriptEl = document.getElementById('manuscript');
+  const readingView = document.getElementById('readingView');
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const playLabel = document.getElementById('playLabel');
+  const stopBtn = document.getElementById('stopBtn');
+  const voiceSelect = document.getElementById('voiceSelect');
+  const speedRange = document.getElementById('speedRange');
+  const speedVal = document.getElementById('speedVal');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressCurrent = document.getElementById('progressCurrent');
+  const statusEl = document.getElementById('status');
+  const kbdHint = document.getElementById('kbdHint');
+
+  // ─── Init Model ────────────────────────────────────
+  async function loadModel() {
+    try {
+      let fakeProgress = 0;
+      const progressInterval = setInterval(() => {
+        if (fakeProgress < 90) {
+          fakeProgress += Math.random() * 3;
+          modelProgressFill.style.width = Math.min(fakeProgress, 90) + '%';
+        }
+      }, 500);
+
+      tts = await KokoroTTS.from_pretrained(
+        "onnx-community/Kokoro-82M-v1.0-ONNX",
+        { dtype: "q8", device: "wasm" }
+      );
+
+      clearInterval(progressInterval);
+      modelProgressFill.style.width = '100%';
+      modelProgressFill.classList.add('ready');
+      modelStatusText.innerHTML = '✓ Kokoro voice model ready';
+      modelStatusText.classList.add('ready-text');
+      modelStatus.classList.add('ready');
+      modelDetail.textContent = 'Model loaded and cached for future sessions';
+
+      modelReady = true;
+      playBtn.disabled = false;
+
+      // Fade out status after a moment
+      setTimeout(() => {
+        modelStatus.style.transition = 'opacity 0.5s, max-height 0.5s, margin 0.5s, padding 0.5s';
+        modelStatus.style.opacity = '0';
+        modelStatus.style.maxHeight = '0';
+        modelStatus.style.marginBottom = '0';
+        modelStatus.style.padding = '0 24px';
+        modelStatus.style.overflow = 'hidden';
+      }, 2000);
+    } catch (err) {
+      modelStatusText.innerHTML = '⚠ Failed to load model';
+      modelDetail.textContent = err.message || 'Check your internet connection and try refreshing.';
+      modelProgressFill.style.background = '#c44';
+      console.error('Model load error:', err);
+    }
+  }
+
+  loadModel();
+
+  // ─── Audio Context ─────────────────────────────────
+  function getAudioContext() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+    }
+    if (audioContext.state === 'suspended') audioContext.resume();
+    return audioContext;
+  }
+
+  // ─── Sentence Splitting ────────────────────────────
+  function splitIntoSentences(text) {
+    const paragraphs = text.split(/\n\s*\n/);
+    const result = [];
+
+    paragraphs.forEach((para, pIdx) => {
+      const trimmed = para.replace(/\n/g, ' ').trim();
+      if (!trimmed) return;
+
+      // Split on sentence boundaries, keeping quotes together
+      const parts = trimmed.match(/[^.!?]*[.!?]+[\s"'"\u201D)]*|[^.!?]+$/g) || [trimmed];
+
+      parts.forEach(s => {
+        const cleaned = s.trim();
+        if (cleaned && cleaned.length > 1) {
+          result.push({ text: cleaned, paragraphEnd: false });
+        }
+      });
+
+      if (result.length > 0 && pIdx < paragraphs.length - 1) {
+        result[result.length - 1].paragraphEnd = true;
+      }
+    });
+
+    return result;
+  }
+
+  // ─── Generate Audio for a Sentence ─────────────────
+  async function generateAudio(text, voice, speed) {
+    const result = await tts.generate(text, { voice, speed });
+
+    // result has .audio (Float32Array) and .sampling_rate
+    const ctx = getAudioContext();
+    const sampleRate = result.sampling_rate || 24000;
+    const samples = result.audio;
+    const audioBuffer = ctx.createBuffer(1, samples.length, sampleRate);
+    audioBuffer.getChannelData(0).set(samples);
+    return audioBuffer;
+  }
+
+  // ─── Prefetch Next Sentence ────────────────────────
+  async function prefetch(index) {
+    if (index >= sentences.length || audioCache.has(index) || prefetchIndex === index) return;
+    prefetchIndex = index;
+    try {
+      const voice = voiceSelect.value;
+      const speed = parseFloat(speedRange.value);
+      const buffer = await generateAudio(sentences[index].text, voice, speed);
+      if (!stopRequested) audioCache.set(index, buffer);
+    } catch (e) {
+      console.warn('Prefetch failed for sentence', index, e);
+    }
+  }
+
+  // ─── Play an AudioBuffer ───────────────────────────
+  function playBuffer(buffer) {
+    return new Promise((resolve) => {
+      const ctx = getAudioContext();
+      currentSource = ctx.createBufferSource();
+      currentSource.buffer = buffer;
+      currentSource.connect(ctx.destination);
+      currentSource.onended = () => {
+        currentSource = null;
+        resolve();
+      };
+      currentSource.start();
+    });
+  }
+
+  // ─── Build Reading View ────────────────────────────
+  function buildReadingView() {
+    readingView.innerHTML = '';
+    sentences.forEach((s, i) => {
+      const span = document.createElement('span');
+      span.className = 'sentence upcoming';
+      span.dataset.index = i;
+      span.textContent = s.text + ' ';
+      readingView.appendChild(span);
+
+      if (s.paragraphEnd) {
+        const br = document.createElement('span');
+        br.className = 'paragraph-break';
+        readingView.appendChild(br);
+      }
+    });
+  }
+
+  // ─── Update Highlight ──────────────────────────────
+  function updateHighlight(genIndex) {
+    const spans = readingView.querySelectorAll('.sentence');
+    spans.forEach((span, i) => {
+      span.className = 'sentence';
+      if (i < currentIndex) span.classList.add('spoken');
+      else if (i === currentIndex) span.classList.add('active');
+      else if (i === genIndex) span.classList.add('generating');
+      else span.classList.add('upcoming');
+    });
+
+    const active = readingView.querySelector('.sentence.active');
+    if (active) {
+      const viewRect = readingView.getBoundingClientRect();
+      const elRect = active.getBoundingClientRect();
+      if (elRect.top < viewRect.top + 20 || elRect.bottom > viewRect.bottom - 20) {
+        active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    const pct = sentences.length > 0 ? (currentIndex / sentences.length) * 100 : 0;
+    progressFill.style.width = pct + '%';
+    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences`;
+  }
+
+  // ─── Main Playback Loop ────────────────────────────
+  async function playFrom(index) {
+    isPlaying = true;
+    isPaused = false;
+    stopRequested = false;
+    updateUI();
+
+    for (let i = index; i < sentences.length; i++) {
+      if (stopRequested) break;
+
+      currentIndex = i;
+      updateHighlight(i);
+
+      // Generate current sentence audio (or use cache)
+      let buffer = audioCache.get(i);
+      if (!buffer) {
+        statusEl.textContent = 'Generating voice...';
+        try {
+          const voice = voiceSelect.value;
+          const speed = parseFloat(speedRange.value);
+          buffer = await generateAudio(sentences[i].text, voice, speed);
+          audioCache.set(i, buffer);
+        } catch (err) {
+          console.error('Generation error:', err);
+          statusEl.textContent = 'Error generating audio. Skipping...';
+          continue;
+        }
+      }
+
+      if (stopRequested) break;
+
+      statusEl.textContent = '';
+      updateHighlight();
+
+      // Start prefetching next sentence while playing current
+      prefetch(i + 1);
+
+      // Play
+      await playBuffer(buffer);
+
+      if (stopRequested) break;
+
+      // Small pause between sentences (longer at paragraph breaks)
+      const pause = sentences[i].paragraphEnd ? parseInt(paraPauseRange.value) : parseInt(pauseRange.value);
+      await new Promise(r => setTimeout(r, pause));
+    }
+
+    if (!stopRequested) {
+      currentIndex = sentences.length;
+      updateHighlight();
+      statusEl.textContent = 'Finished reading.';
+    }
+
+    isPlaying = false;
+    isPaused = false;
+    updateUI();
+  }
+
+  // ─── Controls ──────────────────────────────────────
+  function togglePlay() {
+    if (!modelReady) return;
+
+    if (!isPlaying && !isPaused) {
+      // Fresh start
+      const text = manuscriptEl.value.trim();
+      if (!text) { statusEl.textContent = 'Paste some text first.'; return; }
+
+      sentences = splitIntoSentences(text);
+      if (sentences.length === 0) { statusEl.textContent = 'No sentences found.'; return; }
+
+      audioCache.clear();
+      currentIndex = 0;
+      buildReadingView();
+      readingView.classList.add('active');
+      manuscriptEl.parentElement.classList.add('hidden');
+      progressWrap.classList.add('active');
+
+      playFrom(0);
+
+    } else if (isPlaying && !isPaused) {
+      // Pause: stop current source
+      if (currentSource) {
+        currentSource.onended = null;
+        currentSource.stop();
+        currentSource = null;
+      }
+      isPaused = true;
+      isPlaying = false;
+      updateUI();
+      statusEl.textContent = 'Paused.';
+
+    } else if (isPaused) {
+      // Resume from current index
+      isPaused = false;
+      playFrom(currentIndex);
+    }
+  }
+
+  function stopReading() {
+    stopRequested = true;
+    if (currentSource) {
+      currentSource.onended = null;
+      currentSource.stop();
+      currentSource = null;
+    }
+    isPlaying = false;
+    isPaused = false;
+    currentIndex = 0;
+    audioCache.clear();
+    readingView.classList.remove('active');
+    manuscriptEl.parentElement.classList.remove('hidden');
+    progressWrap.classList.remove('active');
+    updateUI();
+    statusEl.textContent = 'Stopped.';
+  }
+
+  function updateUI() {
+    if (isPlaying) {
+      playIcon.innerHTML = '<rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/>';
+      playLabel.textContent = 'Pause';
+    } else {
+      playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+      playLabel.textContent = isPaused ? 'Resume' : 'Play';
+    }
+
+    stopBtn.classList.toggle('hidden', !isPlaying && !isPaused);
+    kbdHint.classList.toggle('show', isPlaying || isPaused);
+  }
+
+  // ─── Event Listeners ──────────────────────────────
+  playBtn.addEventListener('click', togglePlay);
+  stopBtn.addEventListener('click', stopReading);
+
+  speedRange.addEventListener('input', () => {
+    speedVal.textContent = parseFloat(speedRange.value).toFixed(2) + '×';
+    // Clear cache when speed changes during playback
+    if (isPlaying || isPaused) {
+      audioCache.clear();
+    }
+  });
+
+  const pauseRange = document.getElementById('pauseRange');
+  const pauseVal = document.getElementById('pauseVal');
+  const paraPauseRange = document.getElementById('paraPauseRange');
+  const paraPauseVal = document.getElementById('paraPauseVal');
+
+  pauseRange.addEventListener('input', () => {
+    pauseVal.textContent = pauseRange.value + 'ms';
+  });
+
+  paraPauseRange.addEventListener('input', () => {
+    paraPauseVal.textContent = paraPauseRange.value + 'ms';
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (document.activeElement === manuscriptEl) return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      togglePlay();
+    } else if (e.code === 'Escape') {
+      stopReading();
+    }
+  });
+</script>
+</body>
+</html>
