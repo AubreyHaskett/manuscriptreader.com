@@ -11,7 +11,6 @@
 <meta property="og:url" content="https://manuscriptreader.com">
 <link rel="canonical" href="https://manuscriptreader.com">
 <link rel="icon" type="image/png" href="/manuscript-icon.png">
-<link rel="apple-touch-icon" href="/manuscript-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -209,7 +208,6 @@
     overflow-y: auto;
     display: none;
     scroll-behavior: smooth;
-    position: relative;
   }
 
   .reading-view.active { display: block; animation: fadeUp 0.4s ease; }
@@ -240,40 +238,6 @@
   }
 
   .reading-view .paragraph-break { display: block; height: 1.2em; }
-
-  /* Preparing overlay for reading view */
-  .preparing-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 253, 250, 0.95);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    border-radius: var(--radius);
-    gap: 16px;
-  }
-
-  .preparing-overlay .large-spinner {
-    width: 48px;
-    height: 48px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  .preparing-overlay .preparing-text {
-    font-size: 0.95rem;
-    color: var(--ink-soft);
-    font-weight: 500;
-  }
-
-  .preparing-overlay .preparing-detail {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-  }
 
   /* Controls */
   .controls-row {
@@ -307,23 +271,6 @@
   .play-btn:active { transform: translateY(0); }
   .play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .play-btn svg { width: 16px; height: 16px; fill: currentColor; }
-
-  .play-btn.loading {
-    position: relative;
-    pointer-events: none;
-  }
-
-  .play-btn.loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    right: 12px;
-  }
 
   .stop-btn {
     display: inline-flex;
@@ -732,7 +679,6 @@
     <h1>Manuscript Reader</h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
     <span class="badge">Kokoro AI Voice — runs locally in your browser</span>
-    <p class="browser-tip" style="font-size: 0.72rem; color: var(--ink-faint); margin-top: 10px;">Best performance in Chrome or Edge with GPU acceleration</p>
   </div>
 
   <details class="privacy-banner">
@@ -764,7 +710,7 @@
   <div class="model-status" id="modelStatus">
     <div class="status-text" id="modelStatusText">
       <span class="spinner"></span>
-      Downloading voice model...
+      Loading Kokoro voice model...
     </div>
     <div class="model-progress" id="modelProgressWrap">
       <div class="model-progress-fill" id="modelProgressFill"></div>
@@ -960,76 +906,29 @@
   const statusEl = document.getElementById('status');
   const kbdHint = document.getElementById('kbdHint');
 
-  // ─── Service Worker Registration ──────────────────
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Service worker registration failed - that's ok, will work without it
-    });
-  }
-
-  // ─── Format bytes for display ─────────────────────
-  function formatBytes(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
-
-  // ─── Init Model with Real Progress ────────────────
+  // ─── Init Model ────────────────────────────────────
   async function loadModel() {
     try {
-      // Check if model might be cached (instant load)
-      const cacheCheck = await caches.open('kokoro-model-v1').catch(() => null);
-      let isCached = false;
-      if (cacheCheck) {
-        const keys = await cacheCheck.keys();
-        isCached = keys.some(req => req.url.includes('onnx'));
-      }
-
-      if (isCached) {
-        modelStatusText.innerHTML = '<span class="spinner"></span> Loading cached model...';
-        modelProgressFill.style.width = '50%';
-      }
-
-      // Check for WebGPU support for faster inference
-      let device = "wasm";
-      let deviceName = "CPU";
-      if (navigator.gpu) {
-        try {
-          const adapter = await navigator.gpu.requestAdapter();
-          if (adapter) {
-            device = "webgpu";
-            deviceName = "GPU";
-            modelDetail.textContent = 'WebGPU detected - using GPU acceleration';
-          }
-        } catch (e) {
-          console.log('WebGPU not available, falling back to WASM');
+      let fakeProgress = 0;
+      const progressInterval = setInterval(() => {
+        if (fakeProgress < 90) {
+          fakeProgress += Math.random() * 3;
+          modelProgressFill.style.width = Math.min(fakeProgress, 90) + '%';
         }
-      }
+      }, 500);
 
-      // Load the model - Kokoro will use browser cache if available
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
-        {
-          dtype: "q8",
-          device: device,
-          progress_callback: (progress) => {
-            // progress.loaded and progress.total are available
-            if (progress.total) {
-              const pct = Math.round((progress.loaded / progress.total) * 100);
-              modelProgressFill.style.width = pct + '%';
-              modelStatusText.innerHTML = `<span class="spinner"></span> Downloading... ${formatBytes(progress.loaded)} / ${formatBytes(progress.total)}`;
-              modelDetail.textContent = `${pct}% complete`;
-            }
-          }
-        }
+        { dtype: "q8", device: "wasm" }
       );
 
+      clearInterval(progressInterval);
       modelProgressFill.style.width = '100%';
       modelProgressFill.classList.add('ready');
       modelStatusText.innerHTML = '✓ Kokoro voice model ready';
       modelStatusText.classList.add('ready-text');
       modelStatus.classList.add('ready');
-      modelDetail.textContent = `Model loaded (${deviceName}) and cached for future sessions`;
+      modelDetail.textContent = 'Model loaded and cached for future sessions';
 
       modelReady = true;
       playBtn.disabled = false;
@@ -1062,13 +961,10 @@
     return audioContext;
   }
 
-  // ─── Sentence Splitting with Batching ──────────────
-  // Combines short sentences to reduce TTS calls and improve flow
-  const MIN_BATCH_LENGTH = 80; // Minimum characters before we stop batching
-
+  // ─── Sentence Splitting ────────────────────────────
   function splitIntoSentences(text) {
     const paragraphs = text.split(/\n\s*\n/);
-    const rawSentences = [];
+    const result = [];
 
     paragraphs.forEach((para, pIdx) => {
       const trimmed = para.replace(/\n/g, ' ').trim();
@@ -1080,68 +976,21 @@
       parts.forEach(s => {
         const cleaned = s.trim();
         if (cleaned && cleaned.length > 1) {
-          rawSentences.push({ text: cleaned, paragraphEnd: false });
+          result.push({ text: cleaned, paragraphEnd: false });
         }
       });
 
-      if (rawSentences.length > 0 && pIdx < paragraphs.length - 1) {
-        rawSentences[rawSentences.length - 1].paragraphEnd = true;
+      if (result.length > 0 && pIdx < paragraphs.length - 1) {
+        result[result.length - 1].paragraphEnd = true;
       }
     });
-
-    // Batch short sentences together for fewer TTS calls
-    const result = [];
-    let currentBatch = '';
-    let batchParagraphEnd = false;
-
-    for (let i = 0; i < rawSentences.length; i++) {
-      const sentence = rawSentences[i];
-      const wouldBe = currentBatch ? currentBatch + ' ' + sentence.text : sentence.text;
-
-      // If adding this sentence keeps us under the limit, batch it
-      if (wouldBe.length < MIN_BATCH_LENGTH && !batchParagraphEnd) {
-        currentBatch = wouldBe;
-        batchParagraphEnd = sentence.paragraphEnd;
-      } else {
-        // Flush current batch if exists
-        if (currentBatch) {
-          result.push({ text: currentBatch, paragraphEnd: batchParagraphEnd });
-        }
-        currentBatch = sentence.text;
-        batchParagraphEnd = sentence.paragraphEnd;
-      }
-    }
-
-    // Flush final batch
-    if (currentBatch) {
-      result.push({ text: currentBatch, paragraphEnd: batchParagraphEnd });
-    }
 
     return result;
   }
 
-  // ─── Yield to browser to prevent UI freezing ──────
-  function yieldToMain() {
-    return new Promise(resolve => {
-      if ('scheduler' in window && 'yield' in scheduler) {
-        // Use scheduler.yield() if available (Chrome 115+)
-        scheduler.yield().then(resolve);
-      } else {
-        // Fallback: use setTimeout to yield to the event loop
-        setTimeout(resolve, 0);
-      }
-    });
-  }
-
   // ─── Generate Audio for a Sentence ─────────────────
   async function generateAudio(text, voice, speed) {
-    // Yield before heavy computation to keep UI responsive
-    await yieldToMain();
-
     const result = await tts.generate(text, { voice, speed });
-
-    // Yield after heavy computation too
-    await yieldToMain();
 
     // result has .audio (Float32Array) and .sampling_rate
     const ctx = getAudioContext();
@@ -1180,56 +1029,12 @@
   }
 
   // Fire-and-forget prefetch for upcoming sentences
-  // Increased to 8 sentences for better buffer
-  function prefetchAhead(fromIndex, count = 8) {
+  function prefetchAhead(fromIndex, count = 3) {
     for (let i = fromIndex; i < Math.min(fromIndex + count, sentences.length); i++) {
       if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
         ensureGenerated(i); // intentionally not awaited
       }
     }
-  }
-
-  // Background generator - continuously generates all sentences
-  // IMPORTANT: Only runs when playback is NOT actively waiting for audio
-  let backgroundGeneratorRunning = false;
-  let backgroundGeneratorPaused = false;
-
-  async function startBackgroundGenerator() {
-    if (backgroundGeneratorRunning) return;
-    backgroundGeneratorRunning = true;
-
-    for (let i = 0; i < sentences.length; i++) {
-      if (stopRequested || !backgroundGeneratorRunning) break;
-
-      // Skip if already cached or being generated
-      if (audioCache.has(i) || prefetchInFlight.has(i)) continue;
-
-      // Pause if playback needs the TTS - prioritize current playback
-      while (backgroundGeneratorPaused && !stopRequested) {
-        await new Promise(r => setTimeout(r, 100));
-      }
-
-      if (stopRequested || !backgroundGeneratorRunning) break;
-
-      await ensureGenerated(i);
-      // Longer yield to let playback have priority
-      await new Promise(r => setTimeout(r, 50));
-    }
-
-    backgroundGeneratorRunning = false;
-  }
-
-  function pauseBackgroundGenerator() {
-    backgroundGeneratorPaused = true;
-  }
-
-  function resumeBackgroundGenerator() {
-    backgroundGeneratorPaused = false;
-  }
-
-  function stopBackgroundGenerator() {
-    backgroundGeneratorRunning = false;
-    backgroundGeneratorPaused = false;
   }
 
   // ─── Play an AudioBuffer ───────────────────────────
@@ -1265,30 +1070,6 @@
     });
   }
 
-  // ─── Show/Hide Preparing Overlay ───────────────────
-  function showPreparingOverlay(sentenceCount) {
-    const existing = readingView.querySelector('.preparing-overlay');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.className = 'preparing-overlay';
-    overlay.innerHTML = `
-      <div class="large-spinner"></div>
-      <div class="preparing-text">Preparing audio...</div>
-      <div class="preparing-detail">Generating first ${sentenceCount} sentence${sentenceCount > 1 ? 's' : ''}</div>
-    `;
-    readingView.appendChild(overlay);
-  }
-
-  function hidePreparingOverlay() {
-    const overlay = readingView.querySelector('.preparing-overlay');
-    if (overlay) {
-      overlay.style.transition = 'opacity 0.3s';
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.remove(), 300);
-    }
-  }
-
   // ─── Update Highlight ──────────────────────────────
   function updateHighlight(genIndex) {
     const spans = readingView.querySelectorAll('.sentence');
@@ -1311,11 +1092,7 @@
 
     const pct = sentences.length > 0 ? (currentIndex / sentences.length) * 100 : 0;
     progressFill.style.width = pct + '%';
-
-    // Show cache status for transparency
-    const cachedCount = audioCache.size;
-    const cacheInfo = cachedCount < sentences.length ? ` (${cachedCount} cached)` : ' (all cached)';
-    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences${cacheInfo}`;
+    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences`;
   }
 
   // ─── Main Playback Loop ────────────────────────────
@@ -1328,14 +1105,12 @@
     // Pre-buffer: generate first sentence (and start prefetching next ones)
     // before playing anything, so the user doesn't wait during playback
     if (!audioCache.has(index)) {
+      statusEl.textContent = 'Preparing first sentence...';
       currentIndex = index;
       updateHighlight(index);
     }
     prefetchAhead(index, 3);
     await ensureGenerated(index);
-
-    // Hide preparing overlay now that we're ready
-    hidePreparingOverlay();
 
     if (stopRequested) return;
     statusEl.textContent = '';
@@ -1349,12 +1124,9 @@
       // Get the buffer (should be cached from prefetch, but generate if not)
       let buffer = audioCache.get(i);
       if (!buffer) {
-        // Pause background generator so playback gets priority
-        pauseBackgroundGenerator();
         statusEl.textContent = 'Generating...';
         updateHighlight(i);
         buffer = await ensureGenerated(i);
-        resumeBackgroundGenerator();
         if (!buffer || stopRequested) {
           statusEl.textContent = '';
           continue;
@@ -1364,7 +1136,7 @@
       }
 
       // Kick off prefetch for upcoming sentences while we play this one
-      prefetchAhead(i + 1, 8);
+      prefetchAhead(i + 1, 3);
 
       // Play
       await playBuffer(buffer);
@@ -1388,7 +1160,7 @@
   }
 
   // ─── Controls ──────────────────────────────────────
-  async function togglePlay() {
+  function togglePlay() {
     if (!modelReady) return;
 
     if (!isPlaying && !isPaused) {
@@ -1405,29 +1177,6 @@
       readingView.classList.add('active');
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
-
-      // Show preparing overlay and pre-generate first 5 sentences in parallel
-      const initialCount = Math.min(5, sentences.length);
-      showPreparingOverlay(initialCount);
-
-      // Disable play button while preparing
-      playBtn.classList.add('loading');
-      playLabel.textContent = 'Preparing...';
-
-      // Generate first 5 sentences in parallel for faster startup
-      await Promise.all(
-        Array.from({ length: initialCount }, (_, i) => ensureGenerated(i))
-      );
-
-      playBtn.classList.remove('loading');
-
-      if (stopRequested) {
-        hidePreparingOverlay();
-        return;
-      }
-
-      // Start background generator to pre-generate ALL remaining sentences
-      startBackgroundGenerator();
 
       playFrom(0);
 
@@ -1452,7 +1201,6 @@
 
   function stopReading() {
     stopRequested = true;
-    stopBackgroundGenerator();
     if (currentSource) {
       currentSource.onended = null;
       currentSource.stop();
@@ -1466,8 +1214,6 @@
     readingView.classList.remove('active');
     manuscriptEl.parentElement.classList.remove('hidden');
     progressWrap.classList.remove('active');
-    playBtn.classList.remove('loading');
-    hidePreparingOverlay();
     updateUI();
     statusEl.textContent = 'Stopped.';
   }
