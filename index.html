@@ -207,6 +207,7 @@
     overflow-y: auto;
     display: none;
     scroll-behavior: smooth;
+    position: relative;
   }
 
   .reading-view.active { display: block; animation: fadeUp 0.4s ease; }
@@ -237,6 +238,40 @@
   }
 
   .reading-view .paragraph-break { display: block; height: 1.2em; }
+
+  /* Preparing overlay for reading view */
+  .preparing-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 253, 250, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: var(--radius);
+    gap: 16px;
+  }
+
+  .preparing-overlay .large-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .preparing-overlay .preparing-text {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .preparing-overlay .preparing-detail {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
 
   /* Controls */
   .controls-row {
@@ -270,6 +305,23 @@
   .play-btn:active { transform: translateY(0); }
   .play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .play-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  .play-btn.loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .play-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    right: 12px;
+  }
 
   .stop-btn {
     display: inline-flex;
@@ -709,7 +761,7 @@
   <div class="model-status" id="modelStatus">
     <div class="status-text" id="modelStatusText">
       <span class="spinner"></span>
-      Loading Kokoro voice model...
+      Downloading voice model...
     </div>
     <div class="model-progress" id="modelProgressWrap">
       <div class="model-progress-fill" id="modelProgressFill"></div>
@@ -905,23 +957,54 @@
   const statusEl = document.getElementById('status');
   const kbdHint = document.getElementById('kbdHint');
 
-  // ─── Init Model ────────────────────────────────────
+  // ─── Service Worker Registration ──────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Service worker registration failed - that's ok, will work without it
+    });
+  }
+
+  // ─── Format bytes for display ─────────────────────
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  // ─── Init Model with Real Progress ────────────────
   async function loadModel() {
     try {
-      let fakeProgress = 0;
-      const progressInterval = setInterval(() => {
-        if (fakeProgress < 90) {
-          fakeProgress += Math.random() * 3;
-          modelProgressFill.style.width = Math.min(fakeProgress, 90) + '%';
-        }
-      }, 500);
+      // Check if model might be cached (instant load)
+      const cacheCheck = await caches.open('kokoro-model-v1').catch(() => null);
+      let isCached = false;
+      if (cacheCheck) {
+        const keys = await cacheCheck.keys();
+        isCached = keys.some(req => req.url.includes('onnx'));
+      }
 
+      if (isCached) {
+        modelStatusText.innerHTML = '<span class="spinner"></span> Loading cached model...';
+        modelProgressFill.style.width = '50%';
+      }
+
+      // Load the model - Kokoro will use browser cache if available
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
-        { dtype: "q8", device: "wasm" }
+        {
+          dtype: "q8",
+          device: "wasm",
+          progress_callback: (progress) => {
+            // progress.loaded and progress.total are available
+            if (progress.total) {
+              const pct = Math.round((progress.loaded / progress.total) * 100);
+              modelProgressFill.style.width = pct + '%';
+              modelStatusText.innerHTML = `<span class="spinner"></span> Downloading... ${formatBytes(progress.loaded)} / ${formatBytes(progress.total)}`;
+              modelDetail.textContent = `${pct}% complete`;
+            }
+          }
+        }
       );
 
-      clearInterval(progressInterval);
       modelProgressFill.style.width = '100%';
       modelProgressFill.classList.add('ready');
       modelStatusText.innerHTML = '✓ Kokoro voice model ready';
@@ -1069,6 +1152,30 @@
     });
   }
 
+  // ─── Show/Hide Preparing Overlay ───────────────────
+  function showPreparingOverlay(sentenceCount) {
+    const existing = readingView.querySelector('.preparing-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'preparing-overlay';
+    overlay.innerHTML = `
+      <div class="large-spinner"></div>
+      <div class="preparing-text">Preparing audio...</div>
+      <div class="preparing-detail">Generating first ${sentenceCount} sentence${sentenceCount > 1 ? 's' : ''}</div>
+    `;
+    readingView.appendChild(overlay);
+  }
+
+  function hidePreparingOverlay() {
+    const overlay = readingView.querySelector('.preparing-overlay');
+    if (overlay) {
+      overlay.style.transition = 'opacity 0.3s';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 300);
+    }
+  }
+
   // ─── Update Highlight ──────────────────────────────
   function updateHighlight(genIndex) {
     const spans = readingView.querySelectorAll('.sentence');
@@ -1104,12 +1211,14 @@
     // Pre-buffer: generate first sentence (and start prefetching next ones)
     // before playing anything, so the user doesn't wait during playback
     if (!audioCache.has(index)) {
-      statusEl.textContent = 'Preparing first sentence...';
       currentIndex = index;
       updateHighlight(index);
     }
     prefetchAhead(index, 3);
     await ensureGenerated(index);
+
+    // Hide preparing overlay now that we're ready
+    hidePreparingOverlay();
 
     if (stopRequested) return;
     statusEl.textContent = '';
@@ -1159,7 +1268,7 @@
   }
 
   // ─── Controls ──────────────────────────────────────
-  function togglePlay() {
+  async function togglePlay() {
     if (!modelReady) return;
 
     if (!isPlaying && !isPaused) {
@@ -1176,6 +1285,26 @@
       readingView.classList.add('active');
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
+
+      // Show preparing overlay and pre-generate first 3 sentences in parallel
+      const initialCount = Math.min(3, sentences.length);
+      showPreparingOverlay(initialCount);
+
+      // Disable play button while preparing
+      playBtn.classList.add('loading');
+      playLabel.textContent = 'Preparing...';
+
+      // Generate first 3 sentences in parallel for faster startup
+      await Promise.all(
+        Array.from({ length: initialCount }, (_, i) => ensureGenerated(i))
+      );
+
+      playBtn.classList.remove('loading');
+
+      if (stopRequested) {
+        hidePreparingOverlay();
+        return;
+      }
 
       playFrom(0);
 
@@ -1213,6 +1342,8 @@
     readingView.classList.remove('active');
     manuscriptEl.parentElement.classList.remove('hidden');
     progressWrap.classList.remove('active');
+    playBtn.classList.remove('loading');
+    hidePreparingOverlay();
     updateUI();
     statusEl.textContent = 'Stopped.';
   }
