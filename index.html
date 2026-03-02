@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manuscript Reader — Kokoro</title>
+<title>Manuscript Reader — Hear your writing read aloud</title>
+<meta name="description" content="Free, private text-to-speech for writers. Paste your manuscript, hear it read in a natural AI voice. No accounts, no uploads, no servers. Your words never leave your browser.">
+<meta property="og:title" content="Manuscript Reader">
+<meta property="og:description" content="Free, private text-to-speech for writers. Your words never leave your browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://manuscriptreader.com">
+<link rel="canonical" href="https://manuscriptreader.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -449,15 +455,149 @@
   .reading-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
   .hidden { display: none !important; }
+
+  /* Privacy banner */
+  .privacy-banner {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease 0.15s both;
+  }
+
+  .privacy-banner summary {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .privacy-banner summary::-webkit-details-marker { display: none; }
+
+  .privacy-banner summary .lock-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--green-bg);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .privacy-banner summary .lock-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: var(--green);
+  }
+
+  .privacy-banner summary .arrow {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    transition: transform 0.2s;
+  }
+
+  .privacy-banner[open] summary .arrow { transform: rotate(90deg); }
+
+  .privacy-points {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 560px) { .privacy-points { grid-template-columns: 1fr; } }
+
+  .privacy-point {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .privacy-point .check {
+    color: var(--green);
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+
+  .privacy-point p {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .privacy-point strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+
+  .footer p {
+    font-size: 0.74rem;
+    line-height: 1.7;
+    color: var(--ink-faint);
+  }
+
+  .footer a {
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-color: var(--border);
+    text-underline-offset: 2px;
+    transition: color 0.2s;
+  }
+
+  .footer a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
     <h1>Manuscript Reader</h1>
-    <p>Paste a chapter. Press play. Hear your words.</p>
+    <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
     <span class="badge">Kokoro AI Voice — runs locally in your browser</span>
   </div>
+
+  <details class="privacy-banner">
+    <summary>
+      <span class="lock-icon"><svg viewBox="0 0 24 24"><path d="M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2zm-1-2V7a6 6 0 10-12 0v2h-1v2h14V9h-1zm-10 0V7a4 4 0 118 0v2H8z"/></svg></span>
+      Your manuscript stays private — here's how
+      <span class="arrow">▸</span>
+    </summary>
+    <div class="privacy-points">
+      <div class="privacy-point">
+        <span class="check">✓</span>
+        <p><strong>No servers.</strong> Your text is never uploaded anywhere. Everything runs inside your browser on your device.</p>
+      </div>
+      <div class="privacy-point">
+        <span class="check">✓</span>
+        <p><strong>No AI training.</strong> Your words are not used to train any model. The voice model is pre-trained and read-only.</p>
+      </div>
+      <div class="privacy-point">
+        <span class="check">✓</span>
+        <p><strong>No accounts or tracking.</strong> No logins, no cookies, no analytics. We don't know who you are or what you paste.</p>
+      </div>
+      <div class="privacy-point">
+        <span class="check">✓</span>
+        <p><strong>Nothing is saved.</strong> Close the tab and your text is gone. There is no database, no storage, no history.</p>
+      </div>
+    </div>
+  </details>
 
   <div class="model-status" id="modelStatus">
     <div class="status-text" id="modelStatusText">
@@ -472,7 +612,7 @@
 
   <div class="input-area">
     <label>Your text</label>
-    <textarea id="manuscript" placeholder="Paste your chapter here..."></textarea>
+    <textarea id="manuscript" placeholder="Paste a chapter or scene here — your text stays on your device and is never sent anywhere..."></textarea>
   </div>
 
   <div class="reading-view" id="readingView"></div>
@@ -550,6 +690,14 @@
   <div class="status" id="status"></div>
   <div class="kbd-hint" id="kbdHint">
     <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stop
+  </div>
+
+  <div class="footer">
+    <p>
+      Built for writers who want to hear their work without giving it away.<br>
+      Voice powered by <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a>, an open-source model (Apache 2.0).<br>
+      No data is collected. No text leaves your browser. Ever.
+    </p>
   </div>
 </div>
 
