@@ -1111,12 +1111,35 @@
   }
 
   // Fire-and-forget prefetch for upcoming sentences
-  function prefetchAhead(fromIndex, count = 3) {
+  // Increased to 8 sentences for better buffer
+  function prefetchAhead(fromIndex, count = 8) {
     for (let i = fromIndex; i < Math.min(fromIndex + count, sentences.length); i++) {
       if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
         ensureGenerated(i); // intentionally not awaited
       }
     }
+  }
+
+  // Background generator - continuously generates all sentences
+  let backgroundGeneratorRunning = false;
+  async function startBackgroundGenerator() {
+    if (backgroundGeneratorRunning) return;
+    backgroundGeneratorRunning = true;
+
+    for (let i = 0; i < sentences.length; i++) {
+      if (stopRequested || !backgroundGeneratorRunning) break;
+      if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
+        await ensureGenerated(i);
+        // Small yield to keep UI responsive
+        await new Promise(r => setTimeout(r, 10));
+      }
+    }
+
+    backgroundGeneratorRunning = false;
+  }
+
+  function stopBackgroundGenerator() {
+    backgroundGeneratorRunning = false;
   }
 
   // ─── Play an AudioBuffer ───────────────────────────
@@ -1198,7 +1221,11 @@
 
     const pct = sentences.length > 0 ? (currentIndex / sentences.length) * 100 : 0;
     progressFill.style.width = pct + '%';
-    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences`;
+
+    // Show cache status for transparency
+    const cachedCount = audioCache.size;
+    const cacheInfo = cachedCount < sentences.length ? ` (${cachedCount} cached)` : ' (all cached)';
+    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences${cacheInfo}`;
   }
 
   // ─── Main Playback Loop ────────────────────────────
@@ -1244,7 +1271,7 @@
       }
 
       // Kick off prefetch for upcoming sentences while we play this one
-      prefetchAhead(i + 1, 3);
+      prefetchAhead(i + 1, 8);
 
       // Play
       await playBuffer(buffer);
@@ -1286,15 +1313,15 @@
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
 
-      // Show preparing overlay and pre-generate first 3 sentences in parallel
-      const initialCount = Math.min(3, sentences.length);
+      // Show preparing overlay and pre-generate first 5 sentences in parallel
+      const initialCount = Math.min(5, sentences.length);
       showPreparingOverlay(initialCount);
 
       // Disable play button while preparing
       playBtn.classList.add('loading');
       playLabel.textContent = 'Preparing...';
 
-      // Generate first 3 sentences in parallel for faster startup
+      // Generate first 5 sentences in parallel for faster startup
       await Promise.all(
         Array.from({ length: initialCount }, (_, i) => ensureGenerated(i))
       );
@@ -1305,6 +1332,9 @@
         hidePreparingOverlay();
         return;
       }
+
+      // Start background generator to pre-generate ALL remaining sentences
+      startBackgroundGenerator();
 
       playFrom(0);
 
@@ -1329,6 +1359,7 @@
 
   function stopReading() {
     stopRequested = true;
+    stopBackgroundGenerator();
     if (currentSource) {
       currentSource.onended = null;
       currentSource.stop();
