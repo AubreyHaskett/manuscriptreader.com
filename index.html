@@ -802,16 +802,8 @@
     <div class="setting">
       <div class="setting-label"><span>Voice</span></div>
       <select id="voiceSelect">
-        <optgroup label="British Female">
-          <option value="bf_emma" selected>Emma ★</option>
-          <option value="bf_isabella">Isabella</option>
-        </optgroup>
-        <optgroup label="British Male">
-          <option value="bm_george">George</option>
-          <option value="bm_lewis">Lewis</option>
-        </optgroup>
         <optgroup label="American Female">
-          <option value="af_heart">Heart</option>
+          <option value="af_heart" selected>Heart ★</option>
           <option value="af_bella">Bella</option>
           <option value="af_nicole">Nicole</option>
           <option value="af_sarah">Sarah</option>
@@ -823,6 +815,14 @@
         <optgroup label="American Male">
           <option value="am_adam">Adam</option>
           <option value="am_michael">Michael</option>
+        </optgroup>
+        <optgroup label="British Female">
+          <option value="bf_emma">Emma</option>
+          <option value="bf_isabella">Isabella</option>
+        </optgroup>
+        <optgroup label="British Male">
+          <option value="bm_george">George</option>
+          <option value="bm_lewis">Lewis</option>
         </optgroup>
       </select>
     </div>
@@ -1133,24 +1133,12 @@
     });
   }
 
-  // ─── Get language code from voice name ─────────────
-  function getLangCode(voice) {
-    // Voice names start with language code: af_, bf_, am_, bm_, etc.
-    // a = American English, b = British English
-    const prefix = voice.charAt(0);
-    // For English voices (American or British), use 'en-us' or 'en-gb'
-    // But Kokoro uses single-letter codes: 'a' for American, 'b' for British
-    return prefix; // 'a' or 'b'
-  }
-
   // ─── Generate Audio for a Sentence ─────────────────
   async function generateAudio(text, voice, speed) {
     // Yield before heavy computation to keep UI responsive
     await yieldToMain();
 
-    // Get language code from voice prefix (a=American, b=British)
-    const langCode = getLangCode(voice);
-    const result = await tts.generate(text, { voice, speed, lang: langCode });
+    const result = await tts.generate(text, { voice, speed });
 
     // Yield after heavy computation too
     await yieldToMain();
