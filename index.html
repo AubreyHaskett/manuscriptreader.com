@@ -732,6 +732,7 @@
     <h1>Manuscript Reader</h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
     <span class="badge">Kokoro AI Voice — runs locally in your browser</span>
+    <p class="browser-tip" style="font-size: 0.72rem; color: var(--ink-faint); margin-top: 10px;">Best performance in Chrome or Edge with GPU acceleration</p>
   </div>
 
   <details class="privacy-banner">
@@ -801,8 +802,16 @@
     <div class="setting">
       <div class="setting-label"><span>Voice</span></div>
       <select id="voiceSelect">
+        <optgroup label="British Female">
+          <option value="bf_emma" selected>Emma ★</option>
+          <option value="bf_isabella">Isabella</option>
+        </optgroup>
+        <optgroup label="British Male">
+          <option value="bm_george">George</option>
+          <option value="bm_lewis">Lewis</option>
+        </optgroup>
         <optgroup label="American Female">
-          <option value="af_heart" selected>Heart ★</option>
+          <option value="af_heart">Heart</option>
           <option value="af_bella">Bella</option>
           <option value="af_nicole">Nicole</option>
           <option value="af_sarah">Sarah</option>
@@ -814,14 +823,6 @@
         <optgroup label="American Male">
           <option value="am_adam">Adam</option>
           <option value="am_michael">Michael</option>
-        </optgroup>
-        <optgroup label="British Female">
-          <option value="bf_emma">Emma</option>
-          <option value="bf_isabella">Isabella</option>
-        </optgroup>
-        <optgroup label="British Male">
-          <option value="bm_george">George</option>
-          <option value="bm_lewis">Lewis</option>
         </optgroup>
       </select>
     </div>
@@ -1119,9 +1120,28 @@
     return result;
   }
 
+  // ─── Yield to browser to prevent UI freezing ──────
+  function yieldToMain() {
+    return new Promise(resolve => {
+      if ('scheduler' in window && 'yield' in scheduler) {
+        // Use scheduler.yield() if available (Chrome 115+)
+        scheduler.yield().then(resolve);
+      } else {
+        // Fallback: use setTimeout to yield to the event loop
+        setTimeout(resolve, 0);
+      }
+    });
+  }
+
   // ─── Generate Audio for a Sentence ─────────────────
   async function generateAudio(text, voice, speed) {
+    // Yield before heavy computation to keep UI responsive
+    await yieldToMain();
+
     const result = await tts.generate(text, { voice, speed });
+
+    // Yield after heavy computation too
+    await yieldToMain();
 
     // result has .audio (Float32Array) and .sampling_rate
     const ctx = getAudioContext();
