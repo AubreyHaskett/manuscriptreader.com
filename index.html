@@ -10,6 +10,8 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://manuscriptreader.com">
 <link rel="canonical" href="https://manuscriptreader.com">
+<link rel="icon" type="image/png" href="/manuscript-icon.png">
+<link rel="apple-touch-icon" href="/manuscript-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -987,12 +989,28 @@
         modelProgressFill.style.width = '50%';
       }
 
+      // Check for WebGPU support for faster inference
+      let device = "wasm";
+      let deviceName = "CPU";
+      if (navigator.gpu) {
+        try {
+          const adapter = await navigator.gpu.requestAdapter();
+          if (adapter) {
+            device = "webgpu";
+            deviceName = "GPU";
+            modelDetail.textContent = 'WebGPU detected - using GPU acceleration';
+          }
+        } catch (e) {
+          console.log('WebGPU not available, falling back to WASM');
+        }
+      }
+
       // Load the model - Kokoro will use browser cache if available
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
         {
           dtype: "q8",
-          device: "wasm",
+          device: device,
           progress_callback: (progress) => {
             // progress.loaded and progress.total are available
             if (progress.total) {
@@ -1010,7 +1028,7 @@
       modelStatusText.innerHTML = '✓ Kokoro voice model ready';
       modelStatusText.classList.add('ready-text');
       modelStatus.classList.add('ready');
-      modelDetail.textContent = 'Model loaded and cached for future sessions';
+      modelDetail.textContent = `Model loaded (${deviceName}) and cached for future sessions`;
 
       modelReady = true;
       playBtn.disabled = false;
@@ -1043,10 +1061,13 @@
     return audioContext;
   }
 
-  // ─── Sentence Splitting ────────────────────────────
+  // ─── Sentence Splitting with Batching ──────────────
+  // Combines short sentences to reduce TTS calls and improve flow
+  const MIN_BATCH_LENGTH = 80; // Minimum characters before we stop batching
+
   function splitIntoSentences(text) {
     const paragraphs = text.split(/\n\s*\n/);
-    const result = [];
+    const rawSentences = [];
 
     paragraphs.forEach((para, pIdx) => {
       const trimmed = para.replace(/\n/g, ' ').trim();
@@ -1058,14 +1079,42 @@
       parts.forEach(s => {
         const cleaned = s.trim();
         if (cleaned && cleaned.length > 1) {
-          result.push({ text: cleaned, paragraphEnd: false });
+          rawSentences.push({ text: cleaned, paragraphEnd: false });
         }
       });
 
-      if (result.length > 0 && pIdx < paragraphs.length - 1) {
-        result[result.length - 1].paragraphEnd = true;
+      if (rawSentences.length > 0 && pIdx < paragraphs.length - 1) {
+        rawSentences[rawSentences.length - 1].paragraphEnd = true;
       }
     });
+
+    // Batch short sentences together for fewer TTS calls
+    const result = [];
+    let currentBatch = '';
+    let batchParagraphEnd = false;
+
+    for (let i = 0; i < rawSentences.length; i++) {
+      const sentence = rawSentences[i];
+      const wouldBe = currentBatch ? currentBatch + ' ' + sentence.text : sentence.text;
+
+      // If adding this sentence keeps us under the limit, batch it
+      if (wouldBe.length < MIN_BATCH_LENGTH && !batchParagraphEnd) {
+        currentBatch = wouldBe;
+        batchParagraphEnd = sentence.paragraphEnd;
+      } else {
+        // Flush current batch if exists
+        if (currentBatch) {
+          result.push({ text: currentBatch, paragraphEnd: batchParagraphEnd });
+        }
+        currentBatch = sentence.text;
+        batchParagraphEnd = sentence.paragraphEnd;
+      }
+    }
+
+    // Flush final batch
+    if (currentBatch) {
+      result.push({ text: currentBatch, paragraphEnd: batchParagraphEnd });
+    }
 
     return result;
   }
@@ -1121,25 +1170,46 @@
   }
 
   // Background generator - continuously generates all sentences
+  // IMPORTANT: Only runs when playback is NOT actively waiting for audio
   let backgroundGeneratorRunning = false;
+  let backgroundGeneratorPaused = false;
+
   async function startBackgroundGenerator() {
     if (backgroundGeneratorRunning) return;
     backgroundGeneratorRunning = true;
 
     for (let i = 0; i < sentences.length; i++) {
       if (stopRequested || !backgroundGeneratorRunning) break;
-      if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
-        await ensureGenerated(i);
-        // Small yield to keep UI responsive
-        await new Promise(r => setTimeout(r, 10));
+
+      // Skip if already cached or being generated
+      if (audioCache.has(i) || prefetchInFlight.has(i)) continue;
+
+      // Pause if playback needs the TTS - prioritize current playback
+      while (backgroundGeneratorPaused && !stopRequested) {
+        await new Promise(r => setTimeout(r, 100));
       }
+
+      if (stopRequested || !backgroundGeneratorRunning) break;
+
+      await ensureGenerated(i);
+      // Longer yield to let playback have priority
+      await new Promise(r => setTimeout(r, 50));
     }
 
     backgroundGeneratorRunning = false;
   }
 
+  function pauseBackgroundGenerator() {
+    backgroundGeneratorPaused = true;
+  }
+
+  function resumeBackgroundGenerator() {
+    backgroundGeneratorPaused = false;
+  }
+
   function stopBackgroundGenerator() {
     backgroundGeneratorRunning = false;
+    backgroundGeneratorPaused = false;
   }
 
   // ─── Play an AudioBuffer ───────────────────────────
@@ -1259,9 +1329,12 @@
       // Get the buffer (should be cached from prefetch, but generate if not)
       let buffer = audioCache.get(i);
       if (!buffer) {
+        // Pause background generator so playback gets priority
+        pauseBackgroundGenerator();
         statusEl.textContent = 'Generating...';
         updateHighlight(i);
         buffer = await ensureGenerated(i);
+        resumeBackgroundGenerator();
         if (!buffer || stopRequested) {
           statusEl.textContent = '';
           continue;
