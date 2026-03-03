@@ -907,7 +907,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.6</p>
+    <p class="version">v0.2.7</p>
   </div>
 </div>
 
@@ -963,6 +963,7 @@
   let currentBatchIndex = 0;
   let isPlaying = false;
   let isPaused = false;
+  let isPreparing = false;  // true while pre-generating audio
   let audioContext = null;
   let currentSource = null;
   let stopRequested = false;
@@ -1113,19 +1114,29 @@
   }
 
   // ─── Yield to browser for UI responsiveness ────────
+  // Use requestAnimationFrame + setTimeout for better UI responsiveness
   function yieldToMain() {
-    return new Promise(resolve => setTimeout(resolve, 0));
+    return new Promise(resolve => {
+      requestAnimationFrame(() => {
+        setTimeout(resolve, 0);
+      });
+    });
+  }
+
+  // Longer yield for heavy operations
+  function yieldLong() {
+    return new Promise(resolve => setTimeout(resolve, 10));
   }
 
   // ─── Generate Audio for a Sentence ─────────────────
   async function generateAudio(text, voice, speed) {
-    // Yield before heavy computation
-    await yieldToMain();
+    // Yield before heavy computation to allow UI updates
+    await yieldLong();
 
     const result = await tts.generate(text, { voice, speed });
 
-    // Yield after to let UI update
-    await yieldToMain();
+    // Yield after to let UI catch up
+    await yieldLong();
 
     // result has .audio (Float32Array) and .sampling_rate
     const ctx = getAudioContext();
@@ -1133,6 +1144,10 @@
     const samples = result.audio;
     const audioBuffer = ctx.createBuffer(1, samples.length, sampleRate);
     audioBuffer.getChannelData(0).set(samples);
+
+    // One more yield after buffer creation
+    await yieldToMain();
+
     return audioBuffer;
   }
 
@@ -1367,12 +1382,26 @@
       playIcon.style.display = 'none';
       playLabel.innerHTML = '<span class="spinner-inline"></span>Preparing...';
 
-      // Pre-generate first batches in parallel before starting playback
-      await Promise.all(
-        Array.from({ length: pregenBatchCount }, (_, i) => ensureGenerated(i))
-      );
+      // Hide settings during preparation
+      isPreparing = true;
+      settingsEl.classList.add('collapsed');
+
+      // Pre-generate first batches sequentially (parallel causes more UI blocking)
+      for (let i = 0; i < pregenBatchCount; i++) {
+        if (stopRequested) break;
+        await ensureGenerated(i);
+        // Update overlay progress
+        const overlay = document.getElementById('preparingOverlay');
+        if (overlay) {
+          const detail = overlay.querySelector('.preparing-detail');
+          if (detail) {
+            detail.textContent = `Generated ${i + 1} of ${pregenBatchCount} batches...`;
+          }
+        }
+      }
 
       // Hide loading UI
+      isPreparing = false;
       hidePreparingOverlay();
       playBtn.classList.remove('loading');
       playIcon.style.display = '';
@@ -1407,6 +1436,7 @@
     }
     isPlaying = false;
     isPaused = false;
+    isPreparing = false;
     currentBatchIndex = 0;
     batches = [];
     audioCache.clear();
@@ -1430,10 +1460,10 @@
       playLabel.textContent = isPaused ? 'Resume' : 'Play';
     }
 
-    stopBtn.classList.toggle('hidden', !isPlaying && !isPaused);
+    stopBtn.classList.toggle('hidden', !isPlaying && !isPaused && !isPreparing);
     kbdHint.classList.toggle('show', isPlaying || isPaused);
-    // Hide settings while playing (show when paused or stopped)
-    settingsEl.classList.toggle('collapsed', isPlaying);
+    // Hide settings while preparing or playing (show when paused or stopped)
+    settingsEl.classList.toggle('collapsed', isPlaying || isPreparing);
   }
 
   // ─── Event Listeners ──────────────────────────────
