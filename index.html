@@ -1088,16 +1088,16 @@
     <div class="setting">
       <div class="setting-label">
         <span>Sentence pause</span>
-        <span class="value" id="pauseVal">300ms</span>
+        <span class="value" id="pauseVal">500ms</span>
       </div>
-      <input type="range" id="pauseRange" min="0" max="800" step="25" value="300">
+      <input type="range" id="pauseRange" min="0" max="800" step="25" value="500">
     </div>
     <div class="setting">
       <div class="setting-label">
         <span>Paragraph pause</span>
-        <span class="value" id="paraPauseVal">600ms</span>
+        <span class="value" id="paraPauseVal">800ms</span>
       </div>
-      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="600">
+      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="800">
     </div>
   </div>
 
@@ -1453,7 +1453,7 @@
   }
 
   // ─── Preparing Overlay ────────────────────────────
-  function showPreparingOverlay(batchCount, sentenceCount) {
+  function showPreparingOverlay(totalSentences, totalBatches) {
     readingView.classList.add('preparing');
     const overlay = document.createElement('div');
     overlay.className = 'preparing-overlay';
@@ -1461,7 +1461,7 @@
     overlay.innerHTML = `
       <div class="large-spinner"></div>
       <div class="preparing-text">Preparing audio...</div>
-      <div class="preparing-detail">Generating ${sentenceCount} sentence${sentenceCount > 1 ? 's' : ''} in ${batchCount} batch${batchCount > 1 ? 'es' : ''}</div>
+      <div class="preparing-detail">${totalSentences} sentence${totalSentences > 1 ? 's' : ''} · ${totalBatches} batch${totalBatches > 1 ? 'es' : ''}</div>
     `;
     readingView.appendChild(overlay);
   }
@@ -1680,11 +1680,7 @@
 
       // Show loading UI - pre-generate first 5 batches for smoother playback
       const pregenBatchCount = Math.min(5, batches.length);
-      let pregenSentenceCount = 0;
-      for (let i = 0; i < pregenBatchCount; i++) {
-        pregenSentenceCount += batches[i].sentenceIndices.length;
-      }
-      showPreparingOverlay(pregenBatchCount, pregenSentenceCount);
+      showPreparingOverlay(sentences.length, batches.length);
       playBtn.classList.add('loading');
       playIcon.style.display = 'none';
       playLabel.innerHTML = '<span class="spinner-inline"></span>Preparing...';
@@ -1745,8 +1741,19 @@
     readingView.classList.remove('active');
     manuscriptEl.parentElement.classList.remove('hidden');
     progressWrap.classList.remove('active');
+
+    // Reset to defaults
+    manuscriptEl.value = '';
+    speedRange.value = 1;
+    speedVal.textContent = '1.00×';
+    pauseRange.value = 500;
+    pauseVal.textContent = '500ms';
+    paraPauseRange.value = 800;
+    paraPauseVal.textContent = '800ms';
+    voiceSelect.value = 'bf_emma';
+
     updateUI();
-    statusEl.textContent = 'Stopped.';
+    statusEl.textContent = '';
   }
 
   function updateUI() {
