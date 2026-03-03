@@ -1684,6 +1684,7 @@
 
   function updateUI() {
     const inPlaybackMode = isPlaying || isPaused || isPreparing;
+    const showSkipButtons = isPlaying || isPaused; // Not during preparing
 
     if (isPlaying) {
       playIcon.innerHTML = '<rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/>';
@@ -1693,9 +1694,11 @@
       playLabel.textContent = isPaused ? 'Resume' : 'Play';
     }
 
-    // Playback controls: show skip buttons and stop when in playback mode
-    skipBackBtn.classList.toggle('hidden', !inPlaybackMode);
-    skipForwardBtn.classList.toggle('hidden', !inPlaybackMode);
+    // Skip buttons: show when playing or paused (not during preparing)
+    skipBackBtn.classList.toggle('hidden', !showSkipButtons);
+    skipForwardBtn.classList.toggle('hidden', !showSkipButtons);
+
+    // Stop button: show during any playback mode including preparing
     stopBtn.classList.toggle('hidden', !inPlaybackMode);
 
     // Download button: hide during playback
