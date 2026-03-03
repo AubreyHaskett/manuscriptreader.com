@@ -479,6 +479,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    margin-bottom: 16px;
     animation: fadeUp 0.6s ease 0.3s both;
     transition: opacity 0.3s, max-height 0.4s ease, margin 0.3s;
     max-height: 500px;
@@ -496,6 +497,40 @@
   .settings .setting.full-width { grid-column: 1 / -1; }
 
   @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
+
+  /* Advanced settings toggle */
+  .advanced-settings {
+    margin-bottom: 20px;
+    animation: fadeUp 0.6s ease 0.35s both;
+  }
+
+  .advanced-settings summary {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    cursor: pointer;
+    padding: 8px 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .advanced-settings summary::-webkit-details-marker { display: none; }
+
+  .advanced-settings summary::before {
+    content: '▸';
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+  }
+
+  .advanced-settings[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .advanced-settings .settings {
+    animation: none;
+    margin-bottom: 0;
+  }
 
   .setting {
     background: var(--paper);
@@ -616,12 +651,9 @@
     text-align: center;
     font-size: 0.72rem;
     color: var(--ink-faint);
-    margin-top: 12px;
-    opacity: 0;
-    transition: opacity 0.3s;
+    margin-top: 8px;
+    margin-bottom: 16px;
   }
-
-  .kbd-hint.show { opacity: 1; }
 
   kbd {
     display: inline-block;
@@ -872,7 +904,6 @@
   <div class="header">
     <h1>Manuscript Reader <span class="beta-badge">BETA</span></h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
-    <span class="badge">Kokoro AI Voice — runs locally in your browser</span>
   </div>
 
   <details class="privacy-banner" open>
@@ -941,29 +972,6 @@
 
   <div class="reading-view" id="readingView"></div>
 
-  <div class="controls-row">
-    <button class="play-btn" id="playBtn" disabled>
-      <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-      <span id="playLabel">Play</span>
-    </button>
-    <button class="download-btn" id="downloadBtn" disabled>
-      <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      <span id="downloadLabel">Download</span>
-    </button>
-    <button class="stop-btn hidden" id="stopBtn">
-      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-      Stop
-    </button>
-  </div>
-
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-info">
-      <span id="progressCurrent">0 / 0</span>
-      <span id="progressEta"></span>
-    </div>
-  </div>
-
   <div class="settings">
     <div class="setting">
       <div class="setting-label"><span>Voice</span></div>
@@ -999,32 +1007,61 @@
       </div>
       <input type="range" id="speedRange" min="0.5" max="1.5" step="0.05" value="1">
     </div>
-    <div class="setting">
-      <div class="setting-label">
-        <span>Sentence pause</span>
-        <span class="value" id="pauseVal">100ms</span>
-      </div>
-      <input type="range" id="pauseRange" min="0" max="800" step="25" value="100">
-    </div>
-    <div class="setting">
-      <div class="setting-label">
-        <span>Paragraph pause</span>
-        <span class="value" id="paraPauseVal">350ms</span>
-      </div>
-      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="350">
-    </div>
   </div>
 
-  <div class="status" id="status"></div>
+  <details class="advanced-settings">
+    <summary>Advanced timing</summary>
+    <div class="settings" style="margin-top: 12px;">
+      <div class="setting">
+        <div class="setting-label">
+          <span>Sentence pause</span>
+          <span class="value" id="pauseVal">100ms</span>
+        </div>
+        <input type="range" id="pauseRange" min="0" max="800" step="25" value="100">
+      </div>
+      <div class="setting">
+        <div class="setting-label">
+          <span>Paragraph pause</span>
+          <span class="value" id="paraPauseVal">350ms</span>
+        </div>
+        <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="350">
+      </div>
+    </div>
+  </details>
+
+  <div class="controls-row">
+    <button class="play-btn" id="playBtn" disabled>
+      <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      <span id="playLabel">Play</span>
+    </button>
+    <button class="download-btn" id="downloadBtn" disabled>
+      <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span id="downloadLabel">Download</span>
+    </button>
+    <button class="stop-btn hidden" id="stopBtn">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+      Stop
+    </button>
+  </div>
+
   <div class="kbd-hint" id="kbdHint">
     <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stop
   </div>
 
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-info">
+      <span id="progressCurrent">0 / 0</span>
+      <span id="progressEta"></span>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+
   <div class="footer">
     <p>
       Built for writers who want to hear their work without giving it away.<br>
-      Voice powered by <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a>, an open-source model (Apache 2.0).<br>
-      No data is collected. No text leaves your browser. Ever.
+      Voice powered by <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a>, an open-source model (Apache 2.0).
     </p>
 
     <div class="feedback" id="feedbackForm">
@@ -1043,7 +1080,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.3.6</p>
+    <p class="version">v0.4.0</p>
   </div>
 </div>
 
@@ -1134,8 +1171,8 @@
   const progressFill = document.getElementById('progressFill');
   const progressCurrent = document.getElementById('progressCurrent');
   const statusEl = document.getElementById('status');
-  const kbdHint = document.getElementById('kbdHint');
   const settingsEl = document.querySelector('.settings');
+  const advancedSettingsEl = document.querySelector('.advanced-settings');
 
   // ─── Web Worker Setup ──────────────────────────────
   function initWorker() {
@@ -1616,9 +1653,9 @@
     }
 
     stopBtn.classList.toggle('hidden', !isPlaying && !isPaused && !isPreparing);
-    kbdHint.classList.toggle('show', isPlaying || isPaused);
     // Hide settings while preparing or playing (show when paused or stopped)
     settingsEl.classList.toggle('collapsed', isPlaying || isPreparing);
+    advancedSettingsEl.style.display = (isPlaying || isPreparing) ? 'none' : '';
   }
 
   // ─── Download Functions ────────────────────────────
