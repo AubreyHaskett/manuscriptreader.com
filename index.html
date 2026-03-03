@@ -185,6 +185,33 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* Sound wave animation */
+  .sound-wave {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 16px;
+    margin-right: 8px;
+  }
+
+  .sound-wave .bar {
+    width: 3px;
+    height: 100%;
+    background: currentColor;
+    border-radius: 2px;
+    animation: soundWave 1s ease-in-out infinite;
+  }
+
+  .sound-wave .bar:nth-child(1) { animation-delay: 0s; }
+  .sound-wave .bar:nth-child(2) { animation-delay: 0.15s; }
+  .sound-wave .bar:nth-child(3) { animation-delay: 0.3s; }
+  .sound-wave .bar:nth-child(4) { animation-delay: 0.45s; }
+
+  @keyframes soundWave {
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
+  }
+
   /* Text area */
   .input-area {
     position: relative;
@@ -308,11 +335,17 @@
 
   .reading-view .paragraph-break { display: block; height: 1.2em; }
 
+  .reading-view.preparing .sentence {
+    cursor: default;
+    pointer-events: none;
+  }
+
   /* Controls */
   .controls-row {
     display: flex;
     gap: 12px;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
     margin-bottom: 16px;
     animation: fadeUp 0.6s ease 0.2s both;
@@ -356,7 +389,7 @@
     margin-right: 6px;
   }
 
-  .stop-btn {
+  .clear-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -372,8 +405,7 @@
     transition: all 0.2s;
   }
 
-  .stop-btn:hover { background: var(--bg); color: var(--ink); }
-  .stop-btn svg { width: 14px; height: 14px; fill: currentColor; }
+  .clear-btn:hover { background: var(--bg); color: var(--ink); }
 
   .skip-btn {
     display: inline-flex;
@@ -759,8 +791,6 @@
   /* Footer */
   .footer {
     margin-top: 60px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
     text-align: center;
     animation: fadeUp 0.6s ease 0.4s both;
   }
@@ -1060,14 +1090,13 @@
       <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       <span id="downloadLabel">Download</span>
     </button>
-    <button class="stop-btn hidden" id="stopBtn">
-      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-      Stop
+    <button class="clear-btn hidden" id="clearBtn">
+      Clear
     </button>
   </div>
 
   <div class="kbd-hint" id="kbdHint">
-    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stop
+    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
   </div>
 
   <div class="progress-wrap" id="progressWrap">
@@ -1197,7 +1226,7 @@
   const downloadLabel = document.getElementById('downloadLabel');
   const skipBackBtn = document.getElementById('skipBackBtn');
   const skipForwardBtn = document.getElementById('skipForwardBtn');
-  const stopBtn = document.getElementById('stopBtn');
+  const clearBtn = document.getElementById('clearBtn');
   const voiceSelect = document.getElementById('voiceSelect');
   const speedRange = document.getElementById('speedRange');
   const speedVal = document.getElementById('speedVal');
@@ -1425,6 +1454,7 @@
 
   // ─── Preparing Overlay ────────────────────────────
   function showPreparingOverlay(batchCount, sentenceCount) {
+    readingView.classList.add('preparing');
     const overlay = document.createElement('div');
     overlay.className = 'preparing-overlay';
     overlay.id = 'preparingOverlay';
@@ -1437,6 +1467,7 @@
   }
 
   function hidePreparingOverlay() {
+    readingView.classList.remove('preparing');
     const overlay = document.getElementById('preparingOverlay');
     if (overlay) {
       overlay.style.transition = 'opacity 0.3s';
@@ -1723,9 +1754,10 @@
     const showSkipButtons = isPlaying || isPaused; // Not during preparing
 
     if (isPlaying) {
-      playIcon.innerHTML = '<rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/>';
-      playLabel.textContent = 'Pause';
+      playIcon.style.display = 'none';
+      playLabel.innerHTML = '<span class="sound-wave"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>Pause';
     } else {
+      playIcon.style.display = '';
       playIcon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
       playLabel.textContent = isPaused ? 'Resume' : 'Play';
     }
@@ -1734,8 +1766,8 @@
     skipBackBtn.classList.toggle('hidden', !showSkipButtons);
     skipForwardBtn.classList.toggle('hidden', !showSkipButtons);
 
-    // Stop button: show during any playback mode including preparing
-    stopBtn.classList.toggle('hidden', !inPlaybackMode);
+    // Clear button: show during any playback mode
+    clearBtn.classList.toggle('hidden', !inPlaybackMode);
 
     // Download button: hide during playback
     downloadBtn.classList.toggle('hidden', inPlaybackMode);
@@ -1974,7 +2006,7 @@
 
   // ─── Event Listeners ──────────────────────────────
   playBtn.addEventListener('click', togglePlay);
-  stopBtn.addEventListener('click', stopReading);
+  clearBtn.addEventListener('click', stopReading);
   downloadBtn.addEventListener('click', downloadAudio);
   skipBackBtn.addEventListener('click', skipBack);
   skipForwardBtn.addEventListener('click', skipForward);
