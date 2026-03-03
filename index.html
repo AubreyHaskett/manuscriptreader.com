@@ -907,7 +907,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.5</p>
+    <p class="version">v0.2.6</p>
   </div>
 </div>
 
@@ -1077,9 +1077,9 @@
   }
 
   // ─── Sentence Batching ────────────────────────────
-  // Combine short sentences into batches for fewer TTS calls
-  const MIN_BATCH_LENGTH = 100; // minimum chars before we stop combining
-  const MAX_BATCH_LENGTH = 300; // max chars per batch
+  // Combine sentences into larger batches for fewer TTS calls
+  const MIN_BATCH_LENGTH = 200; // minimum chars before we stop combining
+  const MAX_BATCH_LENGTH = 500; // max chars per batch (longer = fewer calls)
 
   function batchSentences(sentences) {
     const batches = [];
@@ -1163,8 +1163,8 @@
     }
   }
 
-  // Fire-and-forget prefetch for upcoming batches
-  function prefetchAhead(fromIndex, count = 4) {
+  // Fire-and-forget prefetch for upcoming batches - prefetch aggressively
+  function prefetchAhead(fromIndex, count = 8) {
     for (let i = fromIndex; i < Math.min(fromIndex + count, batches.length); i++) {
       if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
         ensureGenerated(i); // intentionally not awaited
@@ -1356,8 +1356,8 @@
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
 
-      // Show loading UI - pre-generate first 3 batches
-      const pregenBatchCount = Math.min(3, batches.length);
+      // Show loading UI - pre-generate first 5 batches for smoother playback
+      const pregenBatchCount = Math.min(5, batches.length);
       let pregenSentenceCount = 0;
       for (let i = 0; i < pregenBatchCount; i++) {
         pregenSentenceCount += batches[i].sentenceIndices.length;
