@@ -1923,7 +1923,7 @@
     // Check hard limit
     if (text.length > DOWNLOAD_HARD_LIMIT) {
       const wordCount = Math.round(text.length / 5);
-      statusEl.textContent = `Text too long for download (~${wordCount.toLocaleString()} words). Playback works fine — download is limited to ~30,000 words because it holds all audio in memory at once.`;
+      statusEl.textContent = `Too long for download (~${wordCount.toLocaleString()} words). You can play any length, but downloads are limited to ~30,000 words due to browser memory limits.`;
       return;
     }
 
@@ -1931,7 +1931,7 @@
     if (text.length > DOWNLOAD_SOFT_LIMIT) {
       const wordCount = Math.round(text.length / 5);
       const estimatedMinutes = Math.round(text.length / 300 / 60); // rough estimate
-      const proceed = confirm(`Long text (~${wordCount.toLocaleString()} words)\n\nPlayback streams audio and works great at any length.\n\nDownload holds all audio in browser memory at once, so it may take ${estimatedMinutes}+ minutes and could strain older devices.\n\nContinue with download?`);
+      const proceed = confirm(`This is a long download (~${wordCount.toLocaleString()} words).\n\nYou can play any length — playback streams as it goes.\n\nDownloads need to build the entire file first, which may take ${estimatedMinutes}+ minutes and could be slow on older devices.\n\nContinue?`);
       if (!proceed) return;
     }
 
