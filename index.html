@@ -1130,7 +1130,7 @@
     </details>
 
     <p class="footer-meta">
-      Voice: <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> (Apache 2.0) · v0.4.6
+      Voice: <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> (Apache 2.0) · v0.4.7
     </p>
   </div>
 </div>
@@ -1150,12 +1150,14 @@
     btn.textContent = 'Sending...';
 
     // Collect device info
+    const accel = window.getDeviceType ? window.getDeviceType() : 'unknown';
     const deviceInfo = [
       `Browser: ${navigator.userAgent}`,
       `Platform: ${navigator.platform}`,
       `Screen: ${window.screen.width}x${window.screen.height}`,
       `Viewport: ${window.innerWidth}x${window.innerHeight}`,
-      `Version: v0.4.6`
+      `Acceleration: ${accel === 'webgpu' ? 'WebGPU' : 'WASM (fallback)'}`,
+      `Version: v0.4.7`
     ].join('\n');
 
     const form = new FormData();
@@ -1190,6 +1192,7 @@
   let worker = null;
   let modelReady = false;
   let deviceType = 'wasm'; // 'webgpu' or 'wasm'
+  window.getDeviceType = () => deviceType; // expose for feedback form
   let sentences = [];       // original sentences (for display)
   let batches = [];         // batched sentences (for TTS generation)
   let currentBatchIndex = 0;
