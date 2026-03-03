@@ -1492,6 +1492,29 @@
     }
   }
 
+  // Lighter overlay for when generating a single batch (e.g., clicking ahead)
+  function showGeneratingOverlay() {
+    if (document.getElementById('generatingOverlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'preparing-overlay';
+    overlay.id = 'generatingOverlay';
+    overlay.style.background = 'rgba(255, 253, 250, 0.85)';
+    overlay.innerHTML = `
+      <div class="large-spinner"></div>
+      <div class="preparing-text">Generating...</div>
+    `;
+    readingView.appendChild(overlay);
+  }
+
+  function hideGeneratingOverlay() {
+    const overlay = document.getElementById('generatingOverlay');
+    if (overlay) {
+      overlay.style.transition = 'opacity 0.3s';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 300);
+    }
+  }
+
   // ─── Play an AudioBuffer ───────────────────────────
   function playBuffer(buffer) {
     return new Promise((resolve) => {
@@ -1635,14 +1658,13 @@
       // Get the buffer (should be cached from prefetch, but generate if not)
       let buffer = audioCache.get(i);
       if (!buffer) {
-        statusEl.textContent = 'Generating...';
+        showGeneratingOverlay();
         updateHighlight(i);
         buffer = await ensureGenerated(i);
+        hideGeneratingOverlay();
         if (!buffer || stopRequested || thisSession !== playbackSessionId) {
-          statusEl.textContent = '';
           continue;
         }
-        statusEl.textContent = '';
         updateHighlight();
       }
 
@@ -1752,6 +1774,7 @@
     audioCache.clear();
     prefetchInFlight.clear();
     hidePreparingOverlay();
+    hideGeneratingOverlay();
     playBtn.classList.remove('loading');
     playIcon.style.display = '';
     readingView.classList.remove('active');
