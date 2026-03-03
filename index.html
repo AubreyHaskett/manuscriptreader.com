@@ -664,7 +664,8 @@
     text-align: center;
     font-size: 0.8rem;
     color: var(--ink-faint);
-    margin-top: 14px;
+    margin-top: 6px;
+    margin-bottom: 16px;
     min-height: 20px;
     font-style: italic;
   }
@@ -1047,6 +1048,8 @@
     <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
   </div>
 
+  <div class="status" id="status"></div>
+
   <div class="settings">
     <div class="setting">
       <div class="setting-label"><span>Voice</span></div>
@@ -1105,8 +1108,6 @@
       <span id="progressEta"></span>
     </div>
   </div>
-
-  <div class="status" id="status"></div>
 
   <div class="footer">
     <p class="support-line">
@@ -1912,7 +1913,7 @@
     // Check hard limit
     if (text.length > DOWNLOAD_HARD_LIMIT) {
       const wordCount = Math.round(text.length / 5);
-      statusEl.textContent = `Text too long for download (~${wordCount.toLocaleString()} words). Please use 30,000 words or less.`;
+      statusEl.textContent = `Text too long for download (~${wordCount.toLocaleString()} words). Playback works fine — download is limited to ~30,000 words because it holds all audio in memory at once.`;
       return;
     }
 
@@ -1920,7 +1921,7 @@
     if (text.length > DOWNLOAD_SOFT_LIMIT) {
       const wordCount = Math.round(text.length / 5);
       const estimatedMinutes = Math.round(text.length / 300 / 60); // rough estimate
-      const proceed = confirm(`This is a long text (~${wordCount.toLocaleString()} words).\n\nDownload may take ${estimatedMinutes}+ minutes and use significant memory.\n\nContinue?`);
+      const proceed = confirm(`Long text (~${wordCount.toLocaleString()} words)\n\nPlayback streams audio and works great at any length.\n\nDownload holds all audio in browser memory at once, so it may take ${estimatedMinutes}+ minutes and could strain older devices.\n\nContinue with download?`);
       if (!proceed) return;
     }
 
