@@ -522,40 +522,6 @@
 
   @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
 
-  /* Advanced settings toggle */
-  .advanced-settings {
-    margin-bottom: 20px;
-    animation: fadeUp 0.6s ease 0.35s both;
-  }
-
-  .advanced-settings summary {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-    cursor: pointer;
-    padding: 8px 0;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .advanced-settings summary::-webkit-details-marker { display: none; }
-
-  .advanced-settings summary::before {
-    content: '▸';
-    font-size: 0.7rem;
-    transition: transform 0.2s;
-  }
-
-  .advanced-settings[open] summary::before {
-    transform: rotate(90deg);
-  }
-
-  .advanced-settings .settings {
-    animation: none;
-    margin-bottom: 0;
-  }
-
   .setting {
     background: var(--paper);
     border: 1px solid var(--border);
@@ -1209,7 +1175,6 @@
   const progressCurrent = document.getElementById('progressCurrent');
   const statusEl = document.getElementById('status');
   const settingsEl = document.querySelector('.settings');
-  const advancedSettingsEl = document.querySelector('.advanced-settings');
 
   // ─── Web Worker Setup ──────────────────────────────
   function initWorker() {
@@ -1734,7 +1699,6 @@
     stopBtn.classList.toggle('hidden', !isPlaying && !isPaused && !isPreparing);
     // Hide settings while preparing or playing (show when paused or stopped)
     settingsEl.classList.toggle('collapsed', isPlaying || isPreparing);
-    advancedSettingsEl.style.display = (isPlaying || isPreparing) ? 'none' : '';
   }
 
   // ─── Download Functions ────────────────────────────
