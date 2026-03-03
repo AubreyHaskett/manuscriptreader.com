@@ -32,10 +32,13 @@ async function initModel() {
       device
     });
 
+    // Use fp32 for WebGPU (q4 causes audio artifacts), q4 for WASM (smaller/faster)
+    const dtype = device === "webgpu" ? "fp32" : "q4";
+
     try {
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
-        { dtype: "q4", device }
+        { dtype, device }
       );
       isInitialized = true;
       self.postMessage({
@@ -44,7 +47,7 @@ async function initModel() {
         message: `Model ready (${device.toUpperCase()})`
       });
     } catch (err) {
-      // If WebGPU fails, fall back to WASM
+      // If WebGPU fails, fall back to WASM with q4 quantization
       if (device === "webgpu") {
         self.postMessage({
           type: 'status',
@@ -53,7 +56,7 @@ async function initModel() {
         });
         tts = await KokoroTTS.from_pretrained(
           "onnx-community/Kokoro-82M-v1.0-ONNX",
-          { dtype: "q4", device: "wasm" }
+          { dtype: "q4", device: "wasm" }  // q4 works fine with WASM
         );
         isInitialized = true;
         self.postMessage({
