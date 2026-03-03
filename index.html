@@ -1024,6 +1024,30 @@
 
   <div class="reading-view" id="readingView"></div>
 
+  <div class="controls-row">
+    <button class="skip-btn hidden" id="skipBackBtn" disabled title="Skip back ~30 seconds">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
+    </button>
+    <button class="play-btn" id="playBtn" disabled>
+      <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      <span id="playLabel">Play</span>
+    </button>
+    <button class="skip-btn hidden" id="skipForwardBtn" disabled title="Skip forward ~30 seconds">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
+    </button>
+    <button class="download-btn hidden" id="downloadBtn" disabled>
+      <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span id="downloadLabel">Download</span>
+    </button>
+    <button class="clear-btn hidden" id="clearBtn">
+      Clear
+    </button>
+  </div>
+
+  <div class="kbd-hint" id="kbdHint">
+    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
+  </div>
+
   <div class="settings">
     <div class="setting">
       <div class="setting-label"><span>Voice</span></div>
@@ -1075,30 +1099,6 @@
     </div>
   </div>
 
-  <div class="controls-row">
-    <button class="skip-btn hidden" id="skipBackBtn" disabled title="Skip back ~30 seconds">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
-    </button>
-    <button class="play-btn" id="playBtn" disabled>
-      <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-      <span id="playLabel">Play</span>
-    </button>
-    <button class="skip-btn hidden" id="skipForwardBtn" disabled title="Skip forward ~30 seconds">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
-    </button>
-    <button class="download-btn hidden" id="downloadBtn" disabled>
-      <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      <span id="downloadLabel">Download</span>
-    </button>
-    <button class="clear-btn hidden" id="clearBtn">
-      Clear
-    </button>
-  </div>
-
-  <div class="kbd-hint" id="kbdHint">
-    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
-  </div>
-
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     <div class="progress-info">
@@ -1130,7 +1130,7 @@
     </details>
 
     <p class="footer-meta">
-      Voice: <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> (Apache 2.0) · v0.4.4
+      Voice: <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> (Apache 2.0) · v0.4.5
     </p>
   </div>
 </div>
@@ -1155,7 +1155,7 @@
       `Platform: ${navigator.platform}`,
       `Screen: ${window.screen.width}x${window.screen.height}`,
       `Viewport: ${window.innerWidth}x${window.innerHeight}`,
-      `Version: v0.4.4`
+      `Version: v0.4.5`
     ].join('\n');
 
     const form = new FormData();
@@ -1897,6 +1897,10 @@
     return combined;
   }
 
+  // Download limits
+  const DOWNLOAD_SOFT_LIMIT = 50000;  // ~10,000 words - show warning
+  const DOWNLOAD_HARD_LIMIT = 150000; // ~30,000 words - block download
+
   async function downloadAudio() {
     if (!modelReady || isDownloading) return;
 
@@ -1904,6 +1908,21 @@
     if (!text) {
       statusEl.textContent = 'Paste some text first.';
       return;
+    }
+
+    // Check hard limit
+    if (text.length > DOWNLOAD_HARD_LIMIT) {
+      const wordCount = Math.round(text.length / 5);
+      statusEl.textContent = `Text too long for download (~${wordCount.toLocaleString()} words). Please use 30,000 words or less.`;
+      return;
+    }
+
+    // Check soft limit - show warning
+    if (text.length > DOWNLOAD_SOFT_LIMIT) {
+      const wordCount = Math.round(text.length / 5);
+      const estimatedMinutes = Math.round(text.length / 300 / 60); // rough estimate
+      const proceed = confirm(`This is a long text (~${wordCount.toLocaleString()} words).\n\nDownload may take ${estimatedMinutes}+ minutes and use significant memory.\n\nContinue?`);
+      if (!proceed) return;
     }
 
     // Parse text
