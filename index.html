@@ -1021,7 +1021,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.3.1</p>
+    <p class="version">v0.3.2</p>
   </div>
 </div>
 
@@ -1221,11 +1221,13 @@
 
   // ─── Sentence Splitting ────────────────────────────
   function splitIntoSentences(text) {
-    const paragraphs = text.split(/\n\s*\n/);
+    // Split on any newline (single or double) to handle Google Docs, Word, etc.
+    // Filter out empty lines
+    const paragraphs = text.split(/\n+/).filter(p => p.trim());
     const result = [];
 
     paragraphs.forEach((para, pIdx) => {
-      const trimmed = para.replace(/\n/g, ' ').trim();
+      const trimmed = para.trim();
       if (!trimmed) return;
 
       // Split on sentence boundaries, keeping quotes together
