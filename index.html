@@ -231,9 +231,44 @@
     overflow-y: auto;
     display: none;
     scroll-behavior: smooth;
+    position: relative;
   }
 
   .reading-view.active { display: block; animation: fadeUp 0.4s ease; }
+
+  /* Preparing overlay */
+  .preparing-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 253, 250, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: var(--radius);
+    gap: 16px;
+  }
+
+  .preparing-overlay .large-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .preparing-overlay .preparing-text {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .preparing-overlay .preparing-detail {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
 
   .reading-view .sentence {
     font-family: 'Cormorant Garamond', serif;
@@ -294,6 +329,21 @@
   .play-btn:active { transform: translateY(0); }
   .play-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .play-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  .play-btn.loading {
+    pointer-events: none;
+  }
+
+  .play-btn.loading .spinner-inline {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 6px;
+  }
 
   .stop-btn {
     display: inline-flex;
@@ -846,7 +896,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.2</p>
+    <p class="version">v0.2.3</p>
   </div>
 </div>
 
@@ -941,24 +991,9 @@
         }
       }, 500);
 
-      // Check for WebGPU support for faster inference
-      let device = "wasm";
-      let deviceName = "CPU";
-      if (navigator.gpu) {
-        try {
-          const adapter = await navigator.gpu.requestAdapter();
-          if (adapter) {
-            device = "webgpu";
-            deviceName = "GPU";
-          }
-        } catch (e) {
-          console.log('WebGPU not available, using WASM');
-        }
-      }
-
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
-        { dtype: "q8", device: device }
+        { dtype: "q8", device: "wasm" }
       );
 
       clearInterval(progressInterval);
@@ -967,7 +1002,7 @@
       modelStatusText.innerHTML = '✓ Kokoro voice model ready';
       modelStatusText.classList.add('ready-text');
       modelStatus.classList.add('ready');
-      modelDetail.textContent = `Model loaded (${deviceName}) and cached for future sessions`;
+      modelDetail.textContent = 'Model loaded and cached for future sessions';
 
       modelReady = true;
       playBtn.disabled = false;
@@ -1076,6 +1111,28 @@
     }
   }
 
+  // ─── Preparing Overlay ────────────────────────────
+  function showPreparingOverlay(count) {
+    const overlay = document.createElement('div');
+    overlay.className = 'preparing-overlay';
+    overlay.id = 'preparingOverlay';
+    overlay.innerHTML = `
+      <div class="large-spinner"></div>
+      <div class="preparing-text">Preparing audio...</div>
+      <div class="preparing-detail">Generating first ${count} sentence${count > 1 ? 's' : ''}</div>
+    `;
+    readingView.appendChild(overlay);
+  }
+
+  function hidePreparingOverlay() {
+    const overlay = document.getElementById('preparingOverlay');
+    if (overlay) {
+      overlay.style.transition = 'opacity 0.3s';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 300);
+    }
+  }
+
   // ─── Play an AudioBuffer ───────────────────────────
   function playBuffer(buffer) {
     return new Promise((resolve) => {
@@ -1131,7 +1188,9 @@
 
     const pct = sentences.length > 0 ? (currentIndex / sentences.length) * 100 : 0;
     progressFill.style.width = pct + '%';
-    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences`;
+    const cached = audioCache.size;
+    const cacheInfo = cached < sentences.length ? ` (${cached} cached)` : ' (all cached)';
+    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences${cacheInfo}`;
   }
 
   // ─── Main Playback Loop ────────────────────────────
@@ -1217,13 +1276,22 @@
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
 
-      // Pre-generate first 4 sentences in parallel before starting playback
+      // Show loading UI
       const pregenCount = Math.min(4, sentences.length);
-      statusEl.textContent = `Preparing ${pregenCount} sentences...`;
+      showPreparingOverlay(pregenCount);
+      playBtn.classList.add('loading');
+      playIcon.style.display = 'none';
+      playLabel.innerHTML = '<span class="spinner-inline"></span>Preparing...';
+
+      // Pre-generate first 4 sentences in parallel before starting playback
       await Promise.all(
         Array.from({ length: pregenCount }, (_, i) => ensureGenerated(i))
       );
-      statusEl.textContent = '';
+
+      // Hide loading UI
+      hidePreparingOverlay();
+      playBtn.classList.remove('loading');
+      playIcon.style.display = '';
 
       playFrom(0);
 
@@ -1258,6 +1326,9 @@
     currentIndex = 0;
     audioCache.clear();
     prefetchInFlight.clear();
+    hidePreparingOverlay();
+    playBtn.classList.remove('loading');
+    playIcon.style.display = '';
     readingView.classList.remove('active');
     manuscriptEl.parentElement.classList.remove('hidden');
     progressWrap.classList.remove('active');
