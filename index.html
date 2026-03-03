@@ -1244,6 +1244,7 @@
   const progressCurrent = document.getElementById('progressCurrent');
   const statusEl = document.getElementById('status');
   const settingsEl = document.querySelector('.settings');
+  const kbdHintEl = document.getElementById('kbdHint');
 
   // Helper to set status text (clears error styling)
   function setStatus(text, isError = false) {
@@ -1775,7 +1776,11 @@
     const inPlaybackMode = isPlaying || isPaused || isPreparing;
     const showSkipButtons = isPlaying || isPaused; // Not during preparing
 
-    if (isPlaying) {
+    if (isPreparing) {
+      // During preparing: show only the preparing button and stop
+      playIcon.style.display = 'none';
+      // playLabel is set separately in togglePlay with spinner
+    } else if (isPlaying) {
       playIcon.style.display = 'none';
       playLabel.innerHTML = '<span class="sound-wave"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>Pause';
     } else {
@@ -1788,14 +1793,19 @@
     skipBackBtn.classList.toggle('hidden', !showSkipButtons);
     skipForwardBtn.classList.toggle('hidden', !showSkipButtons);
 
-    // Clear button: show during any playback mode
+    // Clear/Stop button: show during playback, change text during preparing
     clearBtn.classList.toggle('hidden', !inPlaybackMode);
+    clearBtn.textContent = isPreparing ? 'Stop' : 'Reset';
 
-    // Download button: hide during playback
+    // Download button: hide during any playback mode (including preparing)
     downloadBtn.classList.toggle('hidden', inPlaybackMode);
 
-    // Hide settings while preparing or playing (show when paused or stopped)
-    settingsEl.classList.toggle('collapsed', isPlaying || isPreparing);
+    // Hide settings completely while preparing, collapse while playing
+    settingsEl.classList.toggle('hidden', isPreparing);
+    settingsEl.classList.toggle('collapsed', isPlaying && !isPreparing);
+
+    // Hide keyboard hint during preparing (not useful yet)
+    kbdHintEl.classList.toggle('hidden', isPreparing);
   }
 
   // ─── Download Functions ────────────────────────────
