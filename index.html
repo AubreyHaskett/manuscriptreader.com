@@ -90,6 +90,29 @@
     border-radius: 20px;
   }
 
+  .header .beta-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 8px;
+    position: relative;
+    top: -2px;
+  }
+
+  .version {
+    margin-top: 16px;
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+
   /* Model status */
   .model-status {
     background: var(--paper);
@@ -676,7 +699,7 @@
 <body>
 <div class="app">
   <div class="header">
-    <h1>Manuscript Reader</h1>
+    <h1>Manuscript Reader <span class="beta-badge">BETA</span></h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
     <span class="badge">Kokoro AI Voice — runs locally in your browser</span>
   </div>
@@ -823,6 +846,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
+    <p class="version">v0.2.0</p>
   </div>
 </div>
 
