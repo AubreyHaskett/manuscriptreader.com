@@ -1823,8 +1823,8 @@
     clearBtn.classList.toggle('hidden', !inPlaybackMode);
     clearBtn.textContent = isPreparing ? 'Stop' : 'Reset';
 
-    // Download button: hide during any playback mode (including preparing)
-    downloadBtn.classList.toggle('hidden', inPlaybackMode);
+    // Download button: always visible, disabled during preparing
+    downloadBtn.disabled = !modelReady || isPreparing || isDownloading;
 
     // Hide settings completely while preparing, collapse while playing
     settingsEl.classList.toggle('hidden', isPreparing);
