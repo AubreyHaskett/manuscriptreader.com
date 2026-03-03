@@ -846,7 +846,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.0</p>
+    <p class="version">v0.2.1</p>
   </div>
 </div>
 
@@ -1184,7 +1184,7 @@
   }
 
   // ─── Controls ──────────────────────────────────────
-  function togglePlay() {
+  async function togglePlay() {
     if (!modelReady) return;
 
     if (!isPlaying && !isPaused) {
@@ -1201,6 +1201,14 @@
       readingView.classList.add('active');
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
+
+      // Pre-generate first 4 sentences in parallel before starting playback
+      const pregenCount = Math.min(4, sentences.length);
+      statusEl.textContent = `Preparing ${pregenCount} sentences...`;
+      await Promise.all(
+        Array.from({ length: pregenCount }, (_, i) => ensureGenerated(i))
+      );
+      statusEl.textContent = '';
 
       playFrom(0);
 
