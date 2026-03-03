@@ -670,6 +670,12 @@
     font-style: italic;
   }
 
+  .status.error {
+    color: #c44;
+    font-style: normal;
+    font-weight: 500;
+  }
+
   .kbd-hint {
     text-align: center;
     font-size: 0.72rem;
@@ -1238,6 +1244,12 @@
   const progressCurrent = document.getElementById('progressCurrent');
   const statusEl = document.getElementById('status');
   const settingsEl = document.querySelector('.settings');
+
+  // Helper to set status text (clears error styling)
+  function setStatus(text, isError = false) {
+    statusEl.className = isError ? 'status error' : 'status';
+    statusEl.textContent = text;
+  }
 
   // ─── Web Worker Setup ──────────────────────────────
   function initWorker() {
@@ -1923,6 +1935,7 @@
     // Check hard limit
     if (text.length > DOWNLOAD_HARD_LIMIT) {
       const wordCount = Math.round(text.length / 5);
+      statusEl.className = 'status error';
       statusEl.textContent = `Too long for download (~${wordCount.toLocaleString()} words). You can play any length, but downloads are limited to ~30,000 words due to browser memory limits.`;
       return;
     }
