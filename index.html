@@ -907,7 +907,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.7</p>
+    <p class="version">v0.3.0</p>
   </div>
 </div>
 
@@ -953,11 +953,10 @@
 </script>
 
 <script type="module">
-  import { KokoroTTS } from "https://esm.sh/kokoro-js@1.2.1";
-
   // ─── State ─────────────────────────────────────────
-  let tts = null;
+  let worker = null;
   let modelReady = false;
+  let deviceType = 'wasm'; // 'webgpu' or 'wasm'
   let sentences = [];       // original sentences (for display)
   let batches = [];         // batched sentences (for TTS generation)
   let currentBatchIndex = 0;
@@ -971,6 +970,10 @@
   // Pre-generated audio cache: batchIndex -> AudioBuffer
   const audioCache = new Map();
   const prefetchInFlight = new Set(); // track which batch indices are currently being generated
+
+  // Pending generation requests: id -> { resolve, reject }
+  const pendingGenerations = new Map();
+  let generationId = 0;
 
   // ─── Elements ──────────────────────────────────────
   const modelStatus = document.getElementById('modelStatus');
@@ -994,54 +997,101 @@
   const kbdHint = document.getElementById('kbdHint');
   const settingsEl = document.querySelector('.settings');
 
-  // ─── Init Model ────────────────────────────────────
-  async function loadModel() {
-    try {
-      let fakeProgress = 0;
-      const progressInterval = setInterval(() => {
-        if (fakeProgress < 90) {
-          fakeProgress += Math.random() * 3;
-          modelProgressFill.style.width = Math.min(fakeProgress, 90) + '%';
-        }
-      }, 500);
+  // ─── Web Worker Setup ──────────────────────────────
+  function initWorker() {
+    worker = new Worker('/tts-worker.js', { type: 'module' });
 
-      tts = await KokoroTTS.from_pretrained(
-        "onnx-community/Kokoro-82M-v1.0-ONNX",
-        { dtype: "q4", device: "wasm" }
-      );
+    worker.onmessage = (e) => {
+      const { type, id, audioData, sampleRate, device, message, error } = e.data;
 
-      clearInterval(progressInterval);
-      modelProgressFill.style.width = '100%';
-      modelProgressFill.classList.add('ready');
-      modelStatusText.innerHTML = '✓ Kokoro voice model ready';
-      modelStatusText.classList.add('ready-text');
-      modelStatus.classList.add('ready');
-      modelDetail.textContent = 'Model loaded and cached for future sessions';
+      switch (type) {
+        case 'status':
+          modelStatusText.innerHTML = `<span class="spinner"></span>${message}`;
+          if (device) deviceType = device;
+          break;
 
-      modelReady = true;
-      playBtn.disabled = false;
+        case 'ready':
+          modelProgressFill.style.width = '100%';
+          modelProgressFill.classList.add('ready');
+          deviceType = device;
+          const deviceLabel = device === 'webgpu' ? 'WebGPU' : 'WASM';
+          modelStatusText.innerHTML = `✓ Kokoro voice model ready (${deviceLabel})`;
+          modelStatusText.classList.add('ready-text');
+          modelStatus.classList.add('ready');
+          modelDetail.textContent = `Model loaded with ${deviceLabel} acceleration`;
 
-      // Fade out status after a moment
-      setTimeout(() => {
-        modelStatus.style.transition = 'opacity 0.5s, max-height 0.5s, margin 0.5s, padding 0.5s';
-        modelStatus.style.opacity = '0';
-        modelStatus.style.maxHeight = '0';
-        modelStatus.style.marginBottom = '0';
-        modelStatus.style.padding = '0 24px';
-        modelStatus.style.overflow = 'hidden';
-      }, 2000);
-    } catch (err) {
-      modelStatusText.innerHTML = '⚠ Failed to load model';
-      modelDetail.textContent = err.message || 'Check your internet connection and try refreshing.';
+          modelReady = true;
+          playBtn.disabled = false;
+
+          // Fade out status after a moment
+          setTimeout(() => {
+            modelStatus.style.transition = 'opacity 0.5s, max-height 0.5s, margin 0.5s, padding 0.5s';
+            modelStatus.style.opacity = '0';
+            modelStatus.style.maxHeight = '0';
+            modelStatus.style.marginBottom = '0';
+            modelStatus.style.padding = '0 24px';
+            modelStatus.style.overflow = 'hidden';
+          }, 2000);
+          break;
+
+        case 'audio':
+          // Convert Float32Array back to AudioBuffer
+          const pending = pendingGenerations.get(id);
+          if (pending) {
+            const ctx = getAudioContext();
+            const audioBuffer = ctx.createBuffer(1, audioData.length, sampleRate);
+            audioBuffer.getChannelData(0).set(audioData);
+            pending.resolve(audioBuffer);
+            pendingGenerations.delete(id);
+          }
+          break;
+
+        case 'error':
+          if (id !== undefined) {
+            const pendingErr = pendingGenerations.get(id);
+            if (pendingErr) {
+              pendingErr.reject(new Error(error));
+              pendingGenerations.delete(id);
+            }
+          } else {
+            modelStatusText.innerHTML = '⚠ Failed to load model';
+            modelDetail.textContent = error || 'Check your internet connection and try refreshing.';
+            modelProgressFill.style.background = '#c44';
+            console.error('Worker error:', error);
+          }
+          break;
+      }
+    };
+
+    worker.onerror = (err) => {
+      console.error('Worker error:', err);
+      modelStatusText.innerHTML = '⚠ Worker failed to load';
+      modelDetail.textContent = 'Try refreshing the page.';
       modelProgressFill.style.background = '#c44';
-      console.error('Model load error:', err);
-    }
+    };
   }
 
-  loadModel();
+  // Start fake progress while model loads
+  let fakeProgress = 0;
+  const progressInterval = setInterval(() => {
+    if (fakeProgress < 90 && !modelReady) {
+      fakeProgress += Math.random() * 3;
+      modelProgressFill.style.width = Math.min(fakeProgress, 90) + '%';
+    }
+  }, 500);
+
+  // Initialize worker
+  initWorker();
+
+  // Clear progress interval when ready
+  const checkReady = setInterval(() => {
+    if (modelReady) {
+      clearInterval(progressInterval);
+      clearInterval(checkReady);
+    }
+  }, 100);
 
   // ─── Audio Context ─────────────────────────────────
-  // Use default sample rate - Kokoro outputs at 24kHz and we'll match that
   function getAudioContext() {
     if (!audioContext) {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1113,42 +1163,13 @@
     return batches;
   }
 
-  // ─── Yield to browser for UI responsiveness ────────
-  // Use requestAnimationFrame + setTimeout for better UI responsiveness
-  function yieldToMain() {
-    return new Promise(resolve => {
-      requestAnimationFrame(() => {
-        setTimeout(resolve, 0);
-      });
+  // ─── Generate Audio via Worker ─────────────────────
+  function generateAudio(text, voice, speed) {
+    return new Promise((resolve, reject) => {
+      const id = generationId++;
+      pendingGenerations.set(id, { resolve, reject });
+      worker.postMessage({ type: 'generate', id, text, voice, speed });
     });
-  }
-
-  // Longer yield for heavy operations
-  function yieldLong() {
-    return new Promise(resolve => setTimeout(resolve, 10));
-  }
-
-  // ─── Generate Audio for a Sentence ─────────────────
-  async function generateAudio(text, voice, speed) {
-    // Yield before heavy computation to allow UI updates
-    await yieldLong();
-
-    const result = await tts.generate(text, { voice, speed });
-
-    // Yield after to let UI catch up
-    await yieldLong();
-
-    // result has .audio (Float32Array) and .sampling_rate
-    const ctx = getAudioContext();
-    const sampleRate = result.sampling_rate || 24000;
-    const samples = result.audio;
-    const audioBuffer = ctx.createBuffer(1, samples.length, sampleRate);
-    audioBuffer.getChannelData(0).set(samples);
-
-    // One more yield after buffer creation
-    await yieldToMain();
-
-    return audioBuffer;
   }
 
   // ─── Prefetch Pipeline ──────────────────────────────
@@ -1386,19 +1407,10 @@
       isPreparing = true;
       settingsEl.classList.add('collapsed');
 
-      // Pre-generate first batches sequentially (parallel causes more UI blocking)
-      for (let i = 0; i < pregenBatchCount; i++) {
-        if (stopRequested) break;
-        await ensureGenerated(i);
-        // Update overlay progress
-        const overlay = document.getElementById('preparingOverlay');
-        if (overlay) {
-          const detail = overlay.querySelector('.preparing-detail');
-          if (detail) {
-            detail.textContent = `Generated ${i + 1} of ${pregenBatchCount} batches...`;
-          }
-        }
-      }
+      // Pre-generate first batches in parallel (worker runs off main thread)
+      await Promise.all(
+        Array.from({ length: pregenBatchCount }, (_, i) => ensureGenerated(i))
+      );
 
       // Hide loading UI
       isPreparing = false;
