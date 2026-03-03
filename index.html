@@ -63,6 +63,12 @@
     animation: fadeDown 0.6s ease;
   }
 
+  .header-logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+  }
+
   .header h1 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 600;
@@ -363,6 +369,24 @@
 
   .stop-btn:hover { background: var(--bg); color: var(--ink); }
   .stop-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .skip-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: var(--bg-deep);
+    color: var(--ink-soft);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .skip-btn:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
+  .skip-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .skip-btn svg { width: 22px; height: 22px; }
 
   .download-btn {
     display: inline-flex;
@@ -902,6 +926,7 @@
 <body>
 <div class="app">
   <div class="header">
+    <img src="/favicon.png" alt="Manuscript Reader" class="header-logo">
     <h1>Manuscript Reader <span class="beta-badge">BETA</span></h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
   </div>
@@ -1007,32 +1032,32 @@
       </div>
       <input type="range" id="speedRange" min="0.5" max="1.5" step="0.05" value="1">
     </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Sentence pause</span>
+        <span class="value" id="pauseVal">100ms</span>
+      </div>
+      <input type="range" id="pauseRange" min="0" max="800" step="25" value="100">
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Paragraph pause</span>
+        <span class="value" id="paraPauseVal">350ms</span>
+      </div>
+      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="350">
+    </div>
   </div>
 
-  <details class="advanced-settings">
-    <summary>Advanced timing</summary>
-    <div class="settings" style="margin-top: 12px;">
-      <div class="setting">
-        <div class="setting-label">
-          <span>Sentence pause</span>
-          <span class="value" id="pauseVal">100ms</span>
-        </div>
-        <input type="range" id="pauseRange" min="0" max="800" step="25" value="100">
-      </div>
-      <div class="setting">
-        <div class="setting-label">
-          <span>Paragraph pause</span>
-          <span class="value" id="paraPauseVal">350ms</span>
-        </div>
-        <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="350">
-      </div>
-    </div>
-  </details>
-
   <div class="controls-row">
+    <button class="skip-btn" id="skipBackBtn" disabled title="Skip back ~30 seconds">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
+    </button>
     <button class="play-btn" id="playBtn" disabled>
       <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
       <span id="playLabel">Play</span>
+    </button>
+    <button class="skip-btn" id="skipForwardBtn" disabled title="Skip forward ~30 seconds">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
     </button>
     <button class="download-btn" id="downloadBtn" disabled>
       <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
@@ -1045,7 +1070,7 @@
   </div>
 
   <div class="kbd-hint" id="kbdHint">
-    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stop
+    <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s &nbsp;&middot;&nbsp; <kbd>Esc</kbd> stop
   </div>
 
   <div class="progress-wrap" id="progressWrap">
@@ -1080,7 +1105,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.4.0</p>
+    <p class="version">v0.4.1</p>
   </div>
 </div>
 
@@ -1098,8 +1123,17 @@
     btn.disabled = true;
     btn.textContent = 'Sending...';
 
+    // Collect device info
+    const deviceInfo = [
+      `Browser: ${navigator.userAgent}`,
+      `Platform: ${navigator.platform}`,
+      `Screen: ${window.screen.width}x${window.screen.height}`,
+      `Viewport: ${window.innerWidth}x${window.innerHeight}`,
+      `Version: v0.4.1`
+    ].join('\n');
+
     const form = new FormData();
-    form.append('message', text);
+    form.append('message', text + '\n\n---\n' + deviceInfo);
     form.append('email', email || '(not provided)');
     form.append('_subject', 'Manuscript Reader Feedback');
     form.append('_captcha', 'false');
@@ -1141,6 +1175,7 @@
   let audioContext = null;
   let currentSource = null;
   let stopRequested = false;
+  let playbackSessionId = 0; // incremented each time playback starts to prevent double-play
 
   // Pre-generated audio cache: batchIndex -> AudioBuffer
   const audioCache = new Map();
@@ -1163,6 +1198,8 @@
   const playLabel = document.getElementById('playLabel');
   const downloadBtn = document.getElementById('downloadBtn');
   const downloadLabel = document.getElementById('downloadLabel');
+  const skipBackBtn = document.getElementById('skipBackBtn');
+  const skipForwardBtn = document.getElementById('skipForwardBtn');
   const stopBtn = document.getElementById('stopBtn');
   const voiceSelect = document.getElementById('voiceSelect');
   const speedRange = document.getElementById('speedRange');
@@ -1200,6 +1237,8 @@
           modelReady = true;
           playBtn.disabled = false;
           downloadBtn.disabled = false;
+          skipBackBtn.disabled = false;
+          skipForwardBtn.disabled = false;
 
           // Fade out status after a moment
           setTimeout(() => {
@@ -1425,6 +1464,16 @@
     });
   }
 
+  // ─── Find batch containing a sentence ──────────────
+  function findBatchForSentence(sentenceIndex) {
+    for (let i = 0; i < batches.length; i++) {
+      if (batches[i].sentenceIndices.includes(sentenceIndex)) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
   // ─── Build Reading View ────────────────────────────
   function buildReadingView() {
     readingView.innerHTML = '';
@@ -1433,6 +1482,8 @@
       span.className = 'sentence upcoming';
       span.dataset.index = i;
       span.textContent = s.text + ' ';
+      span.title = 'Click to play from here';
+      span.addEventListener('click', () => playFromSentence(i));
       readingView.appendChild(span);
 
       if (s.paragraphEnd) {
@@ -1441,6 +1492,22 @@
         readingView.appendChild(br);
       }
     });
+  }
+
+  // ─── Play from a specific sentence ─────────────────
+  async function playFromSentence(sentenceIndex) {
+    const batchIndex = findBatchForSentence(sentenceIndex);
+
+    // Stop current playback
+    if (currentSource) {
+      currentSource.onended = null;
+      currentSource.stop();
+      currentSource = null;
+    }
+
+    currentBatchIndex = batchIndex;
+    isPaused = false;
+    playFrom(batchIndex);
   }
 
   // ─── Update Highlight ──────────────────────────────
@@ -1488,6 +1555,16 @@
 
   // ─── Main Playback Loop ────────────────────────────
   async function playFrom(batchIndex) {
+    // Stop any existing playback first
+    if (currentSource) {
+      currentSource.onended = null;
+      currentSource.stop();
+      currentSource = null;
+    }
+
+    // Increment session ID to invalidate any previous loops
+    const thisSession = ++playbackSessionId;
+
     isPlaying = true;
     isPaused = false;
     stopRequested = false;
@@ -1496,18 +1573,18 @@
     // Pre-buffer: generate first batch (and start prefetching next ones)
     // before playing anything, so the user doesn't wait during playback
     if (!audioCache.has(batchIndex)) {
-      statusEl.textContent = 'Preparing first batch...';
+      statusEl.textContent = 'Preparing...';
       currentBatchIndex = batchIndex;
       updateHighlight(batchIndex);
     }
     prefetchAhead(batchIndex, 4);
     await ensureGenerated(batchIndex);
 
-    if (stopRequested) return;
+    if (stopRequested || thisSession !== playbackSessionId) return;
     statusEl.textContent = '';
 
     for (let i = batchIndex; i < batches.length; i++) {
-      if (stopRequested) break;
+      if (stopRequested || thisSession !== playbackSessionId) break;
 
       currentBatchIndex = i;
       updateHighlight();
@@ -1518,7 +1595,7 @@
         statusEl.textContent = 'Generating...';
         updateHighlight(i);
         buffer = await ensureGenerated(i);
-        if (!buffer || stopRequested) {
+        if (!buffer || stopRequested || thisSession !== playbackSessionId) {
           statusEl.textContent = '';
           continue;
         }
@@ -1532,22 +1609,24 @@
       // Play
       await playBuffer(buffer);
 
-      if (stopRequested) break;
+      if (stopRequested || thisSession !== playbackSessionId) break;
 
       // Intentional pause between batches (use paragraph pause if batch ends with paragraph)
       const pause = batches[i].paragraphEnd ? parseInt(paraPauseRange.value) : parseInt(pauseRange.value);
       if (pause > 0) await new Promise(r => setTimeout(r, pause));
     }
 
-    if (!stopRequested) {
-      currentBatchIndex = batches.length;
-      updateHighlight();
-      statusEl.textContent = 'Finished reading.';
+    // Only update state if this is still the active session
+    if (thisSession === playbackSessionId) {
+      if (!stopRequested) {
+        currentBatchIndex = batches.length;
+        updateHighlight();
+        statusEl.textContent = 'Finished reading.';
+      }
+      isPlaying = false;
+      isPaused = false;
+      updateUI();
     }
-
-    isPlaying = false;
-    isPaused = false;
-    updateUI();
   }
 
   // ─── Controls ──────────────────────────────────────
@@ -1850,10 +1929,48 @@
     }
   }
 
+  // ─── Skip Functions ───────────────────────────────
+  // Estimate ~30 seconds worth of batches (rough: ~5 seconds per batch)
+  const SKIP_BATCHES = 6;
+
+  function skipBack() {
+    if (!batches.length || (!isPlaying && !isPaused)) return;
+    const newIndex = Math.max(0, currentBatchIndex - SKIP_BATCHES);
+    if (currentSource) {
+      currentSource.onended = null;
+      currentSource.stop();
+      currentSource = null;
+    }
+    currentBatchIndex = newIndex;
+    if (isPlaying) {
+      playFrom(newIndex);
+    } else {
+      updateHighlight();
+    }
+  }
+
+  function skipForward() {
+    if (!batches.length || (!isPlaying && !isPaused)) return;
+    const newIndex = Math.min(batches.length - 1, currentBatchIndex + SKIP_BATCHES);
+    if (currentSource) {
+      currentSource.onended = null;
+      currentSource.stop();
+      currentSource = null;
+    }
+    currentBatchIndex = newIndex;
+    if (isPlaying) {
+      playFrom(newIndex);
+    } else {
+      updateHighlight();
+    }
+  }
+
   // ─── Event Listeners ──────────────────────────────
   playBtn.addEventListener('click', togglePlay);
   stopBtn.addEventListener('click', stopReading);
   downloadBtn.addEventListener('click', downloadAudio);
+  skipBackBtn.addEventListener('click', skipBack);
+  skipForwardBtn.addEventListener('click', skipForward);
 
   speedRange.addEventListener('input', () => {
     speedVal.textContent = parseFloat(speedRange.value).toFixed(2) + '×';
@@ -1880,12 +1997,19 @@
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     if (document.activeElement === manuscriptEl) return;
+    if (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'INPUT') return;
 
     if (e.code === 'Space') {
       e.preventDefault();
       togglePlay();
     } else if (e.code === 'Escape') {
       stopReading();
+    } else if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      skipBack();
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      skipForward();
     }
   });
 </script>
