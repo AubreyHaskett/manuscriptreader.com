@@ -1023,13 +1023,6 @@
     <div class="model-detail" id="modelDetail">First load downloads ~80-320 MB depending on browser (cached after)</div>
   </div>
 
-  <div class="input-area">
-    <label>Your text</label>
-    <textarea id="manuscript" placeholder="Paste a chapter or scene here — your text stays on your device and is never sent anywhere..."></textarea>
-  </div>
-
-  <div class="reading-view" id="readingView"></div>
-
   <div class="controls-row">
     <button class="skip-btn hidden" id="skipBackBtn" disabled title="Skip back ~30 seconds">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
@@ -1050,11 +1043,18 @@
     </button>
   </div>
 
+  <div class="status" id="status"></div>
+
+  <div class="input-area">
+    <label>Your text</label>
+    <textarea id="manuscript" placeholder="Paste a chapter or scene here — your text stays on your device and is never sent anywhere..."></textarea>
+  </div>
+
+  <div class="reading-view" id="readingView"></div>
+
   <div class="kbd-hint" id="kbdHint">
     <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
   </div>
-
-  <div class="status" id="status"></div>
 
   <div class="settings">
     <div class="setting">
@@ -1872,11 +1872,10 @@
 
   // Convert AudioBuffer to MP3 format using lamejs
   let lamejsLoaded = false;
-  let lamejs = null;
 
   async function loadLamejs() {
     if (lamejsLoaded) return;
-    // Load lamejs from CDN
+    // Load lamejs from CDN (exposes window.lamejs)
     await new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
@@ -1898,8 +1897,8 @@
       samples16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
     }
 
-    // Encode to MP3
-    const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, 128);
+    // Encode to MP3 (lamejs is loaded as window.lamejs)
+    const mp3encoder = new window.lamejs.Mp3Encoder(1, sampleRate, 128);
     const mp3Data = [];
 
     const blockSize = 1152;
