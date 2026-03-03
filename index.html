@@ -846,7 +846,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.1</p>
+    <p class="version">v0.2.2</p>
   </div>
 </div>
 
@@ -941,9 +941,24 @@
         }
       }, 500);
 
+      // Check for WebGPU support for faster inference
+      let device = "wasm";
+      let deviceName = "CPU";
+      if (navigator.gpu) {
+        try {
+          const adapter = await navigator.gpu.requestAdapter();
+          if (adapter) {
+            device = "webgpu";
+            deviceName = "GPU";
+          }
+        } catch (e) {
+          console.log('WebGPU not available, using WASM');
+        }
+      }
+
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
-        { dtype: "q8", device: "wasm" }
+        { dtype: "q8", device: device }
       );
 
       clearInterval(progressInterval);
@@ -952,7 +967,7 @@
       modelStatusText.innerHTML = '✓ Kokoro voice model ready';
       modelStatusText.classList.add('ready-text');
       modelStatus.classList.add('ready');
-      modelDetail.textContent = 'Model loaded and cached for future sessions';
+      modelDetail.textContent = `Model loaded (${deviceName}) and cached for future sessions`;
 
       modelReady = true;
       playBtn.disabled = false;
