@@ -1219,6 +1219,28 @@
   const audioCache = new Map();
   const prefetchInFlight = new Set(); // track which batch indices are currently being generated
 
+  // Screen Wake Lock to prevent phone from sleeping during playback
+  let wakeLock = null;
+
+  async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      } catch (err) {
+        // Wake lock request failed (e.g., low battery, tab not visible)
+        console.log('Wake lock failed:', err.message);
+      }
+    }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release();
+      wakeLock = null;
+    }
+  }
+
   // Pending generation requests: id -> { resolve, reject }
   const pendingGenerations = new Map();
   let generationId = 0;
@@ -1635,6 +1657,7 @@
     const thisSession = ++playbackSessionId;
 
     isPlaying = true;
+    requestWakeLock(); // Keep screen awake during playback
     isPaused = false;
     stopRequested = false;
     updateUI();
@@ -1693,6 +1716,7 @@
       }
       isPlaying = false;
       isPaused = false;
+      releaseWakeLock(); // Allow screen to sleep again
       updateUI();
     }
   }
@@ -1752,6 +1776,7 @@
       }
       isPaused = true;
       isPlaying = false;
+      releaseWakeLock(); // Allow screen to sleep while paused
       updateUI();
       statusEl.textContent = 'Paused.';
 
@@ -1772,6 +1797,7 @@
     isPlaying = false;
     isPaused = false;
     isPreparing = false;
+    releaseWakeLock(); // Allow screen to sleep again
     currentBatchIndex = 0;
     batches = [];
     audioCache.clear();
