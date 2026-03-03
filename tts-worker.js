@@ -7,8 +7,16 @@ let tts = null;
 let isInitialized = false;
 let initPromise = null;
 
-// Check WebGPU support
+// Check if running on mobile device
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Check WebGPU support (disabled on mobile to avoid screen glitches)
 async function checkWebGPU() {
+  // Skip WebGPU on mobile - causes screen glitches during GPU initialization
+  if (isMobile()) return false;
+
   if (!navigator.gpu) return false;
   try {
     const adapter = await navigator.gpu.requestAdapter();
