@@ -505,16 +505,11 @@
     gap: 16px;
     margin-bottom: 16px;
     animation: fadeUp 0.6s ease 0.3s both;
-    transition: opacity 0.3s, max-height 0.4s ease, margin 0.3s;
-    max-height: 500px;
-    overflow: hidden;
+    transition: opacity 0.2s;
   }
 
   .settings.collapsed {
-    opacity: 0;
-    max-height: 0;
-    margin-top: 0;
-    margin-bottom: 0;
+    opacity: 0.4;
     pointer-events: none;
   }
 
@@ -1015,17 +1010,17 @@
   </div>
 
   <div class="controls-row">
-    <button class="skip-btn" id="skipBackBtn" disabled title="Skip back ~30 seconds">
+    <button class="skip-btn hidden" id="skipBackBtn" disabled title="Skip back ~30 seconds">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
     </button>
     <button class="play-btn" id="playBtn" disabled>
       <svg id="playIcon" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
       <span id="playLabel">Play</span>
     </button>
-    <button class="skip-btn" id="skipForwardBtn" disabled title="Skip forward ~30 seconds">
+    <button class="skip-btn hidden" id="skipForwardBtn" disabled title="Skip forward ~30 seconds">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="12" y="15" text-anchor="middle" font-size="7" font-weight="bold">30</text></svg>
     </button>
-    <button class="download-btn" id="downloadBtn" disabled>
+    <button class="download-btn hidden" id="downloadBtn" disabled>
       <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       <span id="downloadLabel">Download</span>
     </button>
@@ -1071,7 +1066,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.4.1</p>
+    <p class="version">v0.4.2</p>
   </div>
 </div>
 
@@ -1095,7 +1090,7 @@
       `Platform: ${navigator.platform}`,
       `Screen: ${window.screen.width}x${window.screen.height}`,
       `Viewport: ${window.innerWidth}x${window.innerHeight}`,
-      `Version: v0.4.1`
+      `Version: v0.4.2`
     ].join('\n');
 
     const form = new FormData();
@@ -1688,6 +1683,8 @@
   }
 
   function updateUI() {
+    const inPlaybackMode = isPlaying || isPaused || isPreparing;
+
     if (isPlaying) {
       playIcon.innerHTML = '<rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/>';
       playLabel.textContent = 'Pause';
@@ -1696,7 +1693,14 @@
       playLabel.textContent = isPaused ? 'Resume' : 'Play';
     }
 
-    stopBtn.classList.toggle('hidden', !isPlaying && !isPaused && !isPreparing);
+    // Playback controls: show skip buttons and stop when in playback mode
+    skipBackBtn.classList.toggle('hidden', !inPlaybackMode);
+    skipForwardBtn.classList.toggle('hidden', !inPlaybackMode);
+    stopBtn.classList.toggle('hidden', !inPlaybackMode);
+
+    // Download button: hide during playback
+    downloadBtn.classList.toggle('hidden', inPlaybackMode);
+
     // Hide settings while preparing or playing (show when paused or stopped)
     settingsEl.classList.toggle('collapsed', isPlaying || isPreparing);
   }
