@@ -799,7 +799,7 @@
     <div class="model-progress" id="modelProgressWrap">
       <div class="model-progress-fill" id="modelProgressFill"></div>
     </div>
-    <div class="model-detail" id="modelDetail">First load downloads ~86 MB (cached after)</div>
+    <div class="model-detail" id="modelDetail">First load downloads ~45 MB (cached after)</div>
   </div>
 
   <div class="input-area">
@@ -907,7 +907,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.4</p>
+    <p class="version">v0.2.5</p>
   </div>
 </div>
 
@@ -958,17 +958,18 @@
   // ─── State ─────────────────────────────────────────
   let tts = null;
   let modelReady = false;
-  let sentences = [];
-  let currentIndex = 0;
+  let sentences = [];       // original sentences (for display)
+  let batches = [];         // batched sentences (for TTS generation)
+  let currentBatchIndex = 0;
   let isPlaying = false;
   let isPaused = false;
   let audioContext = null;
   let currentSource = null;
   let stopRequested = false;
 
-  // Pre-generated audio cache: index -> AudioBuffer
+  // Pre-generated audio cache: batchIndex -> AudioBuffer
   const audioCache = new Map();
-  const prefetchInFlight = new Set(); // track which indices are currently being generated
+  const prefetchInFlight = new Set(); // track which batch indices are currently being generated
 
   // ─── Elements ──────────────────────────────────────
   const modelStatus = document.getElementById('modelStatus');
@@ -1005,7 +1006,7 @@
 
       tts = await KokoroTTS.from_pretrained(
         "onnx-community/Kokoro-82M-v1.0-ONNX",
-        { dtype: "q8", device: "wasm" }
+        { dtype: "q4", device: "wasm" }
       );
 
       clearInterval(progressInterval);
@@ -1039,9 +1040,10 @@
   loadModel();
 
   // ─── Audio Context ─────────────────────────────────
+  // Use default sample rate - Kokoro outputs at 24kHz and we'll match that
   function getAudioContext() {
     if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     if (audioContext.state === 'suspended') audioContext.resume();
     return audioContext;
@@ -1074,6 +1076,42 @@
     return result;
   }
 
+  // ─── Sentence Batching ────────────────────────────
+  // Combine short sentences into batches for fewer TTS calls
+  const MIN_BATCH_LENGTH = 100; // minimum chars before we stop combining
+  const MAX_BATCH_LENGTH = 300; // max chars per batch
+
+  function batchSentences(sentences) {
+    const batches = [];
+    let currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [] };
+
+    sentences.forEach((s, i) => {
+      const combined = currentBatch.text + (currentBatch.text ? ' ' : '') + s.text;
+
+      // If adding this sentence exceeds max, or current batch is long enough
+      // and we're at a paragraph break, finalize current batch
+      if (combined.length > MAX_BATCH_LENGTH ||
+          (currentBatch.text.length >= MIN_BATCH_LENGTH && currentBatch.paragraphEnd)) {
+        if (currentBatch.text) {
+          batches.push(currentBatch);
+        }
+        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i] };
+      } else {
+        // Add to current batch
+        currentBatch.text = combined;
+        currentBatch.sentenceIndices.push(i);
+        currentBatch.paragraphEnd = s.paragraphEnd;
+      }
+    });
+
+    // Push final batch
+    if (currentBatch.text) {
+      batches.push(currentBatch);
+    }
+
+    return batches;
+  }
+
   // ─── Yield to browser for UI responsiveness ────────
   function yieldToMain() {
     return new Promise(resolve => setTimeout(resolve, 0));
@@ -1099,35 +1137,35 @@
   }
 
   // ─── Prefetch Pipeline ──────────────────────────────
-  // Generate audio for a specific index, with deduplication
-  async function ensureGenerated(index) {
-    if (index >= sentences.length || audioCache.has(index)) return audioCache.get(index);
-    if (prefetchInFlight.has(index)) {
+  // Generate audio for a specific batch index, with deduplication
+  async function ensureGenerated(batchIndex) {
+    if (batchIndex >= batches.length || audioCache.has(batchIndex)) return audioCache.get(batchIndex);
+    if (prefetchInFlight.has(batchIndex)) {
       // Already generating — wait for it
-      while (!audioCache.has(index) && !stopRequested) {
+      while (!audioCache.has(batchIndex) && !stopRequested) {
         await new Promise(r => setTimeout(r, 50));
       }
-      return audioCache.get(index);
+      return audioCache.get(batchIndex);
     }
 
-    prefetchInFlight.add(index);
+    prefetchInFlight.add(batchIndex);
     try {
       const voice = voiceSelect.value;
       const speed = parseFloat(speedRange.value);
-      const buffer = await generateAudio(sentences[index].text, voice, speed);
-      if (!stopRequested) audioCache.set(index, buffer);
+      const buffer = await generateAudio(batches[batchIndex].text, voice, speed);
+      if (!stopRequested) audioCache.set(batchIndex, buffer);
       return buffer;
     } catch (e) {
-      console.warn('Generation failed for sentence', index, e);
+      console.warn('Generation failed for batch', batchIndex, e);
       return null;
     } finally {
-      prefetchInFlight.delete(index);
+      prefetchInFlight.delete(batchIndex);
     }
   }
 
-  // Fire-and-forget prefetch for upcoming sentences
-  function prefetchAhead(fromIndex, count = 6) {
-    for (let i = fromIndex; i < Math.min(fromIndex + count, sentences.length); i++) {
+  // Fire-and-forget prefetch for upcoming batches
+  function prefetchAhead(fromIndex, count = 4) {
+    for (let i = fromIndex; i < Math.min(fromIndex + count, batches.length); i++) {
       if (!audioCache.has(i) && !prefetchInFlight.has(i)) {
         ensureGenerated(i); // intentionally not awaited
       }
@@ -1135,14 +1173,14 @@
   }
 
   // ─── Preparing Overlay ────────────────────────────
-  function showPreparingOverlay(count) {
+  function showPreparingOverlay(batchCount, sentenceCount) {
     const overlay = document.createElement('div');
     overlay.className = 'preparing-overlay';
     overlay.id = 'preparingOverlay';
     overlay.innerHTML = `
       <div class="large-spinner"></div>
       <div class="preparing-text">Preparing audio...</div>
-      <div class="preparing-detail">Generating first ${count} sentence${count > 1 ? 's' : ''}</div>
+      <div class="preparing-detail">Generating ${sentenceCount} sentence${sentenceCount > 1 ? 's' : ''} in ${batchCount} batch${batchCount > 1 ? 'es' : ''}</div>
     `;
     readingView.appendChild(overlay);
   }
@@ -1190,13 +1228,24 @@
   }
 
   // ─── Update Highlight ──────────────────────────────
-  function updateHighlight(genIndex) {
+  function updateHighlight(genBatchIndex) {
+    const currentBatch = batches[currentBatchIndex];
+    const currentSentenceIndices = currentBatch ? currentBatch.sentenceIndices : [];
+    const genBatch = genBatchIndex !== undefined ? batches[genBatchIndex] : null;
+    const genSentenceIndices = genBatch ? genBatch.sentenceIndices : [];
+
+    // Calculate which sentences have been spoken
+    let spokenIndices = new Set();
+    for (let b = 0; b < currentBatchIndex; b++) {
+      batches[b].sentenceIndices.forEach(i => spokenIndices.add(i));
+    }
+
     const spans = readingView.querySelectorAll('.sentence');
     spans.forEach((span, i) => {
       span.className = 'sentence';
-      if (i < currentIndex) span.classList.add('spoken');
-      else if (i === currentIndex) span.classList.add('active');
-      else if (i === genIndex) span.classList.add('generating');
+      if (spokenIndices.has(i)) span.classList.add('spoken');
+      else if (currentSentenceIndices.includes(i)) span.classList.add('active');
+      else if (genSentenceIndices.includes(i)) span.classList.add('generating');
       else span.classList.add('upcoming');
     });
 
@@ -1209,37 +1258,42 @@
       }
     }
 
-    const pct = sentences.length > 0 ? (currentIndex / sentences.length) * 100 : 0;
+    // Calculate sentence progress based on batches completed
+    let sentencesDone = 0;
+    for (let b = 0; b < currentBatchIndex; b++) {
+      sentencesDone += batches[b].sentenceIndices.length;
+    }
+    const pct = sentences.length > 0 ? (sentencesDone / sentences.length) * 100 : 0;
     progressFill.style.width = pct + '%';
     const cached = audioCache.size;
-    const cacheInfo = cached < sentences.length ? ` (${cached} cached)` : ' (all cached)';
-    progressCurrent.textContent = `${currentIndex} / ${sentences.length} sentences${cacheInfo}`;
+    const cacheInfo = cached < batches.length ? ` (${cached}/${batches.length} batches cached)` : ' (all cached)';
+    progressCurrent.textContent = `${sentencesDone} / ${sentences.length} sentences${cacheInfo}`;
   }
 
   // ─── Main Playback Loop ────────────────────────────
-  async function playFrom(index) {
+  async function playFrom(batchIndex) {
     isPlaying = true;
     isPaused = false;
     stopRequested = false;
     updateUI();
 
-    // Pre-buffer: generate first sentence (and start prefetching next ones)
+    // Pre-buffer: generate first batch (and start prefetching next ones)
     // before playing anything, so the user doesn't wait during playback
-    if (!audioCache.has(index)) {
-      statusEl.textContent = 'Preparing first sentence...';
-      currentIndex = index;
-      updateHighlight(index);
+    if (!audioCache.has(batchIndex)) {
+      statusEl.textContent = 'Preparing first batch...';
+      currentBatchIndex = batchIndex;
+      updateHighlight(batchIndex);
     }
-    prefetchAhead(index, 6);
-    await ensureGenerated(index);
+    prefetchAhead(batchIndex, 4);
+    await ensureGenerated(batchIndex);
 
     if (stopRequested) return;
     statusEl.textContent = '';
 
-    for (let i = index; i < sentences.length; i++) {
+    for (let i = batchIndex; i < batches.length; i++) {
       if (stopRequested) break;
 
-      currentIndex = i;
+      currentBatchIndex = i;
       updateHighlight();
 
       // Get the buffer (should be cached from prefetch, but generate if not)
@@ -1256,21 +1310,21 @@
         updateHighlight();
       }
 
-      // Kick off prefetch for upcoming sentences while we play this one
-      prefetchAhead(i + 1, 6);
+      // Kick off prefetch for upcoming batches while we play this one
+      prefetchAhead(i + 1, 4);
 
       // Play
       await playBuffer(buffer);
 
       if (stopRequested) break;
 
-      // Intentional pause between sentences
-      const pause = sentences[i].paragraphEnd ? parseInt(paraPauseRange.value) : parseInt(pauseRange.value);
+      // Intentional pause between batches (use paragraph pause if batch ends with paragraph)
+      const pause = batches[i].paragraphEnd ? parseInt(paraPauseRange.value) : parseInt(pauseRange.value);
       if (pause > 0) await new Promise(r => setTimeout(r, pause));
     }
 
     if (!stopRequested) {
-      currentIndex = sentences.length;
+      currentBatchIndex = batches.length;
       updateHighlight();
       statusEl.textContent = 'Finished reading.';
     }
@@ -1292,23 +1346,30 @@
       sentences = splitIntoSentences(text);
       if (sentences.length === 0) { statusEl.textContent = 'No sentences found.'; return; }
 
+      // Batch sentences for fewer TTS calls
+      batches = batchSentences(sentences);
+
       audioCache.clear();
-      currentIndex = 0;
+      currentBatchIndex = 0;
       buildReadingView();
       readingView.classList.add('active');
       manuscriptEl.parentElement.classList.add('hidden');
       progressWrap.classList.add('active');
 
-      // Show loading UI
-      const pregenCount = Math.min(4, sentences.length);
-      showPreparingOverlay(pregenCount);
+      // Show loading UI - pre-generate first 3 batches
+      const pregenBatchCount = Math.min(3, batches.length);
+      let pregenSentenceCount = 0;
+      for (let i = 0; i < pregenBatchCount; i++) {
+        pregenSentenceCount += batches[i].sentenceIndices.length;
+      }
+      showPreparingOverlay(pregenBatchCount, pregenSentenceCount);
       playBtn.classList.add('loading');
       playIcon.style.display = 'none';
       playLabel.innerHTML = '<span class="spinner-inline"></span>Preparing...';
 
-      // Pre-generate first 4 sentences in parallel before starting playback
+      // Pre-generate first batches in parallel before starting playback
       await Promise.all(
-        Array.from({ length: pregenCount }, (_, i) => ensureGenerated(i))
+        Array.from({ length: pregenBatchCount }, (_, i) => ensureGenerated(i))
       );
 
       // Hide loading UI
@@ -1331,9 +1392,9 @@
       statusEl.textContent = 'Paused.';
 
     } else if (isPaused) {
-      // Resume from current index
+      // Resume from current batch
       isPaused = false;
-      playFrom(currentIndex);
+      playFrom(currentBatchIndex);
     }
   }
 
@@ -1346,7 +1407,8 @@
     }
     isPlaying = false;
     isPaused = false;
-    currentIndex = 0;
+    currentBatchIndex = 0;
+    batches = [];
     audioCache.clear();
     prefetchInFlight.clear();
     hidePreparingOverlay();
