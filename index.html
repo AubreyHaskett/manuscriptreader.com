@@ -370,6 +370,17 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     animation: fadeUp 0.6s ease 0.3s both;
+    transition: opacity 0.3s, max-height 0.4s ease, margin 0.3s;
+    max-height: 500px;
+    overflow: hidden;
+  }
+
+  .settings.collapsed {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    pointer-events: none;
   }
 
   .settings .setting.full-width { grid-column: 1 / -1; }
@@ -896,7 +907,7 @@
     <p class="contact-line">
       Or reach us directly at <a href="mailto:manuscriptreadercontact@gmail.com">manuscriptreadercontact@gmail.com</a>
     </p>
-    <p class="version">v0.2.3</p>
+    <p class="version">v0.2.4</p>
   </div>
 </div>
 
@@ -979,6 +990,7 @@
   const progressCurrent = document.getElementById('progressCurrent');
   const statusEl = document.getElementById('status');
   const kbdHint = document.getElementById('kbdHint');
+  const settingsEl = document.querySelector('.settings');
 
   // ─── Init Model ────────────────────────────────────
   async function loadModel() {
@@ -1062,9 +1074,20 @@
     return result;
   }
 
+  // ─── Yield to browser for UI responsiveness ────────
+  function yieldToMain() {
+    return new Promise(resolve => setTimeout(resolve, 0));
+  }
+
   // ─── Generate Audio for a Sentence ─────────────────
   async function generateAudio(text, voice, speed) {
+    // Yield before heavy computation
+    await yieldToMain();
+
     const result = await tts.generate(text, { voice, speed });
+
+    // Yield after to let UI update
+    await yieldToMain();
 
     // result has .audio (Float32Array) and .sampling_rate
     const ctx = getAudioContext();
@@ -1347,6 +1370,8 @@
 
     stopBtn.classList.toggle('hidden', !isPlaying && !isPaused);
     kbdHint.classList.toggle('show', isPlaying || isPaused);
+    // Hide settings while playing (show when paused or stopped)
+    settingsEl.classList.toggle('collapsed', isPlaying);
   }
 
   // ─── Event Listeners ──────────────────────────────
