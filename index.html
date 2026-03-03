@@ -67,6 +67,9 @@
     width: 64px;
     height: 64px;
     margin-bottom: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    object-fit: cover;
   }
 
   .header h1 {
@@ -876,11 +879,22 @@
     font-weight: 500;
   }
 
-  .contact-line {
-    margin-top: 20px;
-    font-size: 0.72rem;
-    color: var(--ink-faint);
+  .support-line {
+    margin-top: 24px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
     text-align: center;
+    font-style: italic;
+  }
+
+  .support-line a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .support-line a:hover {
+    text-decoration: underline;
   }
 </style>
 </head>
@@ -1062,6 +1076,10 @@
     <div class="feedback-sent" id="feedbackSent">
       ✓ Thanks for your feedback!
     </div>
+
+    <p class="support-line">
+      Made by a writer, for writers. If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.
+    </p>
 
     <p class="version">v0.4.2</p>
   </div>
