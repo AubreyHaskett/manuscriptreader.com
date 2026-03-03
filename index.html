@@ -958,10 +958,59 @@
   .footer-meta a:hover {
     color: var(--ink-soft);
   }
+
+  /* Safari warning banner */
+  .safari-warning {
+    display: none;
+    background: #fff3cd;
+    border: 1px solid #ffcc02;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #664d03;
+    position: relative;
+  }
+  .safari-warning strong {
+    color: #553c00;
+  }
+  .safari-warning a {
+    color: #664d03;
+    font-weight: 600;
+  }
+  .safari-warning .dismiss-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #664d03;
+    opacity: 0.6;
+    line-height: 1;
+  }
+  .safari-warning .dismiss-btn:hover {
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
+<script>
+  // Detect Safari: has Safari in UA but not Chrome/Chromium-based browsers
+  if (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|OPR|Brave/.test(navigator.userAgent)) {
+    document.addEventListener('DOMContentLoaded', function() {
+      var el = document.getElementById('safariWarning');
+      if (el) el.style.display = 'block';
+    });
+  }
+</script>
 <div class="app">
+  <div class="safari-warning" id="safariWarning">
+    <button class="dismiss-btn" onclick="document.getElementById('safariWarning').style.display='none'" aria-label="Dismiss">&times;</button>
+    <strong>Safari is not supported.</strong> The voice model fails to load in Safari. Please try <strong>Chrome</strong>, <strong>Edge</strong>, or <strong>Arc</strong> for the best experience, or <strong>Firefox</strong> as an alternative.
+  </div>
   <div class="header">
     <h1>Manuscript Reader <span class="beta-badge">BETA</span></h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
@@ -1006,7 +1055,7 @@
       </div>
       <div class="privacy-point">
         <span class="check" style="color: var(--ink-faint);">○</span>
-        <p><strong>Safari and Firefox</strong> work but use slower CPU processing. Generation takes longer and may have brief pauses.</p>
+        <p><strong>Safari</strong> is not currently supported — the voice model fails to load. <strong>Firefox</strong> works but uses slower CPU processing, so generation takes longer and may have brief pauses.</p>
       </div>
       <div class="privacy-point">
         <span class="check" style="color: var(--ink-faint);">○</span>
