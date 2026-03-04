@@ -28,6 +28,43 @@
     --radius: 10px;
     --green: #3a7d5c;
     --green-bg: rgba(58, 125, 92, 0.08);
+    --overlay-bg: rgba(255, 253, 250, 0.95);
+  }
+
+  [data-theme="dark"] {
+    --bg: #1a1816;
+    --bg-deep: #131110;
+    --paper: #242120;
+    --ink: #e8e0d8;
+    --ink-soft: #b0a89e;
+    --ink-faint: #7a7068;
+    --accent: #d0593a;
+    --accent-glow: rgba(208, 89, 58, 0.15);
+    --highlight-active: rgba(208, 89, 58, 0.18);
+    --border: rgba(232, 224, 216, 0.1);
+    --shadow: rgba(0, 0, 0, 0.2);
+    --green: #5aad7e;
+    --green-bg: rgba(90, 173, 126, 0.12);
+    --overlay-bg: rgba(36, 33, 32, 0.95);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1816;
+      --bg-deep: #131110;
+      --paper: #242120;
+      --ink: #e8e0d8;
+      --ink-soft: #b0a89e;
+      --ink-faint: #7a7068;
+      --accent: #d0593a;
+      --accent-glow: rgba(208, 89, 58, 0.15);
+      --highlight-active: rgba(208, 89, 58, 0.18);
+      --border: rgba(232, 224, 216, 0.1);
+      --shadow: rgba(0, 0, 0, 0.2);
+      --green: #5aad7e;
+      --green-bg: rgba(90, 173, 126, 0.12);
+      --overlay-bg: rgba(36, 33, 32, 0.95);
+    }
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,6 +98,7 @@
     text-align: center;
     margin-bottom: 36px;
     animation: fadeDown 0.6s ease;
+    position: relative;
   }
 
   .header-logo {
@@ -281,7 +319,7 @@
   .preparing-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(255, 253, 250, 0.95);
+    background: var(--overlay-bg, rgba(255, 253, 250, 0.95));
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -994,9 +1032,67 @@
   .safari-warning .dismiss-btn:hover {
     opacity: 1;
   }
+
+  /* Safari warning dark mode */
+  [data-theme="dark"] .safari-warning {
+    background: #3d2e0a;
+    border-color: #6b5518;
+    color: #f0d58c;
+  }
+  [data-theme="dark"] .safari-warning strong { color: #f5e0a0; }
+  [data-theme="dark"] .safari-warning a { color: #f0d58c; }
+  [data-theme="dark"] .safari-warning .dismiss-btn { color: #f0d58c; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .safari-warning {
+      background: #3d2e0a;
+      border-color: #6b5518;
+      color: #f0d58c;
+    }
+    :root:not([data-theme="light"]) .safari-warning strong { color: #f5e0a0; }
+    :root:not([data-theme="light"]) .safari-warning a { color: #f0d58c; }
+    :root:not([data-theme="light"]) .safari-warning .dismiss-btn { color: #f0d58c; }
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    color: var(--ink-faint);
+  }
+  .theme-toggle:hover {
+    background: var(--paper);
+    color: var(--ink-soft);
+  }
+  .theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
 </style>
 </head>
 <body>
+<script>
+  // ─── Theme Toggle (runs early to prevent flash) ───
+  (function() {
+    const stored = localStorage.getItem('theme');
+    if (stored) {
+      document.documentElement.setAttribute('data-theme', stored);
+    }
+    // No attribute set = follows system preference via @media query
+  })();
+</script>
 <script>
   // Detect Safari: has Safari in UA but not Chrome/Chromium-based browsers
   if (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|OPR|Brave/.test(navigator.userAgent)) {
@@ -1012,6 +1108,9 @@
     <strong>Safari is not supported.</strong> The voice model fails to load in Safari. Please try <strong>Chrome</strong>, <strong>Edge</strong>, or <strong>Arc</strong> for the best experience, or <strong>Firefox</strong> as an alternative.
   </div>
   <div class="header">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg id="themeIcon" viewBox="0 0 24 24"></svg>
+    </button>
     <h1>Manuscript Reader <span class="beta-badge">BETA</span></h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
   </div>
@@ -1245,6 +1344,46 @@
   }
 </script>
 
+<script>
+  // ─── Theme Toggle Logic ────────────────────────────
+  (function() {
+    const sunPath = 'M12 3V1m0 22v-2m9-9h2M1 12h2m15.07-7.07l1.42-1.42M3.51 20.49l1.42-1.42M20.49 20.49l-1.42-1.42M4.93 4.93L3.51 3.51M12 7a5 5 0 100 10 5 5 0 000-10z';
+    const moonPath = 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';
+
+    function isDark() {
+      const stored = localStorage.getItem('theme');
+      if (stored) return stored === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function updateIcon() {
+      const icon = document.getElementById('themeIcon');
+      if (!icon) return;
+      const dark = isDark();
+      icon.innerHTML = '<path d="' + (dark ? sunPath : moonPath) + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+    }
+
+    function toggleTheme() {
+      const dark = isDark();
+      const newTheme = dark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateIcon();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      updateIcon();
+      document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    });
+
+    // Follow system preference changes when no manual override
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+      if (!localStorage.getItem('theme')) {
+        updateIcon();
+      }
+    });
+  })();
+</script>
 <script type="module">
   // ─── State ─────────────────────────────────────────
   let worker = null;
@@ -1572,7 +1711,7 @@
     const overlay = document.createElement('div');
     overlay.className = 'preparing-overlay';
     overlay.id = 'generatingOverlay';
-    overlay.style.background = 'rgba(255, 253, 250, 0.85)';
+    overlay.style.background = getComputedStyle(document.documentElement).getPropertyValue('--overlay-bg').trim() || 'rgba(255, 253, 250, 0.85)';
     overlay.innerHTML = `
       <div class="large-spinner"></div>
       <div class="preparing-text">Generating...</div>
