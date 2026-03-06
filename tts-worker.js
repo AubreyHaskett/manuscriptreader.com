@@ -81,31 +81,18 @@ async function initModel() {
   return initPromise;
 }
 
-// Generate audio for text using streaming API
+// Generate audio for text
 async function generateAudio(id, text, voice, speed) {
   if (!isInitialized) {
     await initModel();
   }
 
   try {
-    // Use streaming API — processes text in sub-chunks, reducing peak memory
-    // and improving speed on constrained devices
-    const chunks = [];
-    let sampleRate = 24000;
+    const result = await tts.generate(text, { voice, speed });
 
-    for await (const chunk of tts.stream(text, { voice, speed })) {
-      chunks.push(chunk.audio);
-      sampleRate = chunk.sampling_rate || sampleRate;
-    }
-
-    // Concatenate all audio chunks into a single buffer
-    const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
-    const audioData = new Float32Array(totalLength);
-    let offset = 0;
-    for (const c of chunks) {
-      audioData.set(c, offset);
-      offset += c.length;
-    }
+    // Transfer the audio data back to main thread
+    const audioData = result.audio;
+    const sampleRate = result.sampling_rate || 24000;
 
     self.postMessage({
       type: 'audio',
