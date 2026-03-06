@@ -40,8 +40,8 @@ async function initModel() {
       device
     });
 
-    // Use fp32 for WebGPU (q4 causes audio artifacts), q4 for WASM (smaller/faster)
-    const dtype = device === "webgpu" ? "fp32" : "q4";
+    // Use fp32 for WebGPU (q4 causes audio artifacts), q8 for WASM (faster than q4, better quality)
+    const dtype = device === "webgpu" ? "fp32" : "q8";
 
     try {
       tts = await KokoroTTS.from_pretrained(
@@ -64,7 +64,7 @@ async function initModel() {
         });
         tts = await KokoroTTS.from_pretrained(
           "onnx-community/Kokoro-82M-v1.0-ONNX",
-          { dtype: "q4", device: "wasm" }  // q4 works fine with WASM
+          { dtype: "q8", device: "wasm" }  // q8 is faster than q4 for WASM
         );
         isInitialized = true;
         self.postMessage({
@@ -81,19 +81,31 @@ async function initModel() {
   return initPromise;
 }
 
-// Generate audio for text
+// Generate audio for text using streaming API
 async function generateAudio(id, text, voice, speed) {
   if (!isInitialized) {
     await initModel();
   }
 
   try {
-    const result = await tts.generate(text, { voice, speed });
+    // Use streaming API — processes text in sub-chunks, reducing peak memory
+    // and improving speed on constrained devices
+    const chunks = [];
+    let sampleRate = 24000;
 
-    // Transfer the audio data back to main thread
-    // result.audio is a Float32Array
-    const audioData = result.audio;
-    const sampleRate = result.sampling_rate || 24000;
+    for await (const chunk of tts.stream(text, { voice, speed })) {
+      chunks.push(chunk.audio);
+      sampleRate = chunk.sampling_rate || sampleRate;
+    }
+
+    // Concatenate all audio chunks into a single buffer
+    const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
+    const audioData = new Float32Array(totalLength);
+    let offset = 0;
+    for (const c of chunks) {
+      audioData.set(c, offset);
+      offset += c.length;
+    }
 
     self.postMessage({
       type: 'audio',
