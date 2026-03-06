@@ -1189,9 +1189,9 @@
       <svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       <span id="downloadLabel">Download</span>
     </button>
-    <button class="clear-btn hidden" id="clearBtn">
-      Reset
-    </button>
+    <button class="clear-btn hidden" id="clearTextBtn">Clear Text</button>
+    <button class="clear-btn hidden" id="resetAllBtn">Reset All</button>
+    <button class="clear-btn hidden" id="stopBtn">Stop</button>
   </div>
 
   <div class="status" id="status"></div>
@@ -1429,6 +1429,13 @@
     }
   }
 
+  // Re-acquire wake lock when page becomes visible again (mobile browsers release it on background)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && isPlaying && !isPaused) {
+      requestWakeLock();
+    }
+  });
+
   // Pending generation requests: id -> { resolve, reject }
   const pendingGenerations = new Map();
   let generationId = 0;
@@ -1448,7 +1455,9 @@
   const downloadLabel = document.getElementById('downloadLabel');
   const skipBackBtn = document.getElementById('skipBackBtn');
   const skipForwardBtn = document.getElementById('skipForwardBtn');
-  const clearBtn = document.getElementById('clearBtn');
+  const clearTextBtn = document.getElementById('clearTextBtn');
+  const resetAllBtn = document.getElementById('resetAllBtn');
+  const stopBtn = document.getElementById('stopBtn');
   const voiceSelect = document.getElementById('voiceSelect');
   const speedRange = document.getElementById('speedRange');
   const speedVal = document.getElementById('speedVal');
@@ -1987,7 +1996,7 @@
     isPlaying = false;
     isPaused = false;
     isPreparing = false;
-    releaseWakeLock(); // Allow screen to sleep again
+    releaseWakeLock();
     currentBatchIndex = 0;
     batches = [];
     audioCache.clear();
@@ -2000,7 +2009,17 @@
     manuscriptEl.parentElement.classList.remove('hidden');
     progressWrap.classList.remove('active');
 
-    // Reset to defaults
+    updateUI();
+    statusEl.textContent = '';
+  }
+
+  function clearText() {
+    manuscriptEl.value = '';
+    updateUI();
+  }
+
+  function resetAll() {
+    stopReading();
     manuscriptEl.value = '';
     speedRange.value = 1;
     speedVal.textContent = '1.00×';
@@ -2009,9 +2028,7 @@
     paraPauseRange.value = 800;
     paraPauseVal.textContent = '800ms';
     voiceSelect.value = 'bf_emma';
-
     updateUI();
-    statusEl.textContent = '';
   }
 
   function updateUI() {
@@ -2035,9 +2052,13 @@
     skipBackBtn.classList.toggle('hidden', !showSkipButtons);
     skipForwardBtn.classList.toggle('hidden', !showSkipButtons);
 
-    // Clear/Stop button: show during playback, change text during preparing
-    clearBtn.classList.toggle('hidden', !inPlaybackMode);
-    clearBtn.textContent = isPreparing ? 'Stop' : 'Reset';
+    // Button visibility matrix
+    const hasText = manuscriptEl.value.trim().length > 0;
+    const isIdle = !inPlaybackMode;
+    clearTextBtn.classList.toggle('hidden', !isIdle || !hasText);
+    resetAllBtn.classList.toggle('hidden', !isIdle || !hasText);
+    stopBtn.classList.toggle('hidden', !inPlaybackMode);
+    stopBtn.textContent = isPreparing ? 'Cancel' : 'Stop';
 
     // Download button: always visible, disabled during preparing
     downloadBtn.disabled = !modelReady || isPreparing || isDownloading;
@@ -2302,7 +2323,12 @@
 
   // ─── Event Listeners ──────────────────────────────
   playBtn.addEventListener('click', togglePlay);
-  clearBtn.addEventListener('click', stopReading);
+  clearTextBtn.addEventListener('click', clearText);
+  resetAllBtn.addEventListener('click', resetAll);
+  stopBtn.addEventListener('click', stopReading);
+
+  // Toggle idle button visibility when text changes
+  manuscriptEl.addEventListener('input', updateUI);
   downloadBtn.addEventListener('click', downloadAudio);
   skipBackBtn.addEventListener('click', skipBack);
   skipForwardBtn.addEventListener('click', skipForward);
