@@ -1949,9 +1949,9 @@
       playIcon.style.display = 'none';
       playLabel.innerHTML = '<span class="spinner-inline"></span>Preparing...';
 
-      // Hide settings during preparation
+      // Hide settings and update buttons during preparation
       isPreparing = true;
-      settingsEl.classList.add('collapsed');
+      updateUI();
 
       // Pre-generate first batches in parallel (worker runs off main thread)
       await Promise.all(
@@ -2057,11 +2057,10 @@
     const isIdle = !inPlaybackMode;
     clearTextBtn.classList.toggle('hidden', !isIdle || !hasText);
     resetAllBtn.classList.toggle('hidden', !isIdle || !hasText);
+    downloadBtn.classList.toggle('hidden', isPreparing);
+    downloadBtn.disabled = !modelReady || isPreparing || isDownloading;
     stopBtn.classList.toggle('hidden', !inPlaybackMode);
     stopBtn.textContent = isPreparing ? 'Cancel' : 'Stop';
-
-    // Download button: always visible, disabled during preparing
-    downloadBtn.disabled = !modelReady || isPreparing || isDownloading;
 
     // Hide settings completely while preparing, collapse while playing
     settingsEl.classList.toggle('hidden', isPreparing);
