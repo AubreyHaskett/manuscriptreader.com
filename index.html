@@ -126,6 +126,23 @@
     letter-spacing: 0.02em;
   }
 
+  /* Site nav */
+  .site-nav {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .site-nav a {
+    color: var(--ink-faint);
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin: 0 12px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .site-nav a:hover { color: var(--ink); }
+  .site-nav a.active { color: var(--ink); }
+
   .header .badge {
     display: inline-block;
     margin-top: 8px;
@@ -1114,6 +1131,11 @@
     <h1>Manuscript Reader <span class="beta-badge">BETA</span></h1>
     <p>Hear your writing read aloud in a natural voice — free, private, no signup</p>
   </div>
+
+  <nav class="site-nav">
+    <a href="index.html" class="active">Read Aloud</a>
+    <a href="lint.html">Manuscript Lint</a>
+  </nav>
 
   <details class="privacy-banner" open>
     <summary>
