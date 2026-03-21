@@ -5,1439 +5,224 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Manuscript Lint — Automated prose analysis for writers</title>
 <meta name="description" content="Free, private manuscript analysis. Find overused words, AI-isms, pacing issues, and crutch phrases. Everything runs in your browser — your text never leaves your device.">
-<link rel="icon" href="favicon.png" type="image/png">
+<meta property="og:title" content="Manuscript Lint">
+<meta property="og:description" content="Free, private prose analysis for writers. Your words never leave your browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://manuscriptreader.com/lint.html">
+<link rel="canonical" href="https://manuscriptreader.com/lint.html">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400&display=swap');
-
-:root {
-  --bg: #111110;
-  --bg-raised: #1a1a18;
-  --bg-inset: #0d0d0c;
-  --border: #2a2a28;
-  --border-subtle: #222220;
-  --text: #e8e4dc;
-  --text-dim: #9a968e;
-  --text-faint: #6a665e;
-  --accent: #c4553a;
-  --accent-dim: #a3442e;
-  --accent-glow: rgba(196, 85, 58, 0.15);
-  --green: #5a8a5c;
-  --green-dim: rgba(90, 138, 92, 0.15);
-  --yellow: #b8963e;
-  --yellow-dim: rgba(184, 150, 62, 0.15);
-  --blue: #5a7a9a;
-  --blue-dim: rgba(90, 122, 154, 0.15);
-  --serif: 'Instrument Serif', Georgia, serif;
-  --sans: 'DM Sans', -apple-system, sans-serif;
-  --mono: 'DM Mono', 'Menlo', monospace;
-  --radius: 8px;
-  --radius-sm: 4px;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: var(--sans);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-.container {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-/* ---- HEADER ---- */
-header {
-  padding: 48px 0 32px;
-  text-align: center;
-}
-
-header h1 {
-  font-family: var(--serif);
-  font-size: 2.4rem;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  margin-bottom: 8px;
-}
-
-header h1 span {
-  font-size: 0.5em;
-  font-family: var(--mono);
-  color: var(--accent);
-  vertical-align: super;
-  letter-spacing: 0.05em;
-  font-weight: 400;
-}
-
-header p {
-  color: var(--text-dim);
-  font-size: 1.05rem;
-  font-weight: 300;
-}
-
-/* ---- NAV ---- */
-nav {
-  text-align: center;
-  padding: 0 0 32px;
-  border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 32px;
-}
-
-nav a {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  font-weight: 400;
-  margin: 0 12px;
-  transition: color 0.2s;
-}
-
-nav a:hover { color: var(--text); text-decoration: none; }
-nav a.active { color: var(--text); }
-
-/* ---- PRIVACY DISCLOSURE ---- */
-.privacy-toggle {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.privacy-toggle summary {
-  cursor: pointer;
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.privacy-toggle summary::-webkit-details-marker { display: none; }
-
-.privacy-toggle .arrow { transition: transform 0.2s; display: inline-block; font-size: 0.7em; }
-.privacy-toggle[open] .arrow { transform: rotate(90deg); }
-
-.privacy-box {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  margin-top: 12px;
-  text-align: left;
-  max-width: 560px;
-  display: inline-block;
-}
-
-.privacy-box p {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-bottom: 8px;
-  padding-left: 24px;
-  position: relative;
-}
-
-.privacy-box p:last-child { margin-bottom: 0; }
-
-.privacy-box p::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  color: var(--green);
-  font-weight: 600;
-}
-
-/* ---- UPLOAD AREA ---- */
-.upload-area {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 48px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.upload-area:hover, .upload-area.dragover {
-  border-color: var(--accent);
-  background: var(--accent-glow);
-}
-
-.upload-area h3 {
-  font-family: var(--serif);
-  font-size: 1.3rem;
-  font-weight: 400;
-  margin-bottom: 8px;
-}
-
-.upload-area p {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-}
-
-.upload-area input { display: none; }
-
-.upload-info {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-top: 16px;
-  font-size: 0.8rem;
-  color: var(--text-faint);
-  font-family: var(--mono);
-}
-
-/* ---- PROGRESS ---- */
-.progress-area {
-  display: none;
-  text-align: center;
-  padding: 32px 0;
-}
-
-.progress-area.active { display: block; }
-
-.progress-bar-track {
-  width: 100%;
-  max-width: 400px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  margin: 16px auto;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.3s ease;
-}
-
-.progress-label {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  font-family: var(--mono);
-  font-size: 0.8rem;
-}
-
-/* ---- RESULTS ---- */
-.results { display: none; }
-.results.active { display: block; }
-
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.results-header h2 {
-  font-family: var(--serif);
-  font-size: 1.6rem;
-  font-weight: 400;
-}
-
-.results-meta {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  font-family: var(--mono);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-raised);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn:hover { border-color: var(--accent); background: var(--accent-glow); }
-.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
-
-/* ---- SUMMARY CARDS ---- */
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.summary-card {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  padding: 16px;
-}
-
-.summary-card .label {
-  font-size: 0.75rem;
-  color: var(--text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-family: var(--mono);
-  margin-bottom: 4px;
-}
-
-.summary-card .value {
-  font-family: var(--serif);
-  font-size: 1.6rem;
-  font-weight: 400;
-}
-
-.summary-card .detail {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  margin-top: 2px;
-}
-
-.summary-card.alert { border-color: var(--accent-dim); background: var(--accent-glow); }
-.summary-card.warn { border-color: var(--yellow); background: var(--yellow-dim); }
-.summary-card.good { border-color: var(--green); background: var(--green-dim); }
-
-/* ---- SECTIONS ---- */
-.report-section {
-  margin-bottom: 8px;
-}
-
-.section-toggle {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 20px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  cursor: pointer;
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.section-toggle:hover { border-color: var(--border); }
-.section-toggle .count { font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim); }
-.section-toggle .arrow { transition: transform 0.2s; color: var(--text-faint); }
-.report-section.open .section-toggle .arrow { transform: rotate(90deg); }
-.report-section.open .section-toggle { border-radius: var(--radius) var(--radius) 0 0; border-bottom-color: transparent; }
-
-.section-body {
-  display: none;
-  padding: 20px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-top: none;
-  border-radius: 0 0 var(--radius) var(--radius);
-}
-
-.report-section.open .section-body { display: block; }
-
-/* ---- TABLES ---- */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  margin: 12px 0;
-}
-
-.data-table th {
-  text-align: left;
-  padding: 8px 12px;
-  font-weight: 500;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-faint);
-  font-family: var(--mono);
-  border-bottom: 1px solid var(--border);
-}
-
-.data-table td {
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-dim);
-}
-
-.data-table td:first-child { color: var(--text); }
-.data-table tr:last-child td { border-bottom: none; }
-
-.data-table .num { text-align: right; font-family: var(--mono); font-size: 0.82rem; }
-.data-table .flag { color: var(--yellow); }
-.data-table .alert-flag { color: var(--accent); }
-
-/* ---- INSTANCE LIST ---- */
-.instance-list { list-style: none; }
-
-.instance-list li {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  font-size: 0.85rem;
-}
-
-.instance-list li:last-child { border-bottom: none; }
-
-.instance-loc {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--text-faint);
-  margin-bottom: 4px;
-}
-
-.instance-ctx {
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-.instance-ctx mark {
-  background: var(--accent-glow);
-  color: var(--accent);
-  border-radius: 2px;
-  padding: 1px 4px;
-}
-
-/* ---- SUBSECTION ---- */
-.subsection {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.subsection:first-child { margin-top: 0; padding-top: 0; border-top: none; }
-
-.subsection h4 {
-  font-family: var(--serif);
-  font-size: 1.1rem;
-  font-weight: 400;
-  margin-bottom: 8px;
-}
-
-.subsection p {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-bottom: 12px;
-}
-
-.show-more-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  font-family: var(--mono);
-  cursor: pointer;
-  margin-top: 8px;
-  transition: all 0.2s;
-}
-
-.show-more-btn:hover { border-color: var(--accent); color: var(--text); }
-
-/* ---- BAR CHART (CSS) ---- */
-.bar-chart { margin: 12px 0; }
-
-.bar-row {
-  display: grid;
-  grid-template-columns: 140px 1fr 50px;
-  align-items: center;
-  gap: 12px;
-  padding: 3px 0;
-  font-size: 0.82rem;
-}
-
-.bar-label {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  color: var(--text-dim);
-}
-
-.bar-track {
-  height: 8px;
-  background: var(--bg-inset);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
-.bar-value {
-  text-align: right;
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  color: var(--text-faint);
-}
-
-/* ---- FOOTER ---- */
-footer {
-  text-align: center;
-  padding: 48px 0;
-  margin-top: 48px;
-  border-top: 1px solid var(--border-subtle);
-  font-size: 0.85rem;
-  color: var(--text-faint);
-}
-
-footer a { color: var(--text-dim); }
-
-/* ---- RESPONSIVE ---- */
-@media (max-width: 600px) {
-  header h1 { font-size: 1.8rem; }
-  .summary-grid { grid-template-columns: 1fr 1fr; }
-  .bar-row { grid-template-columns: 100px 1fr 40px; }
-  .results-header { flex-direction: column; gap: 12px; align-items: flex-start; }
-}
+:root{--bg:#f6f1eb;--bg-deep:#ede6dc;--paper:#fffdf9;--ink:#2c2520;--ink-soft:#6b5e53;--ink-faint:#a89888;--accent:#b44a2d;--accent-glow:rgba(180,74,45,0.12);--border:rgba(44,37,32,0.1);--shadow:rgba(44,37,32,0.06);--radius:10px;--green:#3a7d5c;--green-bg:rgba(58,125,92,0.08);--yellow:#b8963e;--yellow-bg:rgba(184,150,62,0.1);--blue:#4a6f8a;--blue-bg:rgba(74,111,138,0.08);}
+[data-theme="dark"]{--bg:#1a1816;--bg-deep:#131110;--paper:#242120;--ink:#e8e0d8;--ink-soft:#b0a89e;--ink-faint:#7a7068;--accent:#d0593a;--accent-glow:rgba(208,89,58,0.15);--border:rgba(232,224,216,0.1);--shadow:rgba(0,0,0,0.2);--green:#5aad7e;--green-bg:rgba(90,173,126,0.12);--yellow:#d4ad4a;--yellow-bg:rgba(212,173,74,0.12);--blue:#6a9fba;--blue-bg:rgba(106,159,186,0.1);}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1816;--bg-deep:#131110;--paper:#242120;--ink:#e8e0d8;--ink-soft:#b0a89e;--ink-faint:#7a7068;--accent:#d0593a;--accent-glow:rgba(208,89,58,0.15);--border:rgba(232,224,216,0.1);--shadow:rgba(0,0,0,0.2);--green:#5aad7e;--green-bg:rgba(90,173,126,0.12);--yellow:#d4ad4a;--yellow-bg:rgba(212,173,74,0.12);--blue:#6a9fba;--blue-bg:rgba(106,159,186,0.1);}}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:40px 24px 120px;}
+a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
+.header{text-align:center;margin-bottom:36px;animation:fadeDown 0.6s ease;}
+.header h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:2.2rem;letter-spacing:-0.02em;color:var(--ink);margin-bottom:4px;}
+.header p{font-size:0.85rem;color:var(--ink-faint);letter-spacing:0.02em;}
+.header .beta-badge{display:inline-block;padding:2px 8px;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:0.05em;border-radius:4px;vertical-align:middle;margin-left:8px;position:relative;top:-2px;}
+.site-nav{text-align:center;margin-bottom:28px;}
+.site-nav a{color:var(--ink-faint);font-size:0.82rem;font-weight:500;margin:0 12px;text-decoration:none;letter-spacing:0.02em;transition:color 0.2s;}
+.site-nav a:hover{color:var(--ink);text-decoration:none;}.site-nav a.active{color:var(--ink);}
+.theme-toggle{position:fixed;top:16px;right:16px;background:var(--bg-deep);border:1px solid var(--border);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;color:var(--ink-faint);z-index:100;}
+.theme-toggle:hover{background:var(--paper);color:var(--ink-soft);}.theme-toggle svg{width:18px;height:18px;fill:currentColor;}
+.privacy-banner{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:28px;animation:fadeUp 0.6s ease 0.15s both;}
+.privacy-banner summary{font-size:0.82rem;font-weight:500;color:var(--ink-soft);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;}
+.privacy-banner summary::-webkit-details-marker{display:none;}
+.privacy-banner summary .lock-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--green-bg);border-radius:50%;flex-shrink:0;}
+.privacy-banner summary .lock-icon svg{width:14px;height:14px;fill:var(--green);}
+.privacy-banner summary .arrow{margin-left:auto;font-size:1rem;color:var(--ink-faint);transition:transform 0.2s;}
+.privacy-banner[open] summary .arrow{transform:rotate(90deg);}
+.privacy-points{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:560px){.privacy-points{grid-template-columns:1fr;}}
+.privacy-point{display:flex;gap:10px;align-items:flex-start;}
+.privacy-point .check{color:var(--green);font-weight:600;font-size:0.9rem;line-height:1.4;flex-shrink:0;}
+.privacy-point p{font-size:0.78rem;line-height:1.5;color:var(--ink-soft);}
+.privacy-point strong{color:var(--ink);font-weight:600;}
+.upload-area{background:var(--paper);border:2px dashed var(--border);border-radius:var(--radius);padding:48px 24px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;margin-bottom:24px;animation:fadeUp 0.6s ease 0.2s both;}
+.upload-area:hover,.upload-area.dragover{border-color:var(--accent);background:var(--accent-glow);}
+.upload-area h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;margin-bottom:8px;}
+.upload-area p{color:var(--ink-faint);font-size:0.88rem;}.upload-area input{display:none;}
+.upload-info{display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:0.75rem;color:var(--ink-faint);font-weight:500;letter-spacing:0.04em;}
+.lint-settings{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;animation:fadeUp 0.6s ease 0.25s both;}
+.lint-settings summary{font-size:0.82rem;font-weight:500;color:var(--ink-soft);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;}
+.lint-settings summary::-webkit-details-marker{display:none;}
+.lint-settings summary .arrow{margin-left:auto;font-size:1rem;color:var(--ink-faint);transition:transform 0.2s;}
+.lint-settings[open] summary .arrow{transform:rotate(90deg);}
+.settings-body{margin-top:16px;}.setting-group{margin-bottom:16px;}.setting-group:last-child{margin-bottom:0;}
+.setting-group label{display:block;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);margin-bottom:8px;}
+.setting-group p{font-size:0.76rem;color:var(--ink-faint);margin-bottom:8px;line-height:1.5;}
+.setting-group select,.setting-group textarea{width:100%;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:var(--ink);background:var(--bg);border:1px solid var(--border);border-radius:6px;outline:none;transition:border-color 0.25s;}
+.setting-group textarea{min-height:80px;resize:vertical;line-height:1.6;font-size:0.82rem;}
+.setting-group select:focus,.setting-group textarea:focus{border-color:var(--accent);}
+.setting-group textarea::placeholder{color:var(--ink-faint);}
+.progress-area{display:none;text-align:center;padding:32px 0;}.progress-area.active{display:block;}
+.progress-track{width:100%;max-width:400px;height:4px;background:var(--bg-deep);border-radius:2px;margin:16px auto;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.3s ease;}
+.progress-label{font-size:0.82rem;color:var(--ink-faint);}
+.results{display:none;}.results.active{display:block;animation:fadeUp 0.4s ease;}
+.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.results-header h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;}
+.results-meta{font-size:0.78rem;color:var(--ink-faint);}
+@media(max-width:560px){.results-header{flex-direction:column;gap:12px;align-items:flex-start;}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:50px;border:1px solid var(--border);background:var(--bg-deep);color:var(--ink-soft);font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:500;cursor:pointer;transition:all 0.2s;}
+.btn:hover{background:var(--bg);color:var(--ink);}.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:28px;}
+.summary-card{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:0 2px 8px var(--shadow);}
+.summary-card .label{font-size:0.72rem;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:4px;}
+.summary-card .value{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;}
+.summary-card .detail{font-size:0.76rem;color:var(--ink-faint);margin-top:2px;}
+.summary-card.alert{border-color:rgba(180,74,45,0.3);background:var(--accent-glow);}
+.summary-card.warn{border-color:rgba(184,150,62,0.3);background:var(--yellow-bg);}
+.summary-card.good{border-color:rgba(58,125,92,0.3);background:var(--green-bg);}
+.report-section{margin-bottom:8px;}
+.section-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:500;transition:all 0.2s;box-shadow:0 1px 4px var(--shadow);}
+.section-toggle:hover{border-color:rgba(44,37,32,0.2);}
+.section-toggle .count{font-size:0.78rem;color:var(--ink-faint);}
+.section-toggle .arrow{transition:transform 0.2s;color:var(--ink-faint);}
+.report-section.open .section-toggle .arrow{transform:rotate(90deg);}
+.report-section.open .section-toggle{border-radius:var(--radius) var(--radius) 0 0;border-bottom-color:transparent;}
+.section-body{display:none;padding:20px;background:var(--paper);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);box-shadow:0 2px 8px var(--shadow);}
+.report-section.open .section-body{display:block;}
+.how-it-works{background:var(--blue-bg);border:1px solid rgba(74,111,138,0.15);border-radius:6px;padding:14px 16px;margin-bottom:16px;font-size:0.8rem;line-height:1.6;color:var(--ink-soft);}
+.how-it-works strong{color:var(--blue);font-weight:600;}
+.data-table{width:100%;border-collapse:collapse;font-size:0.82rem;margin:12px 0;}
+.data-table th{text-align:left;padding:8px 12px;font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);border-bottom:1px solid var(--border);}
+.data-table td{padding:6px 12px;border-bottom:1px solid var(--border);color:var(--ink-soft);}
+.data-table td:first-child{color:var(--ink);}.data-table tr:last-child td{border-bottom:none;}
+.data-table .num{text-align:right;font-variant-numeric:tabular-nums;}.data-table .flag{color:var(--yellow);}.data-table .alert-flag{color:var(--accent);}
+.instance-list{list-style:none;}.instance-list li{padding:10px 16px;border-bottom:1px solid var(--border);font-size:0.82rem;}
+.instance-list li:last-child{border-bottom:none;}
+.instance-loc{font-size:0.72rem;color:var(--ink-faint);margin-bottom:4px;font-weight:500;}
+.instance-ctx{color:var(--ink-soft);line-height:1.5;}
+.instance-ctx mark{background:var(--accent-glow);color:var(--accent);border-radius:2px;padding:1px 4px;}
+.subsection{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.subsection:first-child{margin-top:0;padding-top:0;border-top:none;}
+.subsection h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;margin-bottom:8px;}
+.subsection p{font-size:0.82rem;color:var(--ink-soft);margin-bottom:12px;line-height:1.5;}
+.heatmap{display:flex;gap:2px;margin:12px 0;align-items:end;min-height:60px;}
+.heatmap-bar{border-radius:2px;min-width:3px;cursor:pointer;transition:opacity 0.2s;position:relative;}
+.heatmap-bar:hover{opacity:0.8;}
+.heatmap-bar .heatmap-tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:4px 8px;border-radius:4px;font-size:0.7rem;white-space:nowrap;margin-bottom:4px;z-index:10;}
+.heatmap-bar:hover .heatmap-tip{display:block;}
+.heatmap-legend{display:flex;gap:12px;align-items:center;font-size:0.72rem;color:var(--ink-faint);margin-top:8px;}
+.heatmap-legend-swatch{width:12px;height:12px;border-radius:2px;display:inline-block;vertical-align:middle;margin-right:4px;}
+.bar-chart{margin:12px 0;}
+.bar-row{display:grid;grid-template-columns:130px 1fr 50px;align-items:center;gap:10px;padding:3px 0;font-size:0.8rem;}
+.bar-label{text-overflow:ellipsis;overflow:hidden;white-space:nowrap;color:var(--ink-soft);}
+.bar-track{height:8px;background:var(--bg-deep);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 0.5s ease;}
+.bar-value{text-align:right;font-variant-numeric:tabular-nums;font-size:0.76rem;color:var(--ink-faint);}
+@media(max-width:560px){.bar-row{grid-template-columns:100px 1fr 40px;}}
+.footer{margin-top:60px;text-align:center;animation:fadeUp 0.6s ease 0.4s both;}
+.footer p{font-size:0.74rem;line-height:1.7;color:var(--ink-faint);}
+.footer a{color:var(--ink-soft);text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:2px;transition:color 0.2s;}
+.footer a:hover{color:var(--accent);}
+.support-line{font-size:0.92rem;color:var(--ink-soft);text-align:center;line-height:1.7;}
+.support-line a{color:var(--accent);text-decoration:none;font-weight:500;}.support-line a:hover{text-decoration:underline;}
+.footer-meta{margin-top:32px;font-size:0.68rem;color:var(--ink-faint);text-align:center;}
+.footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:2px;}.footer-meta a:hover{color:var(--ink-soft);}
+/* Privacy hero */
+.privacy-hero{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:28px 28px 24px;margin-bottom:28px;box-shadow:0 2px 12px var(--shadow);animation:fadeUp 0.6s ease 0.15s both;}
+.privacy-hero-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.privacy-hero-icon{width:40px;height:40px;background:var(--green-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.privacy-hero-icon svg{width:20px;height:20px;fill:var(--green);}
+.privacy-hero-header h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--ink);}
+.privacy-hero-body{font-size:0.86rem;line-height:1.7;color:var(--ink-soft);margin-bottom:16px;}
+.privacy-hero-body strong{color:var(--ink);}
+.privacy-proof{background:var(--bg-deep);border:1px dashed var(--border);border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:0.8rem;color:var(--ink-soft);}
+.privacy-proof-icon{font-size:1.1rem;flex-shrink:0;}
+.privacy-proof em{color:var(--ink);font-style:normal;font-weight:600;}
+/* Feature cards */
+.features{margin-bottom:28px;animation:fadeUp 0.6s ease 0.2s both;}
+.features h3{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;text-align:center;margin-bottom:16px;color:var(--ink);}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:560px){.feature-grid{grid-template-columns:1fr;}}
+.feature-card{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 4px var(--shadow);}
+.feature-num{width:28px;height:28px;background:var(--accent-glow);color:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;font-variant-numeric:tabular-nums;}
+.feature-card h4{font-size:0.84rem;font-weight:600;color:var(--ink);margin-bottom:2px;}
+.feature-card p{font-size:0.76rem;color:var(--ink-faint);line-height:1.45;}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.hidden{display:none!important;}
 </style>
 </head>
 <body>
-
-<div class="container">
-  <header>
-    <h1>Manuscript Lint <span>BETA</span></h1>
-    <p>Automated prose analysis for writers — free, private, no signup</p>
-  </header>
-
-  <nav>
-    <a href="index.html">Read Aloud</a>
-    <a href="lint.html" class="active">Manuscript Lint</a>
-  </nav>
-
-  <details class="privacy-toggle">
-    <summary>Your manuscript stays private — here's how <span class="arrow">▸</span></summary>
-    <div class="privacy-box">
-      <p>Your text is never uploaded anywhere. All analysis runs inside your browser.</p>
-      <p>No accounts, no cookies, no tracking of any kind.</p>
-      <p>Nothing is saved. Close the tab and your text is gone.</p>
-      <p>Works offline once the page has loaded.</p>
-    </div>
-  </details>
-
-  <!-- UPLOAD -->
-  <div class="upload-area" id="uploadArea">
-    <h3>Drop your manuscript here</h3>
-    <p>or click to browse</p>
-    <div class="upload-info">
-      <span>.txt files</span>
-      <span>No size limit</span>
-      <span>Runs locally</span>
-    </div>
-    <input type="file" id="fileInput" accept=".txt">
-  </div>
-
-  <!-- PROGRESS -->
-  <div class="progress-area" id="progressArea">
-    <div class="progress-bar-track">
-      <div class="progress-bar-fill" id="progressFill"></div>
-    </div>
-    <div class="progress-label" id="progressLabel">Parsing chapters...</div>
-  </div>
-
-  <!-- RESULTS -->
-  <div class="results" id="results"></div>
-
-  <footer>
-    Made by a writer, for writers.<br>
-    <a href="https://buymeacoffee.com/manuscriptreader">Buy me a coffee</a> · <a href="index.html">Manuscript Reader</a>
-  </footer>
+<script>(function(){var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);})()</script>
+<div class="app">
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button>
+<div class="header"><h1>Manuscript Lint <span class="beta-badge">BETA</span></h1><p>Automated prose analysis for writers — free, private, no signup</p></div>
+<nav class="site-nav"><a href="index.html">Read Aloud</a> <a href="lint.html" class="active">Manuscript Lint</a></nav>
+<div class="privacy-hero" id="privacyHero">
+<div class="privacy-hero-header"><div class="privacy-hero-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14l-4-4 1.41-1.41L11 12.17l6.59-6.59L19 7l-8 8z"/></svg></div><h3>Zero network requests. Your manuscript never leaves this device.</h3></div>
+<div class="privacy-hero-body">This tool is <strong>entirely self-contained</strong>. Every word-count, every regex, every analysis runs in JavaScript inside your browser. There are no servers, no APIs, no database calls, no analytics on your text. Your manuscript is never transmitted anywhere — <strong>not even for a millisecond</strong>.</div>
+<div class="privacy-proof"><span class="privacy-proof-icon">⚡</span><span><em>Prove it yourself:</em> Turn off your Wi-Fi and reload this page. It still works. No other writing tool can say that.</span></div>
 </div>
-
+<div class="features" id="featurePreview">
+<h3>What you'll get</h3>
+<div class="feature-grid">
+<div class="feature-card"><div class="feature-num">1</div><div><h4>Structure & Pacing</h4><p>Chapter word counts, scene counts, paragraph density, and a visual heatmap showing where your pacing runs dense or punchy.</p></div></div>
+<div class="feature-card"><div class="feature-num">2</div><div><h4>AI-ism Detection</h4><p>30+ banned words and phrase patterns pulled from real editing guides. Catches "a [adjective] thing," textile metaphors, magic-as-background-music, and more.</p></div></div>
+<div class="feature-card"><div class="feature-num">3</div><div><h4>Word & Phrase Frequency</h4><p>Top words, bigrams, trigrams, crutch words (just, very, suddenly), sensory filter verbs (she felt, he noticed), and adverb density.</p></div></div>
+<div class="feature-card"><div class="feature-num">4</div><div><h4>Repetition Proximity</h4><p>Flags when the same distinctive word appears twice within a page — the kind of echo readers actually catch.</p></div></div>
+<div class="feature-card"><div class="feature-num">5</div><div><h4>Dialogue Analysis</h4><p>Dialogue-to-prose ratio per chapter, tag audit (how often you use "said" vs. fancy alternatives), and balance checks.</p></div></div>
+<div class="feature-card"><div class="feature-num">6</div><div><h4>Custom Word Lists</h4><p>Add your own overused words and phrases. They get flagged alongside the built-in checks and saved between sessions.</p></div></div>
+</div>
+</div>
+<details class="lint-settings" id="lintSettings"><summary>Settings & custom word lists<span class="arrow">▸</span></summary><div class="settings-body">
+<div class="setting-group"><label>Chapter Detection</label><p>How should chapters be identified in your manuscript?</p><select id="chapterMode"><option value="keyword">Lines starting with "Chapter", "Prologue", or "Epilogue" (case-insensitive)</option><option value="markdown">Markdown headings (# Chapter Title)</option><option value="break">Triple line breaks between major sections</option><option value="none">Don't split — treat entire file as one chapter</option></select></div>
+<div class="setting-group"><label>Custom Words to Flag</label><p>Add your own overused words or crutch phrases, one per line. These get flagged alongside the built-in checks and saved between sessions.</p><textarea id="customWords" placeholder="e.g.&#10;suddenly&#10;seemed to&#10;couldn't help but&#10;the fact that"></textarea></div>
+</div></details>
+<div class="upload-area" id="uploadArea"><h3>Drop your manuscript here</h3><p>or click to browse</p><div class="upload-info"><span>.txt files</span><span>No size limit</span><span>Runs locally</span></div><input type="file" id="fileInput" accept=".txt"></div>
+<div class="progress-area" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Parsing chapters...</div></div>
+<div class="results" id="results"></div>
+<div class="footer"><p class="support-line">Made by a writer, for writers.<br>If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.</p><p class="footer-meta"><a href="index.html">Manuscript Reader</a> · <a href="lint.html">Manuscript Lint</a></p></div>
+</div>
 <script>
-// ============================================================================
-// MANUSCRIPT LINT — CLIENT-SIDE ANALYSIS ENGINE
-// ============================================================================
-
-const CHAPTER_RE = /^\s*(chapter\s+\w+|prologue|epilogue)\s*$/i;
-const SCENE_BREAK_RE = /^\s*\*\s*\*\s*\*\s*$/;
-
-const STOP_WORDS = new Set(`a an the and but or nor for yet so in on at to by of from with as is was were
-be been being am are have has had do does did will would shall should may might
-can could not no its it i me my we us our you your he him his she her they them
-their this that these those than then if when which what who whom whose where
-how all each every both few more most other some such into over after before
-about between through during above below up down out off again further once
-here there also just very only still already even back much now well still also`.split(/\s+/));
-
-const FILTER_WORDS = [
-  'just','really','very','quite','rather','somewhat','almost','slightly',
-  'suddenly','finally','simply','actually','basically','literally',
-  'definitely','certainly','perhaps','merely','nearly','apparently',
-  'presumably','practically','essentially','utterly','absolutely',
-  'completely','entirely','exactly','immediately'
-];
-
-const SENSORY_FILTERS = [
-  'saw','heard','felt','noticed','realized','wondered','thought','knew',
-  'seemed','appeared','looked','watched','observed','sensed','recognized',
-  'understood','remembered','considered','decided'
-];
-
-const BANNED_WORDS = [
-  'delve','delved','delving','tapestry','tapestried','tapestries',
-  'mayhaps','methinks',"'tis","'twas",'realm','beacon','crucible',
-  'testament','furthermore','moreover','interplay','multifaceted',
-  'nuanced','landscape','pivotal','amongst','whilst','unto',
-  'henceforth','wherein','thereof','whereupon'
-];
-
-const AI_PHRASE_PATTERNS = [
-  // Textile metaphors
-  [/\bwoven\b(?!\s+(?:cloth|fabric|basket|blanket|wool|linen|cloak|mantle))/gi,
-   "Textile metaphor ('woven' not literal)", "AI-ism"],
-  [/\bthreads?\s+of\s+\w+/gi, "Textile metaphor ('threads of [concept]')", "AI-ism"],
-
-  // Magic-as-background-music
-  [/\b(?:magic|power|energy)\s+(?:thrummed|pulsed|hummed|sang|crackled|vibrated|resonated)/gi,
-   "Magic as background music", "AI-ism"],
-  [/\b(?:thrummed|pulsed|hummed)\s+(?:through|in|with|beneath)/gi,
-   "Thrumming/pulsing/humming through", "AI-ism"],
-  [/\bthe\s+(?:very\s+)?air\s+(?:crackled|hummed|thrummed|pulsed|vibrated)/gi,
-   "'The air crackled/hummed with...'", "AI-ism"],
-
-  // Destiny/fate personification
-  [/\b(?:destiny|fate)\s+(?:called|beckoned|whispered|demanded|awaited)/gi,
-   "Destiny/fate personification", "AI-ism"],
-
-  // Ghost/shadow/whisper/echo of emotion
-  [/\b(?:ghost|shadow|whisper|echo|specter|spectre)\s+of\s+(?:a\s+)?(?:smile|laugh|memory|thought|feeling|emotion|doubt|fear|hope|sadness|grief|pain|anger|joy)/gi,
-   "'Ghost/shadow/whisper of [emotion]'", "AI-ism"],
-
-  // Landscape of abstract
-  [/\blandscape\s+of\s+(?:her|his|their|the)\s+(?:mind|soul|heart|emotion|feeling|grief|pain|memory)/gi,
-   "'Landscape of [abstract concept]'", "AI-ism"],
-
-  // Intricate web/dance/ballet of
-  [/\bintricate\s+(?:web|dance|ballet|tapestry|mosaic)\s+of/gi,
-   "'Intricate web/dance/ballet of...'", "AI-ism"],
-
-  // Old as time
-  [/\bold\s+as\s+time\b/gi, "'Old as time'", "AI-ism"],
-
-  // X warred within
-  [/\b(?:darkness|light|shadow|hope|fear|doubt)\s+(?:warred|battled|fought)\s+(?:within|inside|in)\b/gi,
-   "'X warred within'", "AI-ism"],
-
-  // "a [adjective] thing"
-  [/\ba\s+(?:\w+,?\s+){0,2}(?:bright|searing|white|dark|cold|hot|sharp|dull|wordless|nameless|terrible|beautiful|awful|monstrous|ancient|living|burning|bleeding|broken|shattered|hollow|raw|wild|savage|quiet|silent|still|small|vast|enormous|heavy|weightless)\s+(?:and\s+\w+\s+)?thing\b/gi,
-   "'A [adjective] thing' — distancing construction", "AI-ism"],
-
-  // Not X, but Y
-  [/\bnot\s+\w+(?:\s+\w+){0,3},?\s+but\s+/gi,
-   "'Not X, but Y' — definition by negation", "Style"],
-
-  // Did not say / did not need to
-  [/(?:she|he|they)\s+did\s+not\s+(?:say|speak|mention|ask|tell)[^.]*(?:she|he|they)\s+did\s+not\s+(?:need|have)\s+to/gi,
-   "'Did not say X. Did not need to.'", "Style"],
-
-  // They both knew / Neither said
-  [/\b(?:they|we)\s+both\s+knew\b/gi, "'They both knew'", "Style"],
-  [/\bneither\s+(?:of\s+them|one)\s+(?:said|spoke|mentioned|needed)/gi,
-   "'Neither of them said it'", "Style"],
-
-  // Atmospheric "wrong"
-  [/\bsomething\s+(?:was|felt|seemed)\s+wrong\b/gi,
-   "'Something was wrong' — tell not show", "Style"],
-  [/,\s*but\s+wrong\b/gi, "'...but wrong' — atmospheric shorthand", "Style"],
-
-  // Three-beat rhetorical lists
-  [/\b\w+\s+and\s+\w+\s+and\s+(?:the\s+)?\w+\b/gi,
-   "Three-beat list (X and Y and Z)", "Style"],
-
-  // Declarations of magnitude
-  [/\b(?:the|her|his)\s+(?:whole\s+)?world\s+(?:came\s+apart|shattered|broke|collapsed|tilted|shifted|stopped|fell\s+away|went\s+(?:dark|white|silent|still))/gi,
-   "Declaration of magnitude ('the world [verb]')", "Style"],
-  [/\bfor\s+(?:a|one)\s+(?:terrible|horrible|awful|dreadful|sickening|endless|infinite|eternal|frozen)\s+(?:moment|second|instant|heartbeat)/gi,
-   "'For a terrible moment'", "Style"],
-
-  // Stock pain language
-  [/\b(?:joints?|shoulders?|muscles?|bones?|arms?|legs?|knees?|back)\s+(?:screaming|screamed|shrieking|shrieked|howling|howled)/gi,
-   "Stock pain language (body part 'screaming')", "Style"],
-  [/\b(?:white\s+)?fire\s+(?:down|through|along|up)\s+(?:her|his|the)\s+(?:arm|leg|spine|back|side|body|limb)/gi,
-   "Stock pain language ('fire down her arm')", "Style"],
-  [/\ba\s+sound\s+(?:she|he)\s+felt\s+more\s+than\s+heard/gi,
-   "'A sound she felt more than heard'", "Style"],
-  [/\bsomething\s+(?:she|he)\s+(?:couldn't|could\s+not)\s+(?:name|identify|describe)/gi,
-   "'Something she couldn't name'", "Style"],
-
-  // Modern/clinical vocabulary
-  [/\b(?:torque|axis|centrifuge|centrifugal|trajectory|velocity|momentum|adrenaline|cortisol|psychological|neurological|traumatic|therapeutic|infrastructure)\b/gi,
-   "Modern/clinical vocabulary", "Style"],
-
-  // Colons before dialogue
-  [/[a-z]\s*:\s*['""\u2018\u2019\u201c\u201d]/g,
-   "Colon before dialogue", "Style"],
-];
-
-
-// ============================================================================
-// PARSING HELPERS
-// ============================================================================
-
-function getWords(text) {
-  return (text.toLowerCase().match(/\b[a-z]+(?:'[a-z]+)?\b/g) || []);
-}
-
-function wordCount(text) {
-  return (text.match(/\b\w+\b/g) || []).length;
-}
-
-function splitSentences(text) {
-  return (text.split(/(?<=[.!?])\s+(?=[A-Z"\u201c])/) || []).filter(s => s.trim());
-}
-
-function splitParagraphs(text) {
-  return text.split(/\n\s*\n/).filter(p => p.trim());
-}
-
-function parseChapters(text) {
-  const lines = text.split('\n');
-  const chapters = [];
-  let curTitle = 'Pre-Chapter Content';
-  let curLines = [];
-  let curStart = 0;
-
-  for (let i = 0; i < lines.length; i++) {
-    if (CHAPTER_RE.test(lines[i].trim())) {
-      if (curLines.length) {
-        const body = curLines.join('\n');
-        if (body.trim()) chapters.push({ title: curTitle, text: body, startLine: curStart });
-      }
-      curTitle = lines[i].trim();
-      curLines = [];
-      curStart = i + 1;
-    } else {
-      curLines.push(lines[i]);
-    }
-  }
-
-  if (curLines.length) {
-    const body = curLines.join('\n');
-    if (body.trim()) chapters.push({ title: curTitle, text: body, startLine: curStart });
-  }
-
-  if (!chapters.length || (chapters.length === 1 && chapters[0].title === 'Pre-Chapter Content')) {
-    return [{ title: 'Full Manuscript', text, startLine: 0 }];
-  }
-
-  return chapters;
-}
-
-function countScenes(text) {
-  return text.split(SCENE_BREAK_RE).filter(s => s.trim()).length;
-}
-
-
-// ============================================================================
-// ANALYSIS
-// ============================================================================
-
-function analyzeStructure(chapters) {
-  return chapters.map(ch => {
-    const paras = splitParagraphs(ch.text);
-    const paraLengths = paras.map(p => wordCount(p));
-    return {
-      title: ch.title,
-      wordCount: wordCount(ch.text),
-      scenes: countScenes(ch.text),
-      paragraphs: paras.length,
-      avgParaLength: paraLengths.length ? Math.round(avg(paraLengths)) : 0,
-      maxParaLength: paraLengths.length ? Math.max(...paraLengths) : 0,
-    };
-  });
-}
-
-function analyzeSentences(chapters) {
-  return chapters.map(ch => {
-    const sentences = splitSentences(ch.text);
-    const lengths = sentences.map(s => wordCount(s));
-    if (!lengths.length) return null;
-
-    const paras = splitParagraphs(ch.text);
-    const singleSentenceParas = paras.filter(p => {
-      const ss = splitSentences(p);
-      const wc = wordCount(p);
-      return ss.length === 1 && wc > 3 && wc < 25;
-    }).map(p => p.trim().replace(/\n/g, ' '));
-
-    return {
-      title: ch.title,
-      totalSentences: sentences.length,
-      avgLength: avg(lengths),
-      medianLength: median(lengths),
-      stdev: stddev(lengths),
-      maxLength: Math.max(...lengths),
-      singleSentenceParas,
-    };
-  }).filter(Boolean);
-}
-
-function analyzeDialogue(chapters) {
-  const dqRe = /[\u201c"][^\u201d"]*[\u201d"]|"[^"]*"/g;
-  const tagRe = /[\u201d"]\s*(?:,\s*)?(?:she|he|they|[A-Z]\w+)\s+(\w+)/gi;
-  const validTags = new Set(['said','asked','whispered','shouted','yelled','cried','murmured',
-    'muttered','snapped','growled','hissed','sighed','breathed','called','screamed','answered',
-    'replied','demanded','exclaimed','declared','pleaded','begged','insisted','warned',
-    'continued','added','agreed','argued','noted','observed','remarked','stated','announced',
-    'conceded','admitted','corrected','countered','interrupted','protested','repeated','responded']);
-
-  return chapters.map(ch => {
-    const dialogueMatches = ch.text.match(dqRe) || [];
-    const dWords = wordCount(dialogueMatches.join(' '));
-    const pWords = wordCount(ch.text.replace(dqRe, ''));
-    const total = dWords + pWords;
-
-    const tags = {};
-    let m;
-    tagRe.lastIndex = 0;
-    while ((m = tagRe.exec(ch.text)) !== null) {
-      const t = m[1].toLowerCase();
-      if (validTags.has(t)) tags[t] = (tags[t] || 0) + 1;
-    }
-
-    return {
-      title: ch.title,
-      dialogueWords: dWords,
-      proseWords: pWords,
-      total,
-      dialoguePct: total > 0 ? (dWords / total * 100) : 0,
-      tags,
-      totalTags: Object.values(tags).reduce((a, b) => a + b, 0),
-    };
-  });
-}
-
-function analyzeWordFrequency(chapters) {
-  const allWords = [];
-  chapters.forEach(ch => allWords.push(...getWords(ch.text)));
-  const total = allWords.length;
-
-  const contentWords = allWords.filter(w => !STOP_WORDS.has(w) && w.length > 2);
-  const wordFreq = count(contentWords);
-
-  // Bigrams
-  const bigrams = [];
-  for (let i = 0; i < allWords.length - 1; i++) {
-    if (!STOP_WORDS.has(allWords[i]) || !STOP_WORDS.has(allWords[i+1])) {
-      bigrams.push(`${allWords[i]} ${allWords[i+1]}`);
-    }
-  }
-  const bigramFreq = count(bigrams);
-
-  // Trigrams
-  const trigrams = [];
-  for (let i = 0; i < allWords.length - 2; i++) {
-    if ([allWords[i], allWords[i+1], allWords[i+2]].some(w => !STOP_WORDS.has(w))) {
-      trigrams.push(`${allWords[i]} ${allWords[i+1]} ${allWords[i+2]}`);
-    }
-  }
-  const trigramFreq = count(trigrams);
-
-  const filterCounts = {};
-  FILTER_WORDS.forEach(fw => {
-    const c = allWords.filter(w => w === fw).length;
-    if (c) filterCounts[fw] = c;
-  });
-
-  const sensoryCounts = {};
-  SENSORY_FILTERS.forEach(sv => {
-    const c = allWords.filter(w => w === sv).length;
-    if (c) sensoryCounts[sv] = c;
-  });
-
-  const adverbs = allWords.filter(w => w.endsWith('ly') && w.length > 3);
-  const adverbFreq = count(adverbs);
-
-  return {
-    totalWords: total,
-    uniqueWords: new Set(allWords).size,
-    topWords: topN(wordFreq, 75),
-    topBigrams: topN(bigramFreq, 50).filter(([,c]) => c >= 5),
-    topTrigrams: topN(trigramFreq, 40).filter(([,c]) => c >= 4),
-    filterWords: sortDesc(filterCounts),
-    sensoryFilters: sortDesc(sensoryCounts),
-    adverbTotal: adverbs.length,
-    adverbPer1k: total ? (adverbs.length / total * 1000) : 0,
-    topAdverbs: topN(adverbFreq, 30).filter(([,c]) => c >= 3),
-  };
-}
-
-function analyzeProximity(chapters, window = 300) {
-  const allText = chapters.map(ch => ch.text).join(' ');
-  const allWords = getWords(allText);
-  const total = allWords.length;
-  const freq = count(allWords);
-  const threshold = total / 1000;
-  const distinctive = new Set(
-    Object.entries(freq).filter(([w, c]) => c > 1 && c < threshold && w.length > 4 && !STOP_WORDS.has(w)).map(([w]) => w)
-  );
-
-  const wordPositions = [];
-  chapters.forEach(ch => {
-    const lines = ch.text.split('\n');
-    lines.forEach((line, li) => {
-      getWords(line).forEach(w => {
-        wordPositions.push({ word: w, chapter: ch.title, line: ch.startLine + li });
-      });
-    });
-  });
-
-  const lastSeen = {};
-  const flags = [];
-
-  wordPositions.forEach((wp, pos) => {
-    if (distinctive.has(wp.word)) {
-      if (lastSeen[wp.word]) {
-        const prev = lastSeen[wp.word];
-        const gap = pos - prev.pos;
-        if (gap >= 10 && gap <= window) {
-          flags.push({
-            word: wp.word, gap,
-            ch1: prev.chapter, line1: prev.line,
-            ch2: wp.chapter, line2: wp.line,
-          });
-        }
-      }
-      lastSeen[wp.word] = { pos, chapter: wp.chapter, line: wp.line };
-    }
-  });
-
-  flags.sort((a, b) => a.gap - b.gap);
-  return flags.slice(0, 150);
-}
-
-function analyzeAIPatterns(chapters) {
-  const banned = [];
-  const phrases = [];
-
-  chapters.forEach(ch => {
-    const lines = ch.text.split('\n');
-
-    // Banned words
-    lines.forEach((line, li) => {
-      const absLine = ch.startLine + li;
-      const lower = line.toLowerCase();
-      BANNED_WORDS.forEach(bw => {
-        const re = new RegExp(`\\b${bw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-        if (re.test(lower)) {
-          let ctx = line.trim();
-          if (ctx.length > 120) {
-            const idx = lower.indexOf(bw);
-            const s = Math.max(0, idx - 50);
-            const e = Math.min(ctx.length, idx + bw.length + 50);
-            ctx = (s > 0 ? '...' : '') + ctx.slice(s, e) + (e < line.trim().length ? '...' : '');
-          }
-          banned.push({ word: bw, chapter: ch.title, line: absLine, context: ctx });
-        }
-      });
-    });
-
-    // Phrase patterns
-    AI_PHRASE_PATTERNS.forEach(([re, desc, cat]) => {
-      re.lastIndex = 0;
-      let m;
-      const freshRe = new RegExp(re.source, re.flags);
-      while ((m = freshRe.exec(ch.text)) !== null) {
-        const before = ch.text.slice(0, m.index);
-        const lineNum = ch.startLine + (before.match(/\n/g) || []).length;
-        const cs = Math.max(0, m.index - 40);
-        const ce = Math.min(ch.text.length, m.index + m[0].length + 40);
-        let ctx = ch.text.slice(cs, ce).replace(/\n/g, ' ').trim();
-        if (cs > 0) ctx = '...' + ctx;
-        if (ce < ch.text.length) ctx = ctx + '...';
-        phrases.push({ desc, cat, match: m[0], chapter: ch.title, line: lineNum, context: ctx });
-      }
-    });
-  });
-
-  return { banned, phrases };
-}
-
-
-// ============================================================================
-// UTILITY
-// ============================================================================
-
-function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
-function median(arr) { const s = [...arr].sort((a,b) => a-b); const m = Math.floor(s.length/2); return s.length % 2 ? s[m] : (s[m-1]+s[m])/2; }
-function stddev(arr) { if (arr.length < 2) return 0; const m = avg(arr); return Math.sqrt(arr.reduce((s,v) => s + (v-m)**2, 0) / (arr.length - 1)); }
-function count(arr) { const c = {}; arr.forEach(w => c[w] = (c[w]||0)+1); return c; }
-function topN(obj, n) { return Object.entries(obj).sort((a,b) => b[1]-a[1]).slice(0, n); }
-function sortDesc(obj) { return Object.entries(obj).sort((a,b) => b[1]-a[1]); }
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function num(n) { return n.toLocaleString(); }
-
-
-// ============================================================================
-// UI
-// ============================================================================
-
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const progressArea = document.getElementById('progressArea');
-const progressFill = document.getElementById('progressFill');
-const progressLabel = document.getElementById('progressLabel');
-const resultsDiv = document.getElementById('results');
-
-uploadArea.addEventListener('click', () => fileInput.click());
-uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-uploadArea.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadArea.classList.remove('dragover');
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
-
-function setProgress(pct, label) {
-  progressFill.style.width = pct + '%';
-  progressLabel.textContent = label;
-}
-
-async function handleFile(file) {
-  if (!file.name.endsWith('.txt')) {
-    alert('Please upload a .txt file. Export your manuscript as plain text first.');
-    return;
-  }
-
-  uploadArea.style.display = 'none';
-  progressArea.classList.add('active');
-  resultsDiv.classList.remove('active');
-  resultsDiv.innerHTML = '';
-
-  // Read file
-  setProgress(5, 'Reading file...');
-  const text = await file.text();
-  await tick();
-
-  // Parse
-  setProgress(15, 'Parsing chapters...');
-  await tick();
-  const chapters = parseChapters(text);
-
-  // Analyze
-  setProgress(25, 'Analyzing structure & pacing...');
-  await tick();
-  const structure = analyzeStructure(chapters);
-
-  setProgress(35, 'Analyzing sentences...');
-  await tick();
-  const sentences = analyzeSentences(chapters);
-
-  setProgress(45, 'Analyzing dialogue...');
-  await tick();
-  const dialogue = analyzeDialogue(chapters);
-
-  setProgress(55, 'Counting words & phrases...');
-  await tick();
-  const freq = analyzeWordFrequency(chapters);
-
-  setProgress(70, 'Scanning for repetition proximity...');
-  await tick();
-  const proximity = analyzeProximity(chapters);
-
-  setProgress(85, 'Hunting AI-isms...');
-  await tick();
-  const aiData = analyzeAIPatterns(chapters);
-
-  setProgress(95, 'Building report...');
-  await tick();
-
-  const totalSSP = sentences.reduce((s, ch) => s + ch.singleSentenceParas.length, 0);
-  const aiIsmCount = aiData.banned.length + aiData.phrases.filter(p => p.cat === 'AI-ism').length;
-  const styleCount = aiData.phrases.filter(p => p.cat === 'Style').length;
-
-  renderResults({
-    filename: file.name,
-    chapters, structure, sentences, dialogue, freq, proximity, aiData,
-    totalSSP, aiIsmCount, styleCount,
-  });
-
-  setProgress(100, 'Done.');
-  await new Promise(r => setTimeout(r, 300));
-  progressArea.classList.remove('active');
-  resultsDiv.classList.add('active');
-}
-
-function tick() { return new Promise(r => setTimeout(r, 20)); }
-
-
-// ============================================================================
-// RENDER
-// ============================================================================
-
-function renderResults(data) {
-  const { filename, chapters, structure, sentences, dialogue, freq, proximity, aiData, totalSSP, aiIsmCount, styleCount } = data;
-  const tw = freq.totalWords;
-
-  let html = '';
-
-  // Header
-  html += `<div class="results-header">
-    <div>
-      <h2>Analysis Report</h2>
-      <div class="results-meta">${esc(filename)} · ${num(tw)} words · ${chapters.length} chapters</div>
-    </div>
-    <div class="btn-row">
-      <button class="btn" onclick="downloadMarkdown()">↓ Download .md</button>
-      <button class="btn" onclick="resetUpload()">Analyze another</button>
-    </div>
-  </div>`;
-
-  // Summary cards
-  html += `<div class="summary-grid">
-    <div class="summary-card"><div class="label">Words</div><div class="value">${num(tw)}</div><div class="detail">${num(freq.uniqueWords)} unique</div></div>
-    <div class="summary-card"><div class="label">Chapters</div><div class="value">${chapters.length}</div><div class="detail">${num(Math.round(avg(structure.map(s=>s.wordCount))))} avg words/ch</div></div>
-    <div class="summary-card ${aiIsmCount > 10 ? 'alert' : aiIsmCount > 0 ? 'warn' : 'good'}"><div class="label">AI-ism Flags</div><div class="value">${aiIsmCount}</div><div class="detail">to review & likely cut</div></div>
-    <div class="summary-card ${styleCount > 20 ? 'warn' : ''}"><div class="label">Style Flags</div><div class="value">${styleCount}</div><div class="detail">check context</div></div>
-    <div class="summary-card ${proximity.length > 50 ? 'warn' : ''}"><div class="label">Word Echoes</div><div class="value">${proximity.length}</div><div class="detail">close-proximity repeats</div></div>
-  </div>`;
-
-  // Section 1: Structure
-  html += renderSection('1. Structure & Pacing', `${chapters.length} chapters`, () => {
-    let s = '<div class="subsection">';
-    s += '<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Words</th><th class="num">Scenes</th><th class="num">Paragraphs</th><th class="num">Avg ¶ Len</th><th class="num">Longest ¶</th></tr></thead><tbody>';
-    structure.forEach(c => {
-      const longFlag = c.maxParaLength > 200 ? ' class="flag"' : '';
-      s += `<tr><td>${esc(c.title)}</td><td class="num">${num(c.wordCount)}</td><td class="num">${c.scenes}</td><td class="num">${c.paragraphs}</td><td class="num">${c.avgParaLength}</td><td class="num"${longFlag}>${c.maxParaLength}</td></tr>`;
-    });
-    s += '</tbody></table>';
-
-    const wcs = structure.map(c => c.wordCount);
-    const avgWc = avg(wcs);
-    const sd = stddev(wcs);
-    const outliers = structure.filter(c => Math.abs(c.wordCount - avgWc) > 1.5 * sd);
-    if (outliers.length && structure.length > 2) {
-      s += '<div class="subsection"><h4>Pacing Outliers</h4><p>These chapters deviate significantly from your average length — worth checking if that\'s intentional.</p><ul class="instance-list">';
-      outliers.forEach(o => {
-        const dir = o.wordCount > avgWc ? 'longer' : 'shorter';
-        s += `<li><div class="instance-ctx"><strong>${esc(o.title)}</strong> — ${num(o.wordCount)} words (${num(Math.round(Math.abs(o.wordCount - avgWc)))} words ${dir} than average)</div></li>`;
-      });
-      s += '</ul></div>';
-    }
-    return s + '</div>';
-  });
-
-  // Section 2: Sentences
-  html += renderSection('2. Sentence Metrics', '', () => {
-    let s = '<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Sentences</th><th class="num">Avg Len</th><th class="num">Median</th><th class="num">Std Dev</th><th class="num">Longest</th></tr></thead><tbody>';
-    sentences.forEach(c => {
-      s += `<tr><td>${esc(c.title)}</td><td class="num">${c.totalSentences}</td><td class="num">${c.avgLength.toFixed(1)}</td><td class="num">${c.medianLength}</td><td class="num">${c.stdev.toFixed(1)}</td><td class="num">${c.maxLength}</td></tr>`;
-    });
-    s += '</tbody></table>';
-
-    if (totalSSP > 0) {
-      s += `<div class="subsection"><h4>Single-Sentence Dramatic Paragraphs (${totalSSP} total)</h4><p>These are powerful in isolation but lose punch when overused. Keep the best 2–3 per scene.</p>`;
-      const examples = sentences.flatMap(ch => ch.singleSentenceParas.map(p => ({ chapter: ch.title, text: p }))).slice(0, 20);
-      s += '<ul class="instance-list">';
-      examples.forEach(e => {
-        s += `<li><div class="instance-loc">${esc(e.chapter)}</div><div class="instance-ctx">${esc(e.text)}</div></li>`;
-      });
-      s += '</ul></div>';
-    }
-    return s;
-  });
-
-  // Section 3: Dialogue
-  html += renderSection('3. Dialogue Analysis', '', () => {
-    let s = '<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Dialogue %</th><th class="num">Dialogue Words</th><th class="num">Prose Words</th></tr></thead><tbody>';
-    dialogue.forEach(d => {
-      s += `<tr><td>${esc(d.title)}</td><td class="num">${d.dialoguePct.toFixed(1)}%</td><td class="num">${num(d.dialogueWords)}</td><td class="num">${num(d.proseWords)}</td></tr>`;
-    });
-    s += '</tbody></table>';
-
-    const allTags = {};
-    dialogue.forEach(d => Object.entries(d.tags).forEach(([t,c]) => allTags[t] = (allTags[t]||0)+c));
-    const totalTagCount = Object.values(allTags).reduce((a,b) => a+b, 0);
-    if (totalTagCount) {
-      const saidPct = ((allTags.said||0) + (allTags.asked||0)) / totalTagCount * 100;
-      s += `<div class="subsection"><h4>Dialogue Tags</h4><p><strong>${totalTagCount}</strong> tags found. "Said/asked" make up <strong>${saidPct.toFixed(0)}%</strong> — aim for this to be the majority.</p>`;
-      s += '<table class="data-table"><thead><tr><th>Tag</th><th class="num">Count</th></tr></thead><tbody>';
-      topN(allTags, 20).forEach(([tag, c]) => { s += `<tr><td>${tag}</td><td class="num">${c}</td></tr>`; });
-      s += '</tbody></table></div>';
-    }
-    return s;
-  });
-
-  // Section 4: Word Frequency
-  html += renderSection('4. Word & Phrase Frequency', '', () => {
-    let s = '<div class="subsection"><h4>Top 50 Words (excluding stop words)</h4>';
-    s += '<div class="bar-chart">';
-    const maxWc = freq.topWords[0] ? freq.topWords[0][1] : 1;
-    freq.topWords.slice(0, 50).forEach(([word, c]) => {
-      s += `<div class="bar-row"><div class="bar-label">${word}</div><div class="bar-track"><div class="bar-fill" style="width:${c/maxWc*100}%"></div></div><div class="bar-value">${c}</div></div>`;
-    });
-    s += '</div></div>';
-
-    if (freq.topBigrams.length) {
-      s += '<div class="subsection"><h4>Top Bigrams</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';
-      freq.topBigrams.slice(0, 25).forEach(([p, c]) => { s += `<tr><td>${esc(p)}</td><td class="num">${c}</td></tr>`; });
-      s += '</tbody></table></div>';
-    }
-
-    if (freq.topTrigrams.length) {
-      s += '<div class="subsection"><h4>Top Trigrams</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';
-      freq.topTrigrams.slice(0, 20).forEach(([p, c]) => { s += `<tr><td>${esc(p)}</td><td class="num">${c}</td></tr>`; });
-      s += '</tbody></table></div>';
-    }
-
-    // Crutch words
-    if (freq.filterWords.length) {
-      s += '<div class="subsection"><h4>Crutch / Filter Words</h4><p>High counts aren\'t automatically bad, but worth reviewing.</p>';
-      s += '<table class="data-table"><thead><tr><th>Word</th><th class="num">Count</th><th class="num">Per 1k</th></tr></thead><tbody>';
-      freq.filterWords.forEach(([w, c]) => {
-        const per1k = (c / tw * 1000).toFixed(1);
-        const flag = per1k > 2.0 ? ' flag' : '';
-        s += `<tr><td>${w}</td><td class="num">${c}</td><td class="num${flag}">${per1k}</td></tr>`;
-      });
-      s += '</tbody></table></div>';
-    }
-
-    // Sensory filters
-    if (freq.sensoryFilters.length) {
-      s += '<div class="subsection"><h4>Sensory Filter Verbs (Telling Not Showing)</h4>';
-      s += '<table class="data-table"><thead><tr><th>Verb</th><th class="num">Count</th><th class="num">Per 1k</th></tr></thead><tbody>';
-      freq.sensoryFilters.forEach(([w, c]) => {
-        const per1k = (c / tw * 1000).toFixed(1);
-        s += `<tr><td>${w}</td><td class="num">${c}</td><td class="num">${per1k}</td></tr>`;
-      });
-      s += '</tbody></table></div>';
-    }
-
-    // Adverbs
-    s += `<div class="subsection"><h4>Adverb Usage</h4><p><strong>${freq.adverbTotal}</strong> -ly adverbs total · <strong>${freq.adverbPer1k.toFixed(1)}</strong> per 1,000 words (published fiction typically runs 5–15)</p>`;
-    if (freq.topAdverbs.length) {
-      s += '<table class="data-table"><thead><tr><th>Adverb</th><th class="num">Count</th></tr></thead><tbody>';
-      freq.topAdverbs.forEach(([a, c]) => { s += `<tr><td>${a}</td><td class="num">${c}</td></tr>`; });
-      s += '</tbody></table>';
-    }
-    s += '</div>';
-
-    return s;
-  });
-
-  // Section 5: Proximity
-  html += renderSection('5. Repetition Proximity', `${proximity.length} echoes`, () => {
-    if (!proximity.length) return '<p>No close-proximity repetitions detected.</p>';
-    let s = '<p>Same distinctive word appearing twice within ~300 words — the kind of repetition readers notice.</p>';
-    s += '<table class="data-table"><thead><tr><th>Word</th><th class="num">Gap</th><th>First</th><th>Second</th></tr></thead><tbody>';
-    proximity.slice(0, 100).forEach(f => {
-      s += `<tr><td>${esc(f.word)}</td><td class="num">${f.gap}</td><td>${esc(f.ch1)} ~${f.line1}</td><td>${esc(f.ch2)} ~${f.line2}</td></tr>`;
-    });
-    s += '</tbody></table>';
-    if (proximity.length > 100) s += `<p style="color:var(--text-faint);font-size:0.8rem;margin-top:8px">Showing 100 of ${proximity.length} flags</p>`;
-    return s;
-  });
-
-  // Section 6: AI-isms
-  html += renderSection('6. AI-ism & Style Violations', `${aiIsmCount + styleCount} flags`, () => {
-    if (!aiData.banned.length && !aiData.phrases.length) {
-      return '<p>No AI-isms or style guide violations detected. (That\'s suspicious — double-check the input file.)</p>';
-    }
-
-    let s = '';
-
-    // Banned words
-    if (aiData.banned.length) {
-      const bSummary = count(aiData.banned.map(b => b.word));
-      s += '<div class="subsection"><h4>Banned Words</h4>';
-      s += '<table class="data-table"><thead><tr><th>Word</th><th class="num">Count</th></tr></thead><tbody>';
-      topN(bSummary, 30).forEach(([w, c]) => { s += `<tr><td class="alert-flag">${w}</td><td class="num">${c}</td></tr>`; });
-      s += '</tbody></table>';
-      s += '<ul class="instance-list">';
-      aiData.banned.forEach(b => {
-        s += `<li><div class="instance-loc">${esc(b.chapter)} · line ~${b.line}</div><div class="instance-ctx">${highlightWord(b.context, b.word)}</div></li>`;
-      });
-      s += '</ul></div>';
-    }
-
-    // Group phrases by category then description
-    ['AI-ism', 'Style'].forEach(cat => {
-      const items = aiData.phrases.filter(p => p.cat === cat);
-      if (!items.length) return;
-
-      s += `<div class="subsection"><h4>${cat} Patterns</h4>`;
-      const byDesc = {};
-      items.forEach(p => { (byDesc[p.desc] = byDesc[p.desc] || []).push(p); });
-
-      s += '<table class="data-table"><thead><tr><th>Pattern</th><th class="num">Count</th></tr></thead><tbody>';
-      Object.entries(byDesc).sort((a,b) => b[1].length - a[1].length).forEach(([desc, list]) => {
-        s += `<tr><td>${esc(desc)}</td><td class="num">${list.length}</td></tr>`;
-      });
-      s += '</tbody></table>';
-
-      Object.entries(byDesc).sort((a,b) => b[1].length - a[1].length).forEach(([desc, list]) => {
-        s += `<div style="margin-top:12px"><strong style="font-size:0.85rem">${esc(desc)}</strong> <span style="color:var(--text-faint);font-size:0.8rem">(${list.length})</span>`;
-        s += '<ul class="instance-list">';
-        list.slice(0, 10).forEach(item => {
-          s += `<li><div class="instance-loc">${esc(item.chapter)} · line ~${item.line}</div><div class="instance-ctx">${highlightWord(item.context, item.match)}</div></li>`;
-        });
-        if (list.length > 10) s += `<li style="color:var(--text-faint);font-size:0.8rem">... and ${list.length - 10} more</li>`;
-        s += '</ul></div>';
-      });
-
-      s += '</div>';
-    });
-
-    return s;
-  });
-
-  resultsDiv.innerHTML = html;
-
-  // Store data for markdown download
-  window._lintData = data;
-}
-
-function renderSection(title, count, contentFn) {
-  const id = title.replace(/[^a-z0-9]/gi, '_');
-  return `<div class="report-section" id="sec_${id}">
-    <button class="section-toggle" onclick="toggleSection('sec_${id}')">
-      <span>${title}</span>
-      <span><span class="count">${count}</span> <span class="arrow">▸</span></span>
-    </button>
-    <div class="section-body">${contentFn()}</div>
-  </div>`;
-}
-
-function toggleSection(id) {
-  document.getElementById(id).classList.toggle('open');
-}
-
-function highlightWord(context, word) {
-  if (!word) return esc(context);
-  const escaped = esc(context);
-  const wordEsc = esc(word);
-  const re = new RegExp(`(${wordEsc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return escaped.replace(re, '<mark>$1</mark>');
-}
-
-function resetUpload() {
-  uploadArea.style.display = '';
-  resultsDiv.classList.remove('active');
-  resultsDiv.innerHTML = '';
-  fileInput.value = '';
-}
-
-
-// ============================================================================
-// MARKDOWN EXPORT
-// ============================================================================
-
-function downloadMarkdown() {
-  const d = window._lintData;
-  if (!d) return;
-  const { filename, structure, sentences, dialogue, freq, proximity, aiData, totalSSP, aiIsmCount, styleCount } = d;
-  const tw = freq.totalWords;
-  let md = '';
-
-  md += `# Manuscript Analysis Report\n`;
-  md += `**File:** \`${filename}\`  \n`;
-  md += `**Total Words:** ${num(tw)}  \n`;
-  md += `**Unique Words:** ${num(freq.uniqueWords)}  \n`;
-  md += `**Chapters:** ${structure.length}\n\n---\n\n`;
-
-  // Structure
-  md += `## 1. Structure & Pacing\n\n`;
-  md += `| Chapter | Words | Scenes | Paragraphs | Avg ¶ Len | Longest ¶ |\n|---------|------:|-------:|-----------:|----------:|----------:|\n`;
-  structure.forEach(c => { md += `| ${c.title} | ${num(c.wordCount)} | ${c.scenes} | ${c.paragraphs} | ${c.avgParaLength} | ${c.maxParaLength} |\n`; });
-  md += '\n';
-
-  // Sentences
-  md += `## 2. Sentence Metrics\n\n`;
-  md += `| Chapter | Sentences | Avg Len | Median | Std Dev | Longest |\n|---------|----------:|--------:|-------:|--------:|--------:|\n`;
-  sentences.forEach(s => { md += `| ${s.title} | ${s.totalSentences} | ${s.avgLength.toFixed(1)} | ${s.medianLength} | ${s.stdev.toFixed(1)} | ${s.maxLength} |\n`; });
-  md += `\n**Single-sentence dramatic paragraphs:** ${totalSSP} total\n\n`;
-
-  // Dialogue
-  md += `## 3. Dialogue\n\n`;
-  md += `| Chapter | Dialogue % | Dialogue Words | Prose Words |\n|---------|----------:|--------------:|------------:|\n`;
-  dialogue.forEach(d => { md += `| ${d.title} | ${d.dialoguePct.toFixed(1)}% | ${num(d.dialogueWords)} | ${num(d.proseWords)} |\n`; });
-  md += '\n';
-
-  // Word frequency
-  md += `## 4. Word & Phrase Frequency\n\n### Top 50 Words\n\n`;
-  md += `| Word | Count | Per 1k |\n|------|------:|-------:|\n`;
-  freq.topWords.slice(0, 50).forEach(([w, c]) => { md += `| ${w} | ${c} | ${(c/tw*1000).toFixed(1)} |\n`; });
-  md += '\n';
-
-  if (freq.filterWords.length) {
-    md += `### Crutch Words\n\n| Word | Count | Per 1k |\n|------|------:|-------:|\n`;
-    freq.filterWords.forEach(([w, c]) => { md += `| ${w} | ${c} | ${(c/tw*1000).toFixed(1)} |\n`; });
-    md += '\n';
-  }
-
-  md += `### Adverbs\n\n**Total:** ${freq.adverbTotal} · **Per 1k:** ${freq.adverbPer1k.toFixed(1)}\n\n`;
-
-  // Proximity
-  md += `## 5. Repetition Proximity\n\n**${proximity.length} echoes** within 300 words\n\n`;
-  if (proximity.length) {
-    md += `| Word | Gap | First | Second |\n|------|----:|-------|--------|\n`;
-    proximity.slice(0, 100).forEach(f => { md += `| ${f.word} | ${f.gap} | ${f.ch1} ~${f.line1} | ${f.ch2} ~${f.line2} |\n`; });
-    md += '\n';
-  }
-
-  // AI-isms
-  md += `## 6. AI-ism & Style Violations\n\n`;
-  md += `**AI-ism flags:** ${aiIsmCount}  \n**Style flags:** ${styleCount}\n\n`;
-  if (aiData.banned.length) {
-    md += `### Banned Words\n\n`;
-    aiData.banned.forEach(b => { md += `- **${b.word}** — ${b.chapter} (line ~${b.line}): \`${b.context}\`\n`; });
-    md += '\n';
-  }
-
-  ['AI-ism', 'Style'].forEach(cat => {
-    const items = aiData.phrases.filter(p => p.cat === cat);
-    if (!items.length) return;
-    md += `### ${cat} Patterns\n\n`;
-    const byDesc = {};
-    items.forEach(p => { (byDesc[p.desc] = byDesc[p.desc] || []).push(p); });
-    Object.entries(byDesc).sort((a,b) => b[1].length - a[1].length).forEach(([desc, list]) => {
-      md += `**${desc}** (${list.length})\n\n`;
-      list.slice(0, 15).forEach(item => { md += `- ${item.chapter} (line ~${item.line}): \`${item.context}\`\n`; });
-      if (list.length > 15) md += `- ... and ${list.length - 15} more\n`;
-      md += '\n';
-    });
-  });
-
-  // Summary
-  md += `---\n\n## Summary\n\n`;
-  md += `1. **AI-ism flags:** ${aiIsmCount}\n`;
-  md += `2. **Style flags:** ${styleCount}\n`;
-  md += `3. **Repetition echoes:** ${proximity.length}\n`;
-  md += `4. **Dramatic single-sentence ¶s:** ${totalSSP}\n`;
-  if (freq.filterWords.length) {
-    md += `5. **Top crutch words:** ${freq.filterWords.slice(0,5).map(([w,c]) => `'${w}' (${c}x)`).join(', ')}\n`;
-  }
-  md += `\n---\n*Generated by Manuscript Lint · manuscriptreader.com/lint*\n`;
-
-  const blob = new Blob([md], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'manuscript_report.md';
-  a.click();
-  URL.revokeObjectURL(url);
-}
+(function(){const sunPath='M12 3V1m0 22v-2m9-9h2M1 12h2m15.07-7.07l1.42-1.42M3.51 20.49l1.42-1.42M20.49 20.49l-1.42-1.42M4.93 4.93L3.51 3.51M12 7a5 5 0 100 10 5 5 0 000-10z';const moonPath='M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';function isDark(){const s=localStorage.getItem('theme');if(s)return s==='dark';return window.matchMedia('(prefers-color-scheme:dark)').matches;}function updateIcon(){const i=document.getElementById('themeIcon');if(!i)return;i.innerHTML='<path d="'+(isDark()?sunPath:moonPath)+'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';}function toggle(){const d=isDark();const n=d?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);updateIcon();}document.addEventListener('DOMContentLoaded',function(){updateIcon();document.getElementById('themeToggle').addEventListener('click',toggle);});window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',function(){if(!localStorage.getItem('theme'))updateIcon();});})();
+(function(){try{const cw=localStorage.getItem('lint_customWords');if(cw)document.addEventListener('DOMContentLoaded',()=>{document.getElementById('customWords').value=cw;});const cm=localStorage.getItem('lint_chapterMode');if(cm)document.addEventListener('DOMContentLoaded',()=>{document.getElementById('chapterMode').value=cm;});}catch(e){}})();
+const STOP_WORDS=new Set('a an the and but or nor for yet so in on at to by of from with as is was were be been being am are have has had do does did will would shall should may might can could not no its it i me my we us our you your he him his she her they them their this that these those than then if when which what who whom whose where how all each every both few more most other some such into over after before about between through during above below up down out off again further once here there also just very only still already even back much now well still also'.split(/\s+/));
+const FILTER_WORDS=['just','really','very','quite','rather','somewhat','almost','slightly','suddenly','finally','simply','actually','basically','literally','definitely','certainly','perhaps','merely','nearly','apparently','presumably','practically','essentially','utterly','absolutely','completely','entirely','exactly','immediately'];
+const SENSORY_FILTERS=['saw','heard','felt','noticed','realized','wondered','thought','knew','seemed','appeared','looked','watched','observed','sensed','recognized','understood','remembered','considered','decided'];
+const BANNED_WORDS=['delve','delved','delving','tapestry','tapestried','tapestries','mayhaps','methinks',"'tis","'twas",'realm','beacon','crucible','testament','furthermore','moreover','interplay','multifaceted','nuanced','landscape','pivotal','amongst','whilst','unto','henceforth','wherein','thereof','whereupon'];
+const AI_PHRASE_PATTERNS=[[/\bwoven\b(?!\s+(?:cloth|fabric|basket|blanket|wool|linen|cloak|mantle))/gi,"Textile metaphor ('woven' not literal)","AI-ism"],[/\bthreads?\s+of\s+\w+/gi,"Textile metaphor ('threads of [concept]')","AI-ism"],[/\b(?:magic|power|energy)\s+(?:thrummed|pulsed|hummed|sang|crackled|vibrated|resonated)/gi,"Magic as background music","AI-ism"],[/\b(?:thrummed|pulsed|hummed)\s+(?:through|in|with|beneath)/gi,"Thrumming/pulsing/humming through","AI-ism"],[/\bthe\s+(?:very\s+)?air\s+(?:crackled|hummed|thrummed|pulsed|vibrated)/gi,"'The air crackled/hummed with...'","AI-ism"],[/\b(?:destiny|fate)\s+(?:called|beckoned|whispered|demanded|awaited)/gi,"Destiny/fate personification","AI-ism"],[/\b(?:ghost|shadow|whisper|echo|specter|spectre)\s+of\s+(?:a\s+)?(?:smile|laugh|memory|thought|feeling|emotion|doubt|fear|hope|sadness|grief|pain|anger|joy)/gi,"'Ghost/shadow/whisper of [emotion]'","AI-ism"],[/\blandscape\s+of\s+(?:her|his|their|the)\s+(?:mind|soul|heart|emotion|feeling|grief|pain|memory)/gi,"'Landscape of [abstract concept]'","AI-ism"],[/\bintricate\s+(?:web|dance|ballet|tapestry|mosaic)\s+of/gi,"'Intricate web/dance/ballet of...'","AI-ism"],[/\bold\s+as\s+time\b/gi,"'Old as time'","AI-ism"],[/\b(?:darkness|light|shadow|hope|fear|doubt)\s+(?:warred|battled|fought)\s+(?:within|inside|in)\b/gi,"'X warred within'","AI-ism"],[/\ba\s+(?:\w+,?\s+){0,2}(?:bright|searing|white|dark|cold|hot|sharp|dull|wordless|nameless|terrible|beautiful|awful|monstrous|ancient|living|burning|bleeding|broken|shattered|hollow|raw|wild|savage|quiet|silent|still|small|vast|enormous|heavy|weightless)\s+(?:and\s+\w+\s+)?thing\b/gi,"'A [adjective] thing' construction","AI-ism"],[/\bnot\s+\w+(?:\s+\w+){0,3},?\s+but\s+/gi,"'Not X, but Y' — definition by negation","Style"],[/(?:she|he|they)\s+did\s+not\s+(?:say|speak|mention|ask|tell)[^.]*(?:she|he|they)\s+did\s+not\s+(?:need|have)\s+to/gi,"'Did not say X. Did not need to.'","Style"],[/\b(?:they|we)\s+both\s+knew\b/gi,"'They both knew'","Style"],[/\bneither\s+(?:of\s+them|one)\s+(?:said|spoke|mentioned|needed)/gi,"'Neither of them said it'","Style"],[/\bsomething\s+(?:was|felt|seemed)\s+wrong\b/gi,"'Something was wrong' — tell not show","Style"],[/,\s*but\s+wrong\b/gi,"'...but wrong' — atmospheric shorthand","Style"],[/\b\w+\s+and\s+\w+\s+and\s+(?:the\s+)?\w+\b/gi,"Three-beat list (X and Y and Z)","Style"],[/\b(?:the|her|his)\s+(?:whole\s+)?world\s+(?:came\s+apart|shattered|broke|collapsed|tilted|shifted|stopped|fell\s+away|went\s+(?:dark|white|silent|still))/gi,"Declaration of magnitude","Style"],[/\bfor\s+(?:a|one)\s+(?:terrible|horrible|awful|dreadful|sickening|endless|infinite|eternal|frozen)\s+(?:moment|second|instant|heartbeat)/gi,"'For a terrible moment'","Style"],[/\b(?:joints?|shoulders?|muscles?|bones?|arms?|legs?|knees?|back)\s+(?:screaming|screamed|shrieking|shrieked|howling|howled)/gi,"Stock pain language","Style"],[/\b(?:white\s+)?fire\s+(?:down|through|along|up)\s+(?:her|his|the)\s+(?:arm|leg|spine|back|side|body|limb)/gi,"Stock pain language ('fire down her arm')","Style"],[/\ba\s+sound\s+(?:she|he)\s+felt\s+more\s+than\s+heard/gi,"'A sound she felt more than heard'","Style"],[/\bsomething\s+(?:she|he)\s+(?:couldn't|could\s+not)\s+(?:name|identify|describe)/gi,"'Something she couldn't name'","Style"],[/\b(?:torque|axis|centrifuge|centrifugal|trajectory|velocity|momentum|adrenaline|cortisol|psychological|neurological|traumatic|therapeutic|infrastructure)\b/gi,"Modern/clinical vocabulary","Style"],[/[a-z]\s*:\s*['""\u2018\u2019\u201c\u201d]/g,"Colon before dialogue","Style"],[/\.\s+(?:This|That|It|These|Those)\s+(?:was|were|is|had been|meant|signified|revealed|showed|suggested|indicated|demonstrated|proved)/gi,"'This was/meant/revealed...' — likely over-explanation","Style"]];
+function getWords(t){return(t.toLowerCase().match(/\b[a-z]+(?:'[a-z]+)?\b/g)||[]);}
+function wordCount(t){return(t.match(/\b\w+\b/g)||[]).length;}
+function splitSentences(t){return(t.split(/(?<=[.!?])\s+(?=[A-Z"\u201c])/)||[]).filter(s=>s.trim());}
+function splitParagraphs(t){return t.split(/\n\s*\n/).filter(p=>p.trim());}
+function parseChapters(text,mode){const lines=text.split('\n');let re;if(mode==='keyword')re=/^\s*(chapter\s+\w+|prologue|epilogue)\s*$/i;else if(mode==='markdown')re=/^\s*#{1,3}\s+.+/;else if(mode==='none')return[{title:'Full Manuscript',text,startLine:0}];else if(mode==='break'){const chunks=text.split(/\n\s*\n\s*\n/).filter(c=>c.trim());return chunks.map((c,i)=>({title:'Section '+(i+1),text:c,startLine:0}));}const chapters=[];let curTitle='Pre-Chapter Content',curLines=[],curStart=0;for(let i=0;i<lines.length;i++){if(re.test(lines[i].trim())){if(curLines.length){const body=curLines.join('\n');if(body.trim())chapters.push({title:curTitle,text:body,startLine:curStart});}curTitle=lines[i].trim().replace(/^#+\s*/,'');curLines=[];curStart=i+1;}else curLines.push(lines[i]);}if(curLines.length){const body=curLines.join('\n');if(body.trim())chapters.push({title:curTitle,text:body,startLine:curStart});}if(!chapters.length||(chapters.length===1&&chapters[0].title==='Pre-Chapter Content'))return[{title:'Full Manuscript',text,startLine:0}];return chapters;}
+const SCENE_BREAK_RE=/^\s*\*\s*\*\s*\*\s*$/;function countScenes(t){return t.split(SCENE_BREAK_RE).filter(s=>s.trim()).length;}
+function analyzeStructure(chs){return chs.map(ch=>{const ps=splitParagraphs(ch.text);const pl=ps.map(p=>wordCount(p));return{title:ch.title,wordCount:wordCount(ch.text),scenes:countScenes(ch.text),paragraphs:ps.length,avgParaLength:pl.length?Math.round(avg(pl)):0,maxParaLength:pl.length?Math.max(...pl):0,paraLengths:pl};});}
+function analyzeSentences(chs){return chs.map(ch=>{const ss=splitSentences(ch.text);const ls=ss.map(s=>wordCount(s));if(!ls.length)return null;const ps=splitParagraphs(ch.text);const ssp=ps.filter(p=>{const s2=splitSentences(p);return s2.length===1&&wordCount(p)>3&&wordCount(p)<25;}).map(p=>p.trim().replace(/\n/g,' '));return{title:ch.title,totalSentences:ss.length,avgLength:avg(ls),medianLength:median(ls),stdev:stddev(ls),maxLength:Math.max(...ls),singleSentenceParas:ssp};}).filter(Boolean);}
+function analyzeDialogue(chs){const dqRe=/[\u201c"][^\u201d"]*[\u201d"]|"[^"]*"/g;const tagRe=/[\u201d"]\s*(?:,\s*)?(?:she|he|they|[A-Z]\w+)\s+(\w+)/gi;const valid=new Set(['said','asked','whispered','shouted','yelled','cried','murmured','muttered','snapped','growled','hissed','sighed','breathed','called','screamed','answered','replied','demanded','exclaimed','declared','pleaded','begged','insisted','warned','continued','added','agreed','argued','noted','observed','remarked','stated','announced','conceded','admitted','corrected','countered','interrupted','protested','repeated','responded']);return chs.map(ch=>{const dm=ch.text.match(dqRe)||[];const dw=wordCount(dm.join(' '));const pw=wordCount(ch.text.replace(dqRe,''));const tot=dw+pw;const tags={};let m;tagRe.lastIndex=0;while((m=tagRe.exec(ch.text))!==null){const t=m[1].toLowerCase();if(valid.has(t))tags[t]=(tags[t]||0)+1;}return{title:ch.title,dialogueWords:dw,proseWords:pw,total:tot,dialoguePct:tot>0?dw/tot*100:0,tags,totalTags:Object.values(tags).reduce((a,b)=>a+b,0)};});}
+function analyzeWordFrequency(chs){const aw=[];chs.forEach(ch=>aw.push(...getWords(ch.text)));const total=aw.length;const cw=aw.filter(w=>!STOP_WORDS.has(w)&&w.length>2);const wf=count(cw);const bgs=[];for(let i=0;i<aw.length-1;i++){if(!STOP_WORDS.has(aw[i])||!STOP_WORDS.has(aw[i+1]))bgs.push(aw[i]+' '+aw[i+1]);}const tgs=[];for(let i=0;i<aw.length-2;i++){if([aw[i],aw[i+1],aw[i+2]].some(w=>!STOP_WORDS.has(w)))tgs.push(aw[i]+' '+aw[i+1]+' '+aw[i+2]);}const fc={};FILTER_WORDS.forEach(fw=>{const c=aw.filter(w=>w===fw).length;if(c)fc[fw]=c;});const sc={};SENSORY_FILTERS.forEach(sv=>{const c=aw.filter(w=>w===sv).length;if(c)sc[sv]=c;});const advs=aw.filter(w=>w.endsWith('ly')&&w.length>3);return{totalWords:total,uniqueWords:new Set(aw).size,topWords:topN(wf,75),topBigrams:topN(count(bgs),50).filter(([,c])=>c>=5),topTrigrams:topN(count(tgs),40).filter(([,c])=>c>=4),filterWords:sortDesc(fc),sensoryFilters:sortDesc(sc),adverbTotal:advs.length,adverbPer1k:total?(advs.length/total*1000):0,topAdverbs:topN(count(advs),30).filter(([,c])=>c>=3)};}
+function analyzeProximity(chs,win=300){const aw=getWords(chs.map(c=>c.text).join(' '));const total=aw.length;const freq=count(aw);const thr=total/1000;const dist=new Set(Object.entries(freq).filter(([w,c])=>c>1&&c<thr&&w.length>4&&!STOP_WORDS.has(w)).map(([w])=>w));const wp=[];chs.forEach(ch=>{ch.text.split('\n').forEach((line,li)=>{getWords(line).forEach(w=>{wp.push({word:w,chapter:ch.title,line:ch.startLine+li});});});});const ls={};const flags=[];wp.forEach((p,pos)=>{if(dist.has(p.word)){if(ls[p.word]){const prev=ls[p.word];const gap=pos-prev.pos;if(gap>=10&&gap<=win)flags.push({word:p.word,gap,ch1:prev.chapter,line1:prev.line,ch2:p.chapter,line2:p.line});}ls[p.word]={pos,chapter:p.chapter,line:p.line};}});flags.sort((a,b)=>a.gap-b.gap);return flags.slice(0,150);}
+function analyzeAIPatterns(chs,customWords){const banned=[];const phrases=[];const allBanned=[...BANNED_WORDS,...customWords.filter(w=>!w.includes(' '))];const customPhrases=customWords.filter(w=>w.includes(' '));chs.forEach(ch=>{const lines=ch.text.split('\n');lines.forEach((line,li)=>{const absLine=ch.startLine+li;const lower=line.toLowerCase();allBanned.forEach(bw=>{const re=new RegExp('\\b'+bw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');if(re.test(lower)){let ctx=line.trim();if(ctx.length>120){const idx=lower.indexOf(bw);const s=Math.max(0,idx-50);const e=Math.min(ctx.length,idx+bw.length+50);ctx=(s>0?'...':'')+ctx.slice(s,e)+(e<line.trim().length?'...':'');}const cat=BANNED_WORDS.includes(bw)?'AI-ism':'Custom';banned.push({word:bw,chapter:ch.title,line:absLine,context:ctx,cat});}});});AI_PHRASE_PATTERNS.forEach(([re,desc,cat])=>{const fr=new RegExp(re.source,re.flags);let m;while((m=fr.exec(ch.text))!==null){const before=ch.text.slice(0,m.index);const ln=ch.startLine+(before.match(/\n/g)||[]).length;const cs=Math.max(0,m.index-40);const ce=Math.min(ch.text.length,m.index+m[0].length+40);let ctx=ch.text.slice(cs,ce).replace(/\n/g,' ').trim();if(cs>0)ctx='...'+ctx;if(ce<ch.text.length)ctx+='...';phrases.push({desc,cat,match:m[0],chapter:ch.title,line:ln,context:ctx});}});customPhrases.forEach(cp=>{const fr=new RegExp('\\b'+cp.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi');let m;while((m=fr.exec(ch.text))!==null){const before=ch.text.slice(0,m.index);const ln=ch.startLine+(before.match(/\n/g)||[]).length;const cs=Math.max(0,m.index-40);const ce=Math.min(ch.text.length,m.index+m[0].length+40);let ctx=ch.text.slice(cs,ce).replace(/\n/g,' ').trim();if(cs>0)ctx='...'+ctx;if(ce<ch.text.length)ctx+='...';phrases.push({desc:'Custom: "'+cp+'"',cat:'Custom',match:m[0],chapter:ch.title,line:ln,context:ctx});}});});return{banned,phrases};}
+function analyzeRepeatedStarts(chs){const flags=[];chs.forEach(ch=>{const ss=splitSentences(ch.text);for(let i=0;i<ss.length-2;i++){const w1=(ss[i].match(/^\s*(\w+)/)||[])[1]||'';const w2=(ss[i+1].match(/^\s*(\w+)/)||[])[1]||'';const w3=(ss[i+2].match(/^\s*(\w+)/)||[])[1]||'';if(w1&&w1.toLowerCase()===w2.toLowerCase()&&w2.toLowerCase()===w3.toLowerCase()){flags.push({word:w1,chapter:ch.title,sentences:[ss[i].trim().slice(0,60),ss[i+1].trim().slice(0,60),ss[i+2].trim().slice(0,60)]});}}});return flags;}
+function avg(a){return a.reduce((s,v)=>s+v,0)/a.length;}function median(a){const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}function stddev(a){if(a.length<2)return 0;const m=avg(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-1));}function count(a){const c={};a.forEach(w=>c[w]=(c[w]||0)+1);return c;}function topN(o,n){return Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n);}function sortDesc(o){return Object.entries(o).sort((a,b)=>b[1]-a[1]);}function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}function num(n){return typeof n==='number'?n.toLocaleString():n;}
+const uploadArea=document.getElementById('uploadArea'),fileInput=document.getElementById('fileInput'),progressArea=document.getElementById('progressArea'),progressFillEl=document.getElementById('progressFill'),progressLabel=document.getElementById('progressLabel'),resultsDiv=document.getElementById('results');
+uploadArea.addEventListener('click',()=>fileInput.click());uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('dragover');});uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('dragover'));uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('dragover');if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);});fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0]);});
+document.getElementById('customWords').addEventListener('input',function(){try{localStorage.setItem('lint_customWords',this.value);}catch(e){}});document.getElementById('chapterMode').addEventListener('change',function(){try{localStorage.setItem('lint_chapterMode',this.value);}catch(e){}});
+function setProgress(p,l){progressFillEl.style.width=p+'%';progressLabel.textContent=l;}function tick(){return new Promise(r=>setTimeout(r,20));}
+async function handleFile(file){if(!file.name.endsWith('.txt')){alert('Please upload a .txt file.');return;}uploadArea.style.display='none';document.getElementById('lintSettings').style.display='none';document.getElementById('privacyHero').style.display='none';document.getElementById('featurePreview').style.display='none';progressArea.classList.add('active');resultsDiv.classList.remove('active');resultsDiv.innerHTML='';setProgress(5,'Reading file...');const text=await file.text();await tick();const mode=document.getElementById('chapterMode').value;const customRaw=document.getElementById('customWords').value;const customWords=customRaw.split('\n').map(w=>w.trim().toLowerCase()).filter(Boolean);setProgress(15,'Parsing chapters...');await tick();const chapters=parseChapters(text,mode);setProgress(25,'Analyzing structure...');await tick();const structure=analyzeStructure(chapters);setProgress(35,'Analyzing sentences...');await tick();const sentences=analyzeSentences(chapters);setProgress(45,'Analyzing dialogue...');await tick();const dialogue=analyzeDialogue(chapters);setProgress(55,'Counting words & phrases...');await tick();const freq=analyzeWordFrequency(chapters);setProgress(65,'Detecting repeated starts...');await tick();const repeatedStarts=analyzeRepeatedStarts(chapters);setProgress(75,'Scanning repetition proximity...');await tick();const proximity=analyzeProximity(chapters);setProgress(88,'Hunting AI-isms...');await tick();const aiData=analyzeAIPatterns(chapters,customWords);setProgress(95,'Building report...');await tick();const totalSSP=sentences.reduce((s,ch)=>s+ch.singleSentenceParas.length,0);const aiIsmCount=aiData.banned.filter(b=>b.cat==='AI-ism').length+aiData.phrases.filter(p=>p.cat==='AI-ism').length;const styleCount=aiData.phrases.filter(p=>p.cat==='Style').length;const customCount=aiData.banned.filter(b=>b.cat==='Custom').length+aiData.phrases.filter(p=>p.cat==='Custom').length;renderResults({filename:file.name,chapters,structure,sentences,dialogue,freq,proximity,aiData,totalSSP,aiIsmCount,styleCount,customCount,repeatedStarts,mode});setProgress(100,'Done.');await new Promise(r=>setTimeout(r,300));progressArea.classList.remove('active');resultsDiv.classList.add('active');}
+function renderResults(data){const{filename,chapters,structure,sentences,dialogue,freq,proximity,aiData,totalSSP,aiIsmCount,styleCount,customCount,repeatedStarts,mode}=data;const tw=freq.totalWords;let html='';html+='<div class="results-header"><div><h2>Analysis Report</h2><div class="results-meta">'+esc(filename)+' · '+num(tw)+' words · '+chapters.length+' chapter'+(chapters.length!==1?'s':'')+'</div></div><div class="btn-row"><button class="btn" onclick="downloadMarkdown()">↓ Download .md</button><button class="btn" onclick="resetUpload()">Analyze another</button></div></div>';html+='<div class="summary-grid"><div class="summary-card"><div class="label">Words</div><div class="value">'+num(tw)+'</div><div class="detail">'+num(freq.uniqueWords)+' unique</div></div><div class="summary-card"><div class="label">Chapters</div><div class="value">'+chapters.length+'</div><div class="detail">'+num(Math.round(avg(structure.map(s=>s.wordCount))))+' avg/ch</div></div><div class="summary-card '+(aiIsmCount>10?'alert':aiIsmCount>0?'warn':'good')+'"><div class="label">AI-ism Flags</div><div class="value">'+aiIsmCount+'</div><div class="detail">review & likely cut</div></div><div class="summary-card '+(styleCount>20?'warn':'')+'"><div class="label">Style Flags</div><div class="value">'+styleCount+'</div><div class="detail">check context</div></div><div class="summary-card '+(proximity.length>50?'warn':'')+'"><div class="label">Word Echoes</div><div class="value">'+proximity.length+'</div><div class="detail">close repeats</div></div>'+(customCount?'<div class="summary-card warn"><div class="label">Custom Flags</div><div class="value">'+customCount+'</div><div class="detail">your word list</div></div>':'')+'</div>';
+const modeLabels={keyword:'Lines matching "Chapter X", "Prologue", or "Epilogue"',markdown:'Markdown headings (# ...)',break:'Triple line breaks between sections',none:'No splitting — entire file as one chapter'};
+html+=renderSection('1. Structure & Pacing',chapters.length+' chapters',function(){let s='<div class="how-it-works"><strong>How this works:</strong> Chapters detected using: <em>'+modeLabels[mode]+'</em>. Change this in Settings. Scene breaks are lines with * * *. Paragraphs split on blank lines.</div>';s+='<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Words</th><th class="num">Scenes</th><th class="num">¶s</th><th class="num">Avg ¶</th><th class="num">Max ¶</th></tr></thead><tbody>';structure.forEach(function(c){s+='<tr><td>'+esc(c.title)+'</td><td class="num">'+num(c.wordCount)+'</td><td class="num">'+c.scenes+'</td><td class="num">'+c.paragraphs+'</td><td class="num">'+c.avgParaLength+'</td><td class="num'+(c.maxParaLength>200?' flag':'')+'">'+c.maxParaLength+'</td></tr>';});s+='</tbody></table>';if(structure.length>1){const maxWc=Math.max(...structure.map(c=>c.wordCount));s+='<div class="subsection"><h4>Pacing Heatmap</h4><p>Each bar is one chapter. Height = word count. Color = paragraph density (darker = longer paragraphs on average).</p><div class="heatmap">';structure.forEach(function(c){const h=Math.max(12,Math.round((c.wordCount/maxWc)*60));const intensity=Math.min(1,c.avgParaLength/120);const r=Math.round(180*intensity+58*(1-intensity));const g=Math.round(74*intensity+125*(1-intensity));const b=Math.round(45*intensity+92*(1-intensity));s+='<div class="heatmap-bar" style="height:'+h+'px;flex:1;background:rgba('+r+','+g+','+b+',0.7)"><span class="heatmap-tip">'+esc(c.title)+': '+num(c.wordCount)+' words, avg ¶ '+c.avgParaLength+'w</span></div>';});s+='</div><div class="heatmap-legend"><span><span class="heatmap-legend-swatch" style="background:rgba(58,125,92,0.7)"></span>Short ¶s (punchy)</span><span><span class="heatmap-legend-swatch" style="background:rgba(180,74,45,0.7)"></span>Long ¶s (dense)</span></div></div>';}return s;});
+html+=renderSection('2. Sentence Metrics','',function(){let s='<div class="how-it-works"><strong>How this works:</strong> Sentences split on . ! ? followed by space + capital letter. Average length is a pacing proxy — action chapters should be shorter. Single-sentence paragraphs are powerful in isolation but lose punch when overused (2–3 per scene max). Repeated starts = 3+ consecutive sentences beginning with the same word.</div>';s+='<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Sentences</th><th class="num">Avg</th><th class="num">Median</th><th class="num">StdDev</th><th class="num">Longest</th></tr></thead><tbody>';sentences.forEach(function(c){s+='<tr><td>'+esc(c.title)+'</td><td class="num">'+c.totalSentences+'</td><td class="num">'+c.avgLength.toFixed(1)+'</td><td class="num">'+c.medianLength+'</td><td class="num">'+c.stdev.toFixed(1)+'</td><td class="num">'+c.maxLength+'</td></tr>';});s+='</tbody></table>';if(totalSSP>0){const examples=sentences.flatMap(ch=>ch.singleSentenceParas.map(p=>({chapter:ch.title,text:p}))).slice(0,20);s+='<div class="subsection"><h4>Single-Sentence Dramatic ¶s ('+totalSSP+')</h4><ul class="instance-list">';examples.forEach(function(e){s+='<li><div class="instance-loc">'+esc(e.chapter)+'</div><div class="instance-ctx">'+esc(e.text)+'</div></li>';});s+='</ul></div>';}if(repeatedStarts.length){s+='<div class="subsection"><h4>Repeated Sentence Starts ('+repeatedStarts.length+')</h4><p>Three or more consecutive sentences starting with the same word.</p><ul class="instance-list">';repeatedStarts.slice(0,15).forEach(function(f){s+='<li><div class="instance-loc">'+esc(f.chapter)+' — starts with "'+f.word+'"</div><div class="instance-ctx">'+f.sentences.map(x=>esc(x)+'...').join('<br>')+'</div></li>';});s+='</ul></div>';}return s;});
+html+=renderSection('3. Dialogue Analysis','',function(){let s='<div class="how-it-works"><strong>How this works:</strong> Dialogue = text inside quotation marks (straight or curly). Tags detected by looking for verbs after closing quotes. "Said" and "asked" should be the majority — fancy tags draw attention to themselves.</div>';s+='<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Dialogue %</th><th class="num">Dialogue</th><th class="num">Prose</th></tr></thead><tbody>';dialogue.forEach(function(d){s+='<tr><td>'+esc(d.title)+'</td><td class="num">'+d.dialoguePct.toFixed(1)+'%</td><td class="num">'+num(d.dialogueWords)+'</td><td class="num">'+num(d.proseWords)+'</td></tr>';});s+='</tbody></table>';const allTags={};dialogue.forEach(d=>Object.entries(d.tags).forEach(([t,c])=>allTags[t]=(allTags[t]||0)+c));const ttc=Object.values(allTags).reduce((a,b)=>a+b,0);if(ttc){const sp=((allTags.said||0)+(allTags.asked||0))/ttc*100;s+='<div class="subsection"><h4>Dialogue Tags</h4><p><strong>'+ttc+'</strong> tags. "Said/asked" = <strong>'+sp.toFixed(0)+'%</strong></p><table class="data-table"><thead><tr><th>Tag</th><th class="num">Count</th></tr></thead><tbody>';topN(allTags,20).forEach(function([t,c]){s+='<tr><td>'+t+'</td><td class="num">'+c+'</td></tr>';});s+='</tbody></table></div>';}return s;});
+html+=renderSection('4. Word & Phrase Frequency','',function(){let s='<div class="how-it-works"><strong>How this works:</strong> All words lowercased and counted. Stop words (the, and, is...) excluded. Bigrams/trigrams = frequent 2- and 3-word sequences. Crutch words flagged with ⚠ above 2× per 1,000 words. Sensory filter verbs ("she felt," "he noticed") add distance between reader and experience. Adverbs = any -ly word over 3 letters.</div>';s+='<div class="subsection"><h4>Top 50 Words</h4><div class="bar-chart">';const mxW=freq.topWords[0]?freq.topWords[0][1]:1;freq.topWords.slice(0,50).forEach(function([w,c]){s+='<div class="bar-row"><div class="bar-label">'+w+'</div><div class="bar-track"><div class="bar-fill" style="width:'+c/mxW*100+'%"></div></div><div class="bar-value">'+c+'</div></div>';});s+='</div></div>';if(freq.topBigrams.length){s+='<div class="subsection"><h4>Top Bigrams</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';freq.topBigrams.slice(0,25).forEach(function([p,c]){s+='<tr><td>'+esc(p)+'</td><td class="num">'+c+'</td></tr>';});s+='</tbody></table></div>';}if(freq.topTrigrams.length){s+='<div class="subsection"><h4>Top Trigrams</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';freq.topTrigrams.slice(0,20).forEach(function([p,c]){s+='<tr><td>'+esc(p)+'</td><td class="num">'+c+'</td></tr>';});s+='</tbody></table></div>';}if(freq.filterWords.length){s+='<div class="subsection"><h4>Crutch / Filter Words</h4><table class="data-table"><thead><tr><th>Word</th><th class="num">Count</th><th class="num">Per 1k</th></tr></thead><tbody>';freq.filterWords.forEach(function([w,c]){const p=(c/tw*1000).toFixed(1);s+='<tr><td>'+w+'</td><td class="num">'+c+'</td><td class="num'+(p>2?' flag':'')+'">'+p+'</td></tr>';});s+='</tbody></table></div>';}if(freq.sensoryFilters.length){s+='<div class="subsection"><h4>Sensory Filter Verbs</h4><table class="data-table"><thead><tr><th>Verb</th><th class="num">Count</th><th class="num">Per 1k</th></tr></thead><tbody>';freq.sensoryFilters.forEach(function([w,c]){s+='<tr><td>'+w+'</td><td class="num">'+c+'</td><td class="num">'+(c/tw*1000).toFixed(1)+'</td></tr>';});s+='</tbody></table></div>';}s+='<div class="subsection"><h4>Adverbs</h4><p><strong>'+freq.adverbTotal+'</strong> total · <strong>'+freq.adverbPer1k.toFixed(1)+'</strong> per 1k words (published fiction: 5–15)</p>';if(freq.topAdverbs.length){s+='<table class="data-table"><thead><tr><th>Adverb</th><th class="num">Count</th></tr></thead><tbody>';freq.topAdverbs.forEach(function([a,c]){s+='<tr><td>'+a+'</td><td class="num">'+c+'</td></tr>';});s+='</tbody></table>';}s+='</div>';return s;});
+html+=renderSection('5. Repetition Proximity',proximity.length+' echoes',function(){let s='<div class="how-it-works"><strong>How this works:</strong> For each "distinctive" word (appears more than once but fewer than 1× per 1,000 words, longer than 4 letters, not a stop word), we check if it appears again within 300 words. These are the repetitions readers notice — not common words like "said" but words like "brambles" or "threshold" appearing twice on the same page.</div>';if(!proximity.length)return s+'<p>No close-proximity repetitions detected.</p>';s+='<table class="data-table"><thead><tr><th>Word</th><th class="num">Gap</th><th>First</th><th>Second</th></tr></thead><tbody>';proximity.slice(0,100).forEach(function(f){s+='<tr><td>'+esc(f.word)+'</td><td class="num">'+f.gap+'</td><td>'+esc(f.ch1)+' ~'+f.line1+'</td><td>'+esc(f.ch2)+' ~'+f.line2+'</td></tr>';});s+='</tbody></table>';if(proximity.length>100)s+='<p style="font-size:0.78rem;color:var(--ink-faint);margin-top:8px">Showing 100 of '+proximity.length+'</p>';return s;});
+html+=renderSection('6. AI-ism & Style Violations',(aiIsmCount+styleCount+customCount)+' flags',function(){let s='<div class="how-it-works"><strong>How this works:</strong> Banned words are matched by exact word boundaries. Phrase patterns use regex for constructions like "a [adjective] thing," "Not X, but Y," three-beat lists, etc. The over-explanation detector flags sentences starting with "This was/meant/revealed..." which often restate the image before them. Custom words from Settings are checked the same way.</div>';if(!aiData.banned.length&&!aiData.phrases.length)return s+'<p>No flags detected.</p>';['AI-ism','Style','Custom'].forEach(function(cat){const bItems=aiData.banned.filter(b=>b.cat===cat);const pItems=aiData.phrases.filter(p=>p.cat===cat);if(!bItems.length&&!pItems.length)return;s+='<div class="subsection"><h4>'+cat+' Patterns</h4>';if(bItems.length){const bs=count(bItems.map(b=>b.word));s+='<table class="data-table"><thead><tr><th>Word</th><th class="num">Count</th></tr></thead><tbody>';topN(bs,30).forEach(function([w,c]){s+='<tr><td class="alert-flag">'+w+'</td><td class="num">'+c+'</td></tr>';});s+='</tbody></table><ul class="instance-list">';bItems.forEach(function(b){s+='<li><div class="instance-loc">'+esc(b.chapter)+' · line ~'+b.line+'</div><div class="instance-ctx">'+highlightWord(b.context,b.word)+'</div></li>';});s+='</ul>';}if(pItems.length){const byDesc={};pItems.forEach(function(p){(byDesc[p.desc]=byDesc[p.desc]||[]).push(p);});s+='<table class="data-table"><thead><tr><th>Pattern</th><th class="num">Count</th></tr></thead><tbody>';Object.entries(byDesc).sort((a,b)=>b[1].length-a[1].length).forEach(function([d,l]){s+='<tr><td>'+esc(d)+'</td><td class="num">'+l.length+'</td></tr>';});s+='</tbody></table>';Object.entries(byDesc).sort((a,b)=>b[1].length-a[1].length).forEach(function([d,l]){s+='<div style="margin-top:12px"><strong style="font-size:0.82rem">'+esc(d)+'</strong> <span style="color:var(--ink-faint);font-size:0.78rem">('+l.length+')</span><ul class="instance-list">';l.slice(0,10).forEach(function(item){s+='<li><div class="instance-loc">'+esc(item.chapter)+' · line ~'+item.line+'</div><div class="instance-ctx">'+highlightWord(item.context,item.match)+'</div></li>';});if(l.length>10)s+='<li style="color:var(--ink-faint);font-size:0.78rem">... and '+(l.length-10)+' more</li>';s+='</ul></div>';});}s+='</div>';});return s;});
+resultsDiv.innerHTML=html;window._lintData=data;}
+function renderSection(title,countText,contentFn){const id=title.replace(/[^a-z0-9]/gi,'_');return'<div class="report-section" id="sec_'+id+'"><button class="section-toggle" onclick="toggleSection(\'sec_'+id+'\')"><span>'+title+'</span><span><span class="count">'+countText+'</span> <span class="arrow">▸</span></span></button><div class="section-body">'+contentFn()+'</div></div>';}
+function toggleSection(id){document.getElementById(id).classList.toggle('open');}
+function highlightWord(ctx,word){if(!word)return esc(ctx);const e=esc(ctx);const w=esc(word);const r=new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');return e.replace(r,'<mark>$1</mark>');}
+function resetUpload(){uploadArea.style.display='';document.getElementById('lintSettings').style.display='';document.getElementById('privacyHero').style.display='';document.getElementById('featurePreview').style.display='';resultsDiv.classList.remove('active');resultsDiv.innerHTML='';fileInput.value='';}
+function downloadMarkdown(){const d=window._lintData;if(!d)return;const{filename,structure,sentences,dialogue,freq,proximity,aiData,totalSSP,aiIsmCount,styleCount,customCount,repeatedStarts}=d;const tw=freq.totalWords;let md='# Manuscript Analysis Report\n**File:** `'+filename+'`\n**Words:** '+num(tw)+' · **Unique:** '+num(freq.uniqueWords)+' · **Chapters:** '+structure.length+'\n\n---\n\n';md+='## 1. Structure & Pacing\n\n| Chapter | Words | Scenes | ¶s | Avg ¶ | Max ¶ |\n|---------|------:|-------:|---:|------:|------:|\n';structure.forEach(function(c){md+='| '+c.title+' | '+num(c.wordCount)+' | '+c.scenes+' | '+c.paragraphs+' | '+c.avgParaLength+' | '+c.maxParaLength+' |\n';});md+='\n## 2. Sentence Metrics\n\n| Chapter | Sentences | Avg | Median | StdDev | Max |\n|---------|----------:|----:|-------:|-------:|----:|\n';sentences.forEach(function(s){md+='| '+s.title+' | '+s.totalSentences+' | '+s.avgLength.toFixed(1)+' | '+s.medianLength+' | '+s.stdev.toFixed(1)+' | '+s.maxLength+' |\n';});md+='\n**Single-sentence ¶s:** '+totalSSP+'\n\n';md+='## 3. Dialogue\n\n| Chapter | Dialogue % | Dialogue | Prose |\n|---------|----------:|---------:|------:|\n';dialogue.forEach(function(d){md+='| '+d.title+' | '+d.dialoguePct.toFixed(1)+'% | '+num(d.dialogueWords)+' | '+num(d.proseWords)+' |\n';});md+='\n## 4. Word Frequency\n\n| Word | Count | Per 1k |\n|------|------:|-------:|\n';freq.topWords.slice(0,50).forEach(function([w,c]){md+='| '+w+' | '+c+' | '+(c/tw*1000).toFixed(1)+' |\n';});if(freq.filterWords.length){md+='\n### Crutch Words\n\n| Word | Count | Per 1k |\n|------|------:|-------:|\n';freq.filterWords.forEach(function([w,c]){md+='| '+w+' | '+c+' | '+(c/tw*1000).toFixed(1)+' |\n';});}md+='\n## 5. Repetition Proximity ('+proximity.length+' echoes)\n\n';if(proximity.length){md+='| Word | Gap | First | Second |\n|------|----:|-------|--------|\n';proximity.slice(0,100).forEach(function(f){md+='| '+f.word+' | '+f.gap+' | '+f.ch1+' ~'+f.line1+' | '+f.ch2+' ~'+f.line2+' |\n';});}md+='\n## 6. AI-ism & Style Violations\n\n**AI-ism:** '+aiIsmCount+' · **Style:** '+styleCount+(customCount?' · **Custom:** '+customCount:'')+'\n\n';if(aiData.banned.length){md+='### Flagged Words\n\n';aiData.banned.forEach(function(b){md+='- **'+b.word+'** — '+b.chapter+' (line ~'+b.line+'): `'+b.context+'`\n';});md+='\n';}['AI-ism','Style','Custom'].forEach(function(cat){const items=aiData.phrases.filter(p=>p.cat===cat);if(!items.length)return;md+='### '+cat+' Patterns\n\n';const byDesc={};items.forEach(function(p){(byDesc[p.desc]=byDesc[p.desc]||[]).push(p);});Object.entries(byDesc).sort((a,b)=>b[1].length-a[1].length).forEach(function([d,l]){md+='**'+d+'** ('+l.length+')\n\n';l.slice(0,15).forEach(function(i){md+='- '+i.chapter+' (line ~'+i.line+'): `'+i.context+'`\n';});if(l.length>15)md+='- ... and '+(l.length-15)+' more\n';md+='\n';});});md+='---\n*Generated by Manuscript Lint · manuscriptreader.com/lint*\n';const blob=new Blob([md],{type:'text/markdown'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='manuscript_report.md';a.click();URL.revokeObjectURL(url);}
 </script>
-
 </body>
 </html>
