@@ -390,6 +390,15 @@
     50% { opacity: 0.7; }
   }
 
+  .reading-view .scene-break {
+    display: block;
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+    padding: 1.2em 0;
+  }
   .reading-view .paragraph-break { display: block; height: 1.2em; }
 
   .reading-view.preparing .sentence {
@@ -603,11 +612,35 @@
   }
 
   .settings.collapsed {
-    opacity: 0.4;
-    pointer-events: none;
+    display: none;
   }
 
   .settings .setting.full-width { grid-column: 1 / -1; }
+
+  .setting-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .setting-toggle input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .setting-toggle span {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  .setting .sub-toggle {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
 
   @media (max-width: 560px) { .settings { grid-template-columns: 1fr; } }
 
@@ -1278,6 +1311,33 @@
       </div>
       <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="800">
     </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Comma pause</span>
+        <span class="value" id="commaPauseVal">150ms</span>
+      </div>
+      <input type="range" id="commaPauseRange" min="0" max="500" step="25" value="150">
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Em dash pause</span>
+        <span class="value" id="emDashPauseVal">250ms</span>
+      </div>
+      <input type="range" id="emDashPauseRange" min="0" max="800" step="25" value="250">
+    </div>
+    <div class="setting full-width">
+      <label class="setting-toggle">
+        <input type="checkbox" id="sceneBreakToggle">
+        <span>Detect scene breaks (*** or * * * or . . .)</span>
+      </label>
+      <div class="sub-toggle" id="sceneBreakPauseWrap" style="display: none;">
+        <div class="setting-label">
+          <span>Scene break pause</span>
+          <span class="value" id="sceneBreakPauseVal">2000ms</span>
+        </div>
+        <input type="range" id="sceneBreakPauseRange" min="500" max="5000" step="250" value="2000">
+      </div>
+    </div>
   </div>
 
   <div class="progress-wrap" id="progressWrap">
@@ -1602,6 +1662,15 @@
     return audioContext;
   }
 
+  // ─── TTS Text Preprocessing ──────────────────────────
+  // Transform text for better TTS prosody (display text stays unchanged)
+  function preprocessForTTS(text) {
+    return text
+      .replace(/[^\p{L}\p{N}\s.,!?;:\-'\u2019\u2014]/gu, '')  // keep only letters, numbers, basic punctuation
+      .replace(/\.{3,}/g, '.')                         // collapse ellipsis to period
+      .trim();
+  }
+
   // ─── Sentence Splitting ────────────────────────────
   function splitIntoSentences(text) {
     // Split on any newline (single or double) to handle Google Docs, Word, etc.
@@ -1609,17 +1678,40 @@
     const paragraphs = text.split(/\n+/).filter(p => p.trim());
     const result = [];
 
+    const detectSceneBreaks = sceneBreakToggle.checked;
+
     paragraphs.forEach((para, pIdx) => {
       const trimmed = para.trim();
       if (!trimmed) return;
 
-      // Split on sentence boundaries, keeping quotes together
-      const parts = trimmed.match(/[^.!?]*[.!?]+[\s"'"\u201D)]*|[^.!?]+$/g) || [trimmed];
+      // Detect scene breaks: ***, * * *, ---, . . ., ..., ~~~, ###, etc.
+      if (detectSceneBreaks && /^([*\-~#]{3,}|(\*\s+){2,}\*|(\.\s+){2,}\.|\.{3,}|\u2026)$/.test(trimmed)) {
+        result.push({ text: '', paragraphEnd: true, isDialogue: false, isSceneBreak: true });
+        return;
+      }
+
+      // Detect if this paragraph starts with dialogue (opening quote)
+      const isDialogue = /^[\u201C\u2018"']/.test(trimmed);
+
+      // Split on sentence boundaries (. ! ?) and em dashes
+      const parts = trimmed.match(/[^.!?\u2014]*[.!?]+[\s"'\u201D\u2019)]*|[^.!?\u2014]*\u2014\s*|[^.!?\u2014]+$/g) || [trimmed];
+
+      // Further split at commas when comma pause is enabled
+      const splitCommas = parseInt(commaPauseRange.value) > 0;
 
       parts.forEach(s => {
         const cleaned = s.trim();
-        if (cleaned && cleaned.length > 1) {
-          result.push({ text: cleaned, paragraphEnd: false });
+        if (!cleaned || cleaned.length <= 1) return;
+        if (splitCommas) {
+          const commaParts = cleaned.match(/[^,]*,\s*|[^,]+$/g) || [cleaned];
+          commaParts.forEach(cp => {
+            const trimCP = cp.trim();
+            if (trimCP && trimCP.length > 1) {
+              result.push({ text: trimCP, paragraphEnd: false, isDialogue, isSceneBreak: false });
+            }
+          });
+        } else {
+          result.push({ text: cleaned, paragraphEnd: false, isDialogue, isSceneBreak: false });
         }
       });
 
@@ -1640,24 +1732,39 @@
 
   function batchSentences(sentences) {
     const batches = [];
-    let currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [] };
+    let currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [], dialogueBreak: false };
 
     sentences.forEach((s, i) => {
-      const combined = currentBatch.text + (currentBatch.text ? ' ' : '') + s.text;
-
-      // If adding this sentence exceeds max, or current batch is long enough
-      // and we're at a paragraph break, finalize current batch
-      if (combined.length > MAX_BATCH_LENGTH ||
-          (currentBatch.text.length >= MIN_BATCH_LENGTH && currentBatch.paragraphEnd)) {
+      // Scene breaks: force a batch break, don't generate audio, just mark for pause
+      if (s.isSceneBreak) {
         if (currentBatch.text) {
           batches.push(currentBatch);
         }
-        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i] };
+        batches.push({ text: '', paragraphEnd: true, sentenceIndices: [i], isDialogue: false, dialogueBreak: false, isSceneBreak: true });
+        currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [], dialogueBreak: false };
+        return;
+      }
+
+      const combined = currentBatch.text + (currentBatch.text ? ' ' : '') + s.text;
+
+      // Force batch break between consecutive dialogue paragraphs (different speakers)
+      const dialogueBreak = currentBatch.text && currentBatch.paragraphEnd && s.isDialogue && currentBatch.isDialogue;
+
+      // If adding this sentence exceeds max, or current batch is long enough
+      // and we're at a paragraph break, or dialogue boundary
+      if (combined.length > MAX_BATCH_LENGTH ||
+          (currentBatch.text.length >= MIN_BATCH_LENGTH && currentBatch.paragraphEnd) ||
+          dialogueBreak) {
+        if (currentBatch.text) {
+          batches.push(currentBatch);
+        }
+        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i], isDialogue: s.isDialogue, dialogueBreak: dialogueBreak, isSceneBreak: false };
       } else {
         // Add to current batch
         currentBatch.text = combined;
         currentBatch.sentenceIndices.push(i);
         currentBatch.paragraphEnd = s.paragraphEnd;
+        currentBatch.isDialogue = s.isDialogue;
       }
     });
 
@@ -1666,7 +1773,29 @@
       batches.push(currentBatch);
     }
 
-    return batches;
+    // Merge tiny batches (< 10 chars after TTS preprocessing) into the previous batch
+    // to avoid Kokoro artifacts on very short inputs
+    const MIN_TTS_LENGTH = 10;
+    const merged = [];
+    for (const batch of batches) {
+      if (batch.isSceneBreak || !batch.text) {
+        merged.push(batch);
+        continue;
+      }
+      const ttsLen = preprocessForTTS(batch.text).length;
+      if (ttsLen < MIN_TTS_LENGTH && merged.length > 0) {
+        const prev = merged[merged.length - 1];
+        if (!prev.isSceneBreak && prev.text) {
+          prev.text += ' ' + batch.text;
+          prev.sentenceIndices.push(...batch.sentenceIndices);
+          prev.paragraphEnd = batch.paragraphEnd;
+          continue;
+        }
+      }
+      merged.push(batch);
+    }
+
+    return merged;
   }
 
   // ─── Generate Audio via Worker ─────────────────────
@@ -1681,7 +1810,9 @@
   // ─── Prefetch Pipeline ──────────────────────────────
   // Generate audio for a specific batch index, with deduplication
   async function ensureGenerated(batchIndex) {
-    if (batchIndex >= batches.length || audioCache.has(batchIndex)) return audioCache.get(batchIndex);
+    if (batchIndex >= batches.length) return null;
+    if (batches[batchIndex].isSceneBreak) return null; // no audio for scene breaks
+    if (audioCache.has(batchIndex)) return audioCache.get(batchIndex);
     if (prefetchInFlight.has(batchIndex)) {
       // Already generating — wait for it
       while (!audioCache.has(batchIndex) && !stopRequested) {
@@ -1694,7 +1825,8 @@
     try {
       const voice = voiceSelect.value;
       const speed = parseFloat(speedRange.value);
-      const buffer = await generateAudio(batches[batchIndex].text, voice, speed);
+      const ttsText = preprocessForTTS(batches[batchIndex].text);
+      const buffer = await generateAudio(ttsText, voice, speed);
       if (!stopRequested) audioCache.set(batchIndex, buffer);
       return buffer;
     } catch (e) {
@@ -1790,6 +1922,14 @@
   function buildReadingView() {
     readingView.innerHTML = '';
     sentences.forEach((s, i) => {
+      if (s.isSceneBreak) {
+        const divider = document.createElement('div');
+        divider.className = 'scene-break';
+        divider.textContent = '* * *';
+        readingView.appendChild(divider);
+        return;
+      }
+
       const span = document.createElement('span');
       span.className = 'sentence upcoming';
       span.dataset.index = i;
@@ -1902,6 +2042,13 @@
       currentBatchIndex = i;
       updateHighlight();
 
+      // Scene breaks: skip audio, just pause
+      if (batches[i].isSceneBreak) {
+        const sceneBreakPause = parseInt(sceneBreakPauseRange.value);
+        if (sceneBreakPause > 0) await new Promise(r => setTimeout(r, sceneBreakPause));
+        continue;
+      }
+
       // Get the buffer (should be cached from prefetch, but generate if not)
       let buffer = audioCache.get(i);
       if (!buffer) {
@@ -1923,8 +2070,19 @@
 
       if (stopRequested || thisSession !== playbackSessionId) break;
 
-      // Intentional pause between batches (use paragraph pause if batch ends with paragraph)
-      const pause = batches[i].paragraphEnd ? parseInt(paraPauseRange.value) : parseInt(pauseRange.value);
+      // Intentional pause between batches — choose duration by break type
+      const batchText = batches[i].text;
+      const nextBatch = batches[i + 1];
+      let pause;
+      if (batches[i].paragraphEnd || (nextBatch && nextBatch.dialogueBreak)) {
+        pause = parseInt(paraPauseRange.value);
+      } else if (batchText.endsWith('\u2014') || batchText.endsWith('\u2014 ')) {
+        pause = parseInt(emDashPauseRange.value);
+      } else if (batchText.endsWith(',') || batchText.endsWith(', ')) {
+        pause = parseInt(commaPauseRange.value);
+      } else {
+        pause = parseInt(pauseRange.value);
+      }
       if (pause > 0) await new Promise(r => setTimeout(r, pause));
     }
 
@@ -2050,6 +2208,14 @@
     paraPauseRange.value = 800;
     paraPauseVal.textContent = '800ms';
     voiceSelect.value = 'bf_emma';
+    commaPauseRange.value = 150;
+    commaPauseVal.textContent = '150ms';
+    emDashPauseRange.value = 250;
+    emDashPauseVal.textContent = '250ms';
+    sceneBreakToggle.checked = false;
+    sceneBreakPauseRange.value = 2000;
+    sceneBreakPauseVal.textContent = '2000ms';
+    sceneBreakPauseWrap.style.display = 'none';
     updateUI();
   }
 
@@ -2084,9 +2250,9 @@
     stopBtn.classList.toggle('hidden', !inPlaybackMode);
     stopBtn.textContent = isPreparing ? 'Cancel' : 'Stop';
 
-    // Hide settings completely while preparing, collapse while playing
+    // Hide settings completely while preparing, collapse while playing or paused
     settingsEl.classList.toggle('hidden', isPreparing);
-    settingsEl.classList.toggle('collapsed', isPlaying && !isPreparing);
+    settingsEl.classList.toggle('collapsed', (isPlaying || isPaused) && !isPreparing);
 
     // Hide keyboard hint during preparing (not useful yet)
     kbdHintEl.classList.toggle('hidden', isPreparing);
@@ -2258,7 +2424,7 @@
     showDownloadModal();
 
     const voice = voiceSelect.value;
-    const speed = parseFloat(speedRange.value);
+    const baseSpeed = parseFloat(speedRange.value);
     const audioBuffers = [];
 
     try {
@@ -2267,7 +2433,18 @@
 
         updateDownloadProgress(i + 1, dlBatches.length, `Generating segment ${i + 1}...`);
 
-        const buffer = await generateAudio(dlBatches[i].text, voice, speed);
+        // Scene breaks: add silence instead of generating audio
+        if (dlBatches[i].isSceneBreak) {
+          const ctx = getAudioContext();
+          const silenceDuration = parseInt(sceneBreakPauseRange.value) / 1000;
+          const silenceBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * silenceDuration), ctx.sampleRate);
+          audioBuffers.push(silenceBuffer);
+          continue;
+        }
+
+        const speed = baseSpeed;
+        const ttsText = preprocessForTTS(dlBatches[i].text);
+        const buffer = await generateAudio(ttsText, voice, speed);
         audioBuffers.push(buffer);
       }
 
@@ -2350,6 +2527,7 @@
 
   // Toggle idle button visibility when text changes
   manuscriptEl.addEventListener('input', updateUI);
+
   downloadBtn.addEventListener('click', downloadAudio);
   skipBackBtn.addEventListener('click', skipBack);
   skipForwardBtn.addEventListener('click', skipForward);
@@ -2367,6 +2545,14 @@
   const pauseVal = document.getElementById('pauseVal');
   const paraPauseRange = document.getElementById('paraPauseRange');
   const paraPauseVal = document.getElementById('paraPauseVal');
+  const sceneBreakToggle = document.getElementById('sceneBreakToggle');
+  const sceneBreakPauseRange = document.getElementById('sceneBreakPauseRange');
+  const sceneBreakPauseVal = document.getElementById('sceneBreakPauseVal');
+  const sceneBreakPauseWrap = document.getElementById('sceneBreakPauseWrap');
+  const commaPauseRange = document.getElementById('commaPauseRange');
+  const commaPauseVal = document.getElementById('commaPauseVal');
+  const emDashPauseRange = document.getElementById('emDashPauseRange');
+  const emDashPauseVal = document.getElementById('emDashPauseVal');
 
   pauseRange.addEventListener('input', () => {
     pauseVal.textContent = pauseRange.value + 'ms';
@@ -2374,6 +2560,22 @@
 
   paraPauseRange.addEventListener('input', () => {
     paraPauseVal.textContent = paraPauseRange.value + 'ms';
+  });
+
+  commaPauseRange.addEventListener('input', () => {
+    commaPauseVal.textContent = commaPauseRange.value + 'ms';
+  });
+
+  emDashPauseRange.addEventListener('input', () => {
+    emDashPauseVal.textContent = emDashPauseRange.value + 'ms';
+  });
+
+  sceneBreakToggle.addEventListener('change', () => {
+    sceneBreakPauseWrap.style.display = sceneBreakToggle.checked ? '' : 'none';
+  });
+
+  sceneBreakPauseRange.addEventListener('input', () => {
+    sceneBreakPauseVal.textContent = sceneBreakPauseRange.value + 'ms';
   });
 
   // Keyboard shortcuts
