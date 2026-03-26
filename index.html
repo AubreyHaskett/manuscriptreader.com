@@ -1976,11 +1976,12 @@
     }
 
     const spans = readingView.querySelectorAll('.sentence');
-    spans.forEach((span, i) => {
+    spans.forEach(span => {
+      const idx = parseInt(span.dataset.index);
       span.className = 'sentence';
-      if (spokenIndices.has(i)) span.classList.add('spoken');
-      else if (currentSentenceIndices.includes(i)) span.classList.add('active');
-      else if (genSentenceIndices.includes(i)) span.classList.add('generating');
+      if (spokenIndices.has(idx)) span.classList.add('spoken');
+      else if (currentSentenceIndices.includes(idx)) span.classList.add('active');
+      else if (genSentenceIndices.includes(idx)) span.classList.add('generating');
       else span.classList.add('upcoming');
     });
 
