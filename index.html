@@ -1307,16 +1307,30 @@
     <div class="setting">
       <div class="setting-label">
         <span>Paragraph pause</span>
-        <span class="value" id="paraPauseVal">800ms</span>
+        <span class="value" id="paraPauseVal">1000ms</span>
       </div>
-      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="800">
+      <input type="range" id="paraPauseRange" min="0" max="1500" step="50" value="1000">
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Speaker change pause</span>
+        <span class="value" id="speakerChangePauseVal">1000ms</span>
+      </div>
+      <input type="range" id="speakerChangePauseRange" min="0" max="1500" step="50" value="1000">
+    </div>
+    <div class="setting">
+      <div class="setting-label">
+        <span>Action beat pause</span>
+        <span class="value" id="actionBeatPauseVal">400ms</span>
+      </div>
+      <input type="range" id="actionBeatPauseRange" min="0" max="800" step="25" value="400">
     </div>
     <div class="setting">
       <div class="setting-label">
         <span>Comma pause</span>
-        <span class="value" id="commaPauseVal">150ms</span>
+        <span class="value" id="commaPauseVal">250ms</span>
       </div>
-      <input type="range" id="commaPauseRange" min="0" max="500" step="25" value="150">
+      <input type="range" id="commaPauseRange" min="0" max="500" step="25" value="250">
     </div>
     <div class="setting">
       <div class="setting-label">
@@ -1702,16 +1716,21 @@
       parts.forEach(s => {
         const cleaned = s.trim();
         if (!cleaned || cleaned.length <= 1) return;
+
+        // Detect quote boundaries for pause control
+        const startsWithQuote = /^[\u201C\u2018"']/.test(cleaned);
+        const endsWithQuote = /[\u201D\u2019"'][\s.!?,]*$/.test(cleaned);
+
         if (splitCommas) {
           const commaParts = cleaned.match(/[^,]*,\s*|[^,]+$/g) || [cleaned];
           commaParts.forEach(cp => {
             const trimCP = cp.trim();
             if (trimCP && trimCP.length > 1) {
-              result.push({ text: trimCP, paragraphEnd: false, isDialogue, isSceneBreak: false });
+              result.push({ text: trimCP, paragraphEnd: false, isDialogue, isSceneBreak: false, startsWithQuote, endsWithQuote });
             }
           });
         } else {
-          result.push({ text: cleaned, paragraphEnd: false, isDialogue, isSceneBreak: false });
+          result.push({ text: cleaned, paragraphEnd: false, isDialogue, isSceneBreak: false, startsWithQuote, endsWithQuote });
         }
       });
 
@@ -1732,7 +1751,7 @@
 
   function batchSentences(sentences) {
     const batches = [];
-    let currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [], dialogueBreak: false };
+    let currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [], dialogueBreak: false, actionBeat: false };
 
     sentences.forEach((s, i) => {
       // Scene breaks: force a batch break, don't generate audio, just mark for pause
@@ -1740,8 +1759,8 @@
         if (currentBatch.text) {
           batches.push(currentBatch);
         }
-        batches.push({ text: '', paragraphEnd: true, sentenceIndices: [i], isDialogue: false, dialogueBreak: false, isSceneBreak: true });
-        currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [], dialogueBreak: false };
+        batches.push({ text: '', paragraphEnd: true, sentenceIndices: [i], isDialogue: false, dialogueBreak: false, actionBeat: false, isSceneBreak: true });
+        currentBatch = { text: '', paragraphEnd: false, sentenceIndices: [], dialogueBreak: false, actionBeat: false };
         return;
       }
 
@@ -1750,15 +1769,26 @@
       // Force batch break between consecutive dialogue paragraphs (different speakers)
       const dialogueBreak = currentBatch.text && currentBatch.paragraphEnd && s.isDialogue && currentBatch.isDialogue;
 
+      // Detect action beats: transition from quoted speech to unquoted narration
+      // or from unquoted narration back to quoted speech within the same paragraph
+      // e.g. "Wait." She grabbed his arm. "Don't go."
+      const lastSentenceIdx = currentBatch.sentenceIndices.length > 0 ? currentBatch.sentenceIndices[currentBatch.sentenceIndices.length - 1] : -1;
+      const lastSentence = lastSentenceIdx >= 0 ? sentences[lastSentenceIdx] : null;
+      const actionBeat = currentBatch.text && !currentBatch.paragraphEnd && lastSentence && (
+        (lastSentence.endsWithQuote && !s.startsWithQuote) ||  // dialog → narration
+        (!lastSentence.endsWithQuote && s.startsWithQuote)     // narration → dialog
+      );
+
       // If adding this sentence exceeds max, or current batch is long enough
-      // and we're at a paragraph break, or dialogue boundary
+      // and we're at a paragraph break, or dialogue boundary, or action beat
       if (combined.length > MAX_BATCH_LENGTH ||
           (currentBatch.text.length >= MIN_BATCH_LENGTH && currentBatch.paragraphEnd) ||
-          dialogueBreak) {
+          dialogueBreak ||
+          actionBeat) {
         if (currentBatch.text) {
           batches.push(currentBatch);
         }
-        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i], isDialogue: s.isDialogue, dialogueBreak: dialogueBreak, isSceneBreak: false };
+        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i], isDialogue: s.isDialogue, dialogueBreak: dialogueBreak, actionBeat: !!actionBeat, isSceneBreak: false };
       } else {
         // Add to current batch
         currentBatch.text = combined;
@@ -2075,7 +2105,13 @@
       const batchText = batches[i].text;
       const nextBatch = batches[i + 1];
       let pause;
-      if (batches[i].paragraphEnd || (nextBatch && nextBatch.dialogueBreak)) {
+      if (nextBatch && nextBatch.dialogueBreak) {
+        // Different speakers in consecutive dialogue paragraphs
+        pause = parseInt(speakerChangePauseRange.value);
+      } else if (nextBatch && nextBatch.actionBeat) {
+        // Transition between dialog and narration (action beat)
+        pause = parseInt(actionBeatPauseRange.value);
+      } else if (batches[i].paragraphEnd) {
         pause = parseInt(paraPauseRange.value);
       } else if (batchText.endsWith('\u2014') || batchText.endsWith('\u2014 ')) {
         pause = parseInt(emDashPauseRange.value);
@@ -2206,11 +2242,15 @@
     speedVal.textContent = '1.00×';
     pauseRange.value = 500;
     pauseVal.textContent = '500ms';
-    paraPauseRange.value = 800;
-    paraPauseVal.textContent = '800ms';
+    paraPauseRange.value = 1000;
+    paraPauseVal.textContent = '1000ms';
     voiceSelect.value = 'bf_emma';
-    commaPauseRange.value = 150;
-    commaPauseVal.textContent = '150ms';
+    speakerChangePauseRange.value = 1000;
+    speakerChangePauseVal.textContent = '1000ms';
+    actionBeatPauseRange.value = 400;
+    actionBeatPauseVal.textContent = '400ms';
+    commaPauseRange.value = 250;
+    commaPauseVal.textContent = '250ms';
     emDashPauseRange.value = 250;
     emDashPauseVal.textContent = '250ms';
     sceneBreakToggle.checked = false;
@@ -2554,6 +2594,10 @@
   const commaPauseVal = document.getElementById('commaPauseVal');
   const emDashPauseRange = document.getElementById('emDashPauseRange');
   const emDashPauseVal = document.getElementById('emDashPauseVal');
+  const speakerChangePauseRange = document.getElementById('speakerChangePauseRange');
+  const speakerChangePauseVal = document.getElementById('speakerChangePauseVal');
+  const actionBeatPauseRange = document.getElementById('actionBeatPauseRange');
+  const actionBeatPauseVal = document.getElementById('actionBeatPauseVal');
 
   pauseRange.addEventListener('input', () => {
     pauseVal.textContent = pauseRange.value + 'ms';
@@ -2569,6 +2613,14 @@
 
   emDashPauseRange.addEventListener('input', () => {
     emDashPauseVal.textContent = emDashPauseRange.value + 'ms';
+  });
+
+  speakerChangePauseRange.addEventListener('input', () => {
+    speakerChangePauseVal.textContent = speakerChangePauseRange.value + 'ms';
+  });
+
+  actionBeatPauseRange.addEventListener('input', () => {
+    actionBeatPauseVal.textContent = actionBeatPauseRange.value + 'ms';
   });
 
   sceneBreakToggle.addEventListener('change', () => {
