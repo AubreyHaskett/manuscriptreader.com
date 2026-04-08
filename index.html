@@ -1769,26 +1769,23 @@
       // Force batch break between consecutive dialogue paragraphs (different speakers)
       const dialogueBreak = currentBatch.text && currentBatch.paragraphEnd && s.isDialogue && currentBatch.isDialogue;
 
-      // Detect action beats: transition from quoted speech to unquoted narration
-      // or from unquoted narration back to quoted speech within the same paragraph
-      // e.g. "Wait." She grabbed his arm. "Don't go."
-      const lastSentenceIdx = currentBatch.sentenceIndices.length > 0 ? currentBatch.sentenceIndices[currentBatch.sentenceIndices.length - 1] : -1;
-      const lastSentence = lastSentenceIdx >= 0 ? sentences[lastSentenceIdx] : null;
-      const actionBeat = currentBatch.text && !currentBatch.paragraphEnd && lastSentence && (
-        (lastSentence.endsWithQuote && !s.startsWithQuote) ||  // dialog → narration
-        (!lastSentence.endsWithQuote && s.startsWithQuote)     // narration → dialog
-      );
-
       // If adding this sentence exceeds max, or current batch is long enough
-      // and we're at a paragraph break, or dialogue boundary, or action beat
+      // and we're at a paragraph break, or dialogue boundary
       if (combined.length > MAX_BATCH_LENGTH ||
           (currentBatch.text.length >= MIN_BATCH_LENGTH && currentBatch.paragraphEnd) ||
-          dialogueBreak ||
-          actionBeat) {
+          dialogueBreak) {
         if (currentBatch.text) {
+          // Tag action beats at natural batch boundaries (dialog↔narration transitions)
+          const lastSentenceIdx = currentBatch.sentenceIndices.length > 0 ? currentBatch.sentenceIndices[currentBatch.sentenceIndices.length - 1] : -1;
+          const lastSentence = lastSentenceIdx >= 0 ? sentences[lastSentenceIdx] : null;
+          const actionBeat = !currentBatch.paragraphEnd && lastSentence && (
+            (lastSentence.endsWithQuote && !s.startsWithQuote) ||
+            (!lastSentence.endsWithQuote && s.startsWithQuote)
+          );
+          currentBatch.actionBeat = !!actionBeat;
           batches.push(currentBatch);
         }
-        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i], isDialogue: s.isDialogue, dialogueBreak: dialogueBreak, actionBeat: !!actionBeat, isSceneBreak: false };
+        currentBatch = { text: s.text, paragraphEnd: s.paragraphEnd, sentenceIndices: [i], isDialogue: s.isDialogue, dialogueBreak: dialogueBreak, actionBeat: false, isSceneBreak: false };
       } else {
         // Add to current batch
         currentBatch.text = combined;
