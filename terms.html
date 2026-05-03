@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Use — Manuscript Reader</title>
+<meta name="description" content="Terms of use for Manuscript Reader.">
+<link rel="canonical" href="https://manuscriptreader.com/terms.html">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:#F2EEE2;--paper-deep:#E8E1CE;--paper-soft:#F8F5EC;
+  --rule:#C9C0A8;--rule-soft:#DDD4BD;
+  --ink:#1A1814;--ink-strong:#07060A;--ink-muted:#5C564A;--ink-faint:#8C8676;
+  --proof:#C0392E;--proof-deep:#8C2920;--proof-wash:#F2D9D4;
+  --serif:"Newsreader","Iowan Old Style",Charter,Georgia,serif;
+  --mono:"IBM Plex Mono","JetBrains Mono","SF Mono",ui-monospace,monospace;
+  --gut:clamp(20px,4vw,56px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1D1B16;
+  --rule:#34302A;--rule-soft:#232019;
+  --ink:#ECE3CE;--ink-strong:#FFFAEC;--ink-muted:#948D7C;--ink-faint:#5F5A4F;
+  --proof:#E16653;--proof-deep:#C04435;--proof-wash:#2A1714;
+}}
+[data-theme="dark"]{
+  --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1D1B16;
+  --rule:#34302A;--rule-soft:#232019;
+  --ink:#ECE3CE;--ink-strong:#FFFAEC;--ink-muted:#948D7C;--ink-faint:#5F5A4F;
+  --proof:#E16653;--proof-deep:#C04435;--proof-wash:#2A1714;
+}
+*,*::before,*::after{box-sizing:border-box;}
+*{margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--serif);background:var(--paper);color:var(--ink);
+  min-height:100vh;font-size:17px;line-height:1.65;
+  font-feature-settings:"ss01","onum","kern";
+  text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+::selection{background:var(--proof);color:var(--paper);}
+.page{max-width:680px;margin:0 auto;padding:clamp(32px,6vw,72px) var(--gut) 64px;}
+/* Masthead */
+.masthead{padding-bottom:20px;border-bottom:2px solid var(--ink);margin-bottom:36px;}
+.wordmark .name{
+  font-family:var(--serif);font-weight:350;font-size:clamp(40px,7vw,88px);
+  line-height:0.86;letter-spacing:-0.04em;color:var(--ink-strong);
+  font-feature-settings:"ss01","lnum";margin-bottom:12px;
+}
+.wordmark .name em{font-style:italic;font-weight:350;}
+.mast-nav{display:flex;align-items:flex-end;margin-top:20px;border-bottom:1px solid var(--rule);}
+.mast-nav .links{display:flex;gap:0;align-items:flex-end;}
+.mast-nav a{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;
+  text-decoration:none;color:var(--ink-muted);padding:7px 16px 6px;
+  border:1px solid transparent;border-bottom:none;margin-bottom:-1px;
+  transition:color 0.1s,background 0.1s;
+}
+.mast-nav a:hover{color:var(--ink);background:var(--paper-deep);border-color:var(--rule-soft);}
+.mast-nav a.current{color:var(--ink-strong);background:var(--paper);border-color:var(--rule);border-bottom-color:var(--paper);}
+/* Doc styles */
+.doc-header{margin-bottom:40px;}
+.doc-title{
+  font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,44px);
+  line-height:1.1;letter-spacing:-0.02em;color:var(--ink-strong);margin-bottom:10px;
+}
+.doc-meta{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);}
+.doc-intro{
+  font-family:var(--serif);font-style:italic;font-size:18px;
+  color:var(--ink-muted);line-height:1.5;margin-bottom:36px;
+  padding-bottom:24px;border-bottom:1px solid var(--rule-soft);
+}
+h2{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--ink-faint);margin:36px 0 12px;
+}
+p{margin-bottom:14px;color:var(--ink);}
+p:last-child{margin-bottom:0;}
+a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule);}
+a:hover{color:var(--proof);}
+ul{margin:0 0 14px 1.4em;}
+ul li{margin-bottom:6px;}
+.back-link{
+  display:inline-block;margin-bottom:32px;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--ink-faint);text-decoration:none;
+}
+.back-link:hover{color:var(--proof);}
+.footer-legal{
+  margin-top:48px;padding-top:20px;border-top:1px solid var(--rule-soft);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--ink-faint);text-align:center;
+}
+.footer-legal a{color:var(--ink-faint);text-decoration:underline;text-underline-offset:2px;}
+.footer-legal a:hover{color:var(--ink-muted);}
+</style>
+</head>
+<body>
+<script>
+  (function(){var s=localStorage.getItem('theme');if(s)document.documentElement.setAttribute('data-theme',s);})();
+</script>
+<div class="page">
+  <header class="masthead">
+    <div class="wordmark">
+      <div class="name">Manuscript<br>Reader<em>.</em></div>
+    </div>
+    <nav class="mast-nav">
+      <div class="links">
+        <a href="index.html">Read&nbsp;Aloud</a>
+        <a href="lint.html">Manuscript&nbsp;Lint</a>
+      </div>
+    </nav>
+  </header>
+
+  <a class="back-link" href="index.html">← Back to Manuscript Reader</a>
+
+  <div class="doc-header">
+    <h1 class="doc-title">Terms of Use</h1>
+    <p class="doc-meta">Last updated: May 2025</p>
+  </div>
+
+  <p class="doc-intro">Manuscript Reader is a free tool for writers. By using it, you agree to these terms. They are short, plain-English, and written in good faith.</p>
+
+  <h2>What this tool does</h2>
+  <p>Manuscript Reader converts text you paste into spoken audio using an AI voice model that runs entirely inside your browser. No text leaves your device. No audio is stored or transmitted. The tool is provided free of charge, with no accounts required.</p>
+
+  <h2>Your content</h2>
+  <p>You retain full ownership of everything you paste into Manuscript Reader. We make no claim to your writing. Because your text is never uploaded to our servers, we never have access to it in the first place.</p>
+
+  <h2>Acceptable use</h2>
+  <p>You may use Manuscript Reader for any lawful purpose. Please do not use it to process content that is illegal in your jurisdiction or that infringes the copyright of others without authorisation.</p>
+
+  <h2>No warranties</h2>
+  <p>Manuscript Reader is provided "as is" without warranty of any kind. The voice model may make errors, mispronounce words, or behave unexpectedly. We make no guarantee that the service will be available at any particular time.</p>
+
+  <h2>Limitation of liability</h2>
+  <p>To the fullest extent permitted by applicable law, the operator of Manuscript Reader shall not be liable for any damages arising from your use of the tool, including but not limited to loss of data or interruption of work.</p>
+
+  <h2>Open source</h2>
+  <p>Manuscript Reader uses the <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> voice model (Apache 2.0 licence) and <a href="https://github.com/hexgrad/kokoro-js" target="_blank" rel="noopener">kokoro-js</a> for in-browser inference. The site itself is open source. These licences are separate from these Terms of Use.</p>
+
+  <h2>Changes</h2>
+  <p>We may update these terms from time to time. Continued use of the tool after changes are posted constitutes acceptance of the revised terms.</p>
+
+  <h2>Contact</h2>
+  <p>Questions? Use the feedback form on the <a href="index.html">main page</a>.</p>
+
+  <div class="footer-legal">
+    <a href="index.html">Manuscript Reader</a> &nbsp;&middot;&nbsp;
+    <a href="privacy.html">Privacy Policy</a> &nbsp;&middot;&nbsp;
+    <a href="terms.html">Terms of Use</a>
+  </div>
+</div>
+<script data-goatcounter="https://manuscriptreader.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
