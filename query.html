@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Query Letter — Manuscript Reader</title>
-<meta name="description" content="Build your query letter. Structured form, live preview. Supports fiction and nonfiction. Free, private — your text never leaves your browser.">
+<meta name="description" content="Build your query letter. Step-by-step form, live preview. Supports fiction and nonfiction. Free, private — your text never leaves your browser.">
 <meta property="og:title" content="Query Letter — Manuscript Reader">
 <meta property="og:description" content="Build your query letter free, in your browser. No AI. Your text never leaves your device.">
 <meta property="og:type" content="website">
@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F2EEE2;--paper-deep:#E8E1CE;--paper-soft:#F8F5EC;
+  --paper:#F2EEE2;--paper-deep:#E8E1CE;--paper-soft:#EDE7D4;
   --rule:#C9C0A8;--rule-soft:#DDD4BD;
   --ink:#1A1814;--ink-strong:#07060A;--ink-muted:#5C564A;--ink-faint:#8C8676;
   --proof:#C0392E;--proof-deep:#8C2920;--proof-wash:#F2D9D4;
@@ -24,13 +24,13 @@
   --mono:"IBM Plex Mono","JetBrains Mono","SF Mono",ui-monospace,monospace;
 }
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1D1B16;
+  --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1E1C16;
   --rule:#34302A;--rule-soft:#232019;
   --ink:#ECE3CE;--ink-strong:#FFFAEC;--ink-muted:#948D7C;--ink-faint:#5F5A4F;
   --proof:#E16653;--proof-deep:#C04435;--proof-wash:#2A1714;--indigo:#88A8DD;
 }}
 [data-theme="dark"]{
-  --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1D1B16;
+  --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1E1C16;
   --rule:#34302A;--rule-soft:#232019;
   --ink:#ECE3CE;--ink-strong:#FFFAEC;--ink-muted:#948D7C;--ink-faint:#5F5A4F;
   --proof:#E16653;--proof-deep:#C04435;--proof-wash:#2A1714;--indigo:#88A8DD;
@@ -71,41 +71,77 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 .type-hint{font-family:var(--mono);font-size:0.68rem;color:var(--ink-faint);}
 
 /* — Workspace — */
-.workspace{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:0;border:1px solid var(--rule);align-items:start;}
+.workspace{display:grid;grid-template-columns:minmax(0,500px) minmax(0,1fr);gap:0;border:1px solid var(--rule);align-items:start;}
 @media(max-width:900px){.workspace{grid-template-columns:1fr;}}
 
 /* — Form panel — */
 .form-panel{border-right:1px solid var(--rule);}
 @media(max-width:900px){.form-panel{border-right:none;border-bottom:1px solid var(--rule);}}
-.form-section{border-bottom:1px solid var(--rule-soft);padding:18px 22px;}
-.form-section:last-child{border-bottom:none;}
+
+/* — Step indicator — */
+.step-indicator{display:flex;align-items:center;gap:0;padding:14px 22px;border-bottom:1px solid var(--rule);background:var(--paper-deep);overflow-x:auto;}
+.step-dot{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+.step-dot-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--rule);background:var(--paper);font-family:var(--mono);font-size:0.6rem;font-weight:700;color:var(--ink-faint);cursor:default;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative;}
+.step-dot.done .step-dot-btn{background:var(--ink-muted);border-color:var(--ink-muted);color:var(--paper);cursor:pointer;}
+.step-dot.done .step-dot-btn:hover{background:var(--ink);border-color:var(--ink);}
+.step-dot.current .step-dot-btn{background:var(--proof);border-color:var(--proof);color:var(--paper);cursor:default;}
+.step-dot-label{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;max-width:54px;text-align:center;line-height:1.2;}
+.step-dot.current .step-dot-label{color:var(--proof);}
+.step-dot.done .step-dot-label{color:var(--ink-muted);}
+.step-connector{width:18px;height:2px;background:var(--rule-soft);flex-shrink:0;margin-bottom:20px;}
+.step-connector.done{background:var(--ink-muted);}
+
+/* — Form section (one visible at a time) — */
+.form-section{padding:22px 22px 0;}
+.form-section.hidden{display:none!important;}
 .section-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;}
-.section-num{font-family:var(--mono);font-size:var(--t-caps);color:var(--proof);font-weight:700;letter-spacing:0.06em;flex-shrink:0;}
-.section-head h3{font-family:var(--serif);font-size:0.97rem;font-weight:600;color:var(--ink-strong);}
+.section-head h3{font-family:var(--serif);font-size:1.08rem;font-weight:600;color:var(--ink-strong);}
 .opt-tag{font-family:var(--mono);font-size:0.62rem;color:var(--ink-faint);letter-spacing:0.06em;text-transform:uppercase;margin-left:auto;flex-shrink:0;}
-.guidance{font-size:0.77rem;line-height:1.65;color:var(--ink-muted);margin-bottom:12px;}
+.guidance{font-size:0.8rem;line-height:1.65;color:var(--ink-muted);margin-bottom:16px;}
 .guidance strong{color:var(--ink);font-weight:600;}
 .guidance em{color:var(--ink);}
-.guidance ul{margin:5px 0 0 14px;}.guidance li{margin-bottom:2px;}
+.guidance ul{margin:5px 0 0 14px;}.guidance li{margin-bottom:3px;}
 
-/* — Fields — */
-.field{margin-bottom:11px;}.field:last-child{margin-bottom:0;}
-.field label{display:block;font-family:var(--mono);font-size:0.62rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-faint);margin-bottom:4px;}
-.field label .sub{font-weight:400;text-transform:none;letter-spacing:0;font-size:0.9em;}
-.field input[type="text"],.field select{width:100%;font-family:var(--serif);font-size:0.87rem;color:var(--ink);background:transparent;border:none;border-bottom:1px solid var(--rule);outline:none;padding:5px 0;transition:border-color 0.2s;-webkit-appearance:none;border-radius:0;line-height:1.4;}
-.field input[type="text"]:focus,.field select:focus{border-bottom-color:var(--proof);}
-.field textarea{width:100%;font-family:var(--serif);font-size:0.87rem;color:var(--ink);background:var(--paper-deep);border:1px solid var(--rule);outline:none;padding:8px 10px;transition:border-color 0.2s;line-height:1.55;resize:vertical;min-height:72px;border-radius:0;}
-.field textarea:focus{border-color:var(--proof);}
-.field textarea.tall{min-height:110px;}
-.field textarea.xtall{min-height:160px;}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.wc-note{font-family:var(--mono);font-size:0.63rem;color:var(--ink-faint);margin-top:3px;min-height:1em;}
+/* — Fields — now clearly editable — */
+.field{margin-bottom:14px;}.field:last-child{margin-bottom:0;}
+.field label{display:block;font-family:var(--mono);font-size:0.62rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-muted);margin-bottom:5px;}
+.field label .sub{font-weight:400;text-transform:none;letter-spacing:0;font-size:0.9em;color:var(--ink-faint);}
+.field input[type="text"]{width:100%;font-family:var(--serif);font-size:0.92rem;color:var(--ink-strong);background:var(--paper-soft);border:1px solid var(--rule);outline:none;padding:9px 12px;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;border-radius:0;line-height:1.4;}
+.field input[type="text"]:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.field select{width:100%;font-family:var(--serif);font-size:0.92rem;color:var(--ink-strong);background:var(--paper-soft);border:1px solid var(--rule);outline:none;padding:9px 32px 9px 12px;transition:border-color 0.2s;-webkit-appearance:none;border-radius:0;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238C8676' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field select:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.field textarea{width:100%;font-family:var(--serif);font-size:0.92rem;color:var(--ink-strong);background:var(--paper-soft);border:1px solid var(--rule);outline:none;padding:10px 12px;transition:border-color 0.2s,box-shadow 0.2s;line-height:1.55;resize:vertical;min-height:80px;border-radius:0;}
+.field textarea:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.field textarea.tall{min-height:114px;}
+.field textarea.xtall{min-height:168px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.wc-note{font-family:var(--mono);font-size:0.63rem;color:var(--ink-faint);margin-top:4px;min-height:1em;line-height:1.4;}
+::placeholder{color:var(--ink-faint);opacity:1;}
 
 /* — Pronoun group — */
 .pronoun-group{display:flex;gap:0;border:1px solid var(--rule);margin-top:4px;width:fit-content;}
-.pronoun-btn{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.05em;text-transform:uppercase;padding:5px 11px;background:transparent;border:none;cursor:pointer;color:var(--ink-faint);transition:all 0.15s;}
+.pronoun-btn{font-family:var(--mono);font-size:0.63rem;letter-spacing:0.05em;text-transform:uppercase;padding:7px 14px;background:var(--paper-soft);border:none;cursor:pointer;color:var(--ink-muted);transition:all 0.15s;}
 .pronoun-btn:not(:last-child){border-right:1px solid var(--rule);}
 .pronoun-btn.active{background:var(--ink-strong);color:var(--paper);}
+.pronoun-btn:hover:not(.active){background:var(--paper-deep);}
+
+/* — Step navigation (continue / back) — */
+.step-nav{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 22px;gap:12px;}
+.back-btn{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.08em;text-transform:uppercase;background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:4px 0;}
+.back-btn:hover{color:var(--ink-muted);}
+.back-btn:disabled{opacity:0;pointer-events:none;}
+
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 0 0 rgba(192,57,46,0);}
+  50%{box-shadow:0 0 0 7px rgba(192,57,46,0.18);}
+}
+.continue-btn{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.12em;text-transform:uppercase;padding:11px 28px;background:var(--proof);border:2px solid var(--proof);color:var(--paper);cursor:pointer;transition:background 0.15s,border-color 0.15s;border-radius:0;animation:pulse-glow 2.2s ease-in-out infinite;}
+.continue-btn:hover{background:var(--proof-deep);border-color:var(--proof-deep);animation:none;}
+.continue-btn.finish{background:var(--ink-strong);border-color:var(--ink-strong);animation:none;}
+.continue-btn.finish:hover{background:var(--proof);border-color:var(--proof);animation:pulse-glow 2.2s ease-in-out infinite;}
+.skip-link{font-family:var(--mono);font-size:0.63rem;color:var(--ink-faint);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;}
+.skip-link:hover{color:var(--ink-muted);}
+.step-nav-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
 
 /* — Preview panel — */
 .preview-panel{display:flex;flex-direction:column;position:sticky;top:0;max-height:100vh;overflow:hidden;}
@@ -154,7 +190,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 </div>
 <nav class="mast-nav"><div class="links">
 <a href="index.html">Read&nbsp;Aloud</a>
-<a href="lint.html">Manuscript&nbsp;Lint</a>
+<a href="lint.html">Prose&nbsp;Analysis</a>
 <a href="query.html" class="current">Query&nbsp;Letter</a>
 </div></nav>
 </header>
@@ -172,274 +208,259 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 <!-- ═══ FORM PANEL ═══════════════════════════════════════════════════════ -->
 <div class="form-panel" id="formPanel">
 
-  <!-- 00 PERSONALIZATION -->
-  <div class="form-section">
-    <div class="section-head">
-      <span class="section-num">00</span>
-      <h3>Personalization</h3>
-      <span class="opt-tag">Optional</span>
-    </div>
-    <div class="guidance">Why this specific agent? Keep it to 1–2 genuine sentences — something you actually read or researched. If you're sending a batch query with no specific reason, skip it. Agents can tell the difference.</div>
+  <!-- Step indicator -->
+  <div class="step-indicator" id="stepIndicator"></div>
+
+  <!-- ─── FICTION SECTIONS ──────────────────────────────────────────── -->
+
+  <!-- F0: Personalization -->
+  <div class="form-section hidden" id="sec-f0">
+    <div class="section-head"><h3>Personalization <span class="opt-tag">Optional</span></h3></div>
+    <div class="guidance">Why this specific agent? Keep it to 1–2 genuine sentences — something you actually read or researched. If you're sending a batch query with no specific reason, skip this step. Agents can tell the difference.</div>
     <div class="field">
       <label>Personalization note</label>
       <textarea id="qPersonal" rows="2" placeholder="I read your MSWL post seeking fantasy with political stakes and unreliable maps…"></textarea>
     </div>
   </div>
 
-  <!-- ═══ FICTION FIELDS ═══════════════════════════════════════════════ -->
-  <div id="fictionFields">
-
-    <!-- 01 THE PITCH -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">01</span><h3>The Pitch</h3></div>
-      <div class="guidance">The heart of your query. Fill in the fields below and watch the letter assemble on the right. You can always copy and edit the result — this is a scaffold, not a final draft.
-        <br><br>Write each field to complete the sentence that precedes it in the letter.
-      </div>
-      <div class="field">
-        <label>Protagonist name</label>
-        <input type="text" id="fName" placeholder="Elara">
-      </div>
-      <div class="field">
-        <label>Protagonist description <span class="sub">("NAME is ___")</span></label>
-        <input type="text" id="fDesc" placeholder="a disgraced cartographer in a city that erases its own history">
-      </div>
-      <div class="field">
-        <label>Pronoun</label>
-        <div class="pronoun-group" id="pronounGroup">
-          <button class="pronoun-btn active" data-sub="she" data-obj="her" data-pos="her">she/her</button>
-          <button class="pronoun-btn" data-sub="he" data-obj="him" data-pos="his">he/him</button>
-          <button class="pronoun-btn" data-sub="they" data-obj="them" data-pos="their">they/them</button>
-        </div>
-      </div>
-      <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
-        <label>Inciting incident <span class="sub">("When ___, NAME must…")</span></label>
-        <textarea id="fInciting" rows="2" placeholder="a forbidden map surfaces that contradicts the city's founding myth"></textarea>
-      </div>
-      <div class="field">
-        <label>Conflict — what must they do <span class="sub">("NAME must ___")</span></label>
-        <textarea id="fConflict" rows="2" placeholder="choose between exposing the truth and protecting the only home she has ever known"></textarea>
-      </div>
-      <div class="field">
-        <label>Stakes <span class="sub">(full sentence — what happens if they fail)</span></label>
-        <input type="text" id="fStakes" placeholder="If she stays silent, thousands will be erased from history — including herself.">
-      </div>
-      <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
-        <label>Second pitch paragraph <span class="sub">(optional — subplot, complication, second act)</span></label>
-        <textarea id="fPitch2" class="tall" placeholder="Leave blank if your pitch fits in one paragraph."></textarea>
+  <!-- F1: The Pitch -->
+  <div class="form-section hidden" id="sec-f1">
+    <div class="section-head"><h3>The Pitch</h3></div>
+    <div class="guidance">The heart of your query. Fill in the fields below — watch the letter take shape on the right as you go. Each field completes a sentence in the letter.</div>
+    <div class="field">
+      <label>Protagonist name</label>
+      <input type="text" id="fName" placeholder="Elara">
+    </div>
+    <div class="field">
+      <label>Protagonist description <span class="sub"> — "NAME is ___"</span></label>
+      <input type="text" id="fDesc" placeholder="a disgraced cartographer in a city that erases its own history">
+    </div>
+    <div class="field">
+      <label>Pronoun</label>
+      <div class="pronoun-group" id="pronounGroup">
+        <button class="pronoun-btn active" data-sub="she" data-obj="her" data-pos="her">she/her</button>
+        <button class="pronoun-btn" data-sub="he" data-obj="him" data-pos="his">he/him</button>
+        <button class="pronoun-btn" data-sub="they" data-obj="them" data-pos="their">they/them</button>
       </div>
     </div>
+    <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
+      <label>Inciting incident <span class="sub"> — "When ___, NAME must…"</span></label>
+      <textarea id="fInciting" rows="2" placeholder="a forbidden map surfaces that contradicts the city's founding myth"></textarea>
+    </div>
+    <div class="field">
+      <label>Conflict <span class="sub"> — "NAME must ___"</span></label>
+      <textarea id="fConflict" rows="2" placeholder="choose between exposing the truth and protecting the only home she has ever known"></textarea>
+    </div>
+    <div class="field">
+      <label>Stakes <span class="sub"> — full sentence, what happens if they fail</span></label>
+      <input type="text" id="fStakes" placeholder="If she stays silent, thousands will be erased from history — including herself.">
+    </div>
+    <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
+      <label>Second pitch paragraph <span class="sub"> — optional subplot or complication</span></label>
+      <textarea id="fPitch2" class="tall" placeholder="Leave blank if your pitch fits in one paragraph."></textarea>
+    </div>
+  </div>
 
-    <!-- 02 BOOK DETAILS -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">02</span><h3>Book Details</h3></div>
+  <!-- F2: Book Details -->
+  <div class="form-section hidden" id="sec-f2">
+    <div class="section-head"><h3>Book Details</h3></div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="fTitle" placeholder="The Cartographer's Erasure">
+    </div>
+    <div class="field-row">
       <div class="field">
-        <label>Title</label>
-        <input type="text" id="fTitle" placeholder="The Cartographer's Erasure">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Genre</label>
-          <select id="fGenre">
-            <option value="">Select…</option>
-            <optgroup label="Adult Fiction">
-              <option value="literary fiction">Literary Fiction</option>
-              <option value="upmarket fiction">Upmarket Fiction</option>
-              <option value="commercial fiction">Commercial Fiction</option>
-              <option value="women's fiction">Women's Fiction</option>
-              <option value="historical fiction">Historical Fiction</option>
-              <option value="thriller">Thriller / Suspense</option>
-              <option value="mystery">Mystery / Crime</option>
-              <option value="horror">Horror</option>
-              <option value="fantasy">Fantasy</option>
-              <option value="epic fantasy">Epic Fantasy</option>
-              <option value="science fiction">Science Fiction</option>
-              <option value="speculative fiction">Speculative Fiction</option>
-              <option value="romance">Romance</option>
-              <option value="contemporary romance">Contemporary Romance</option>
-              <option value="historical romance">Historical Romance</option>
-            </optgroup>
-            <optgroup label="YA / MG">
-              <option value="YA contemporary fiction">YA Contemporary</option>
-              <option value="YA fantasy">YA Fantasy</option>
-              <option value="YA thriller">YA Thriller</option>
-              <option value="YA romance">YA Romance</option>
-              <option value="YA science fiction">YA Science Fiction</option>
-              <option value="YA historical fiction">YA Historical Fiction</option>
-              <option value="middle grade fiction">Middle Grade Fiction</option>
-              <option value="middle grade fantasy">Middle Grade Fantasy</option>
-            </optgroup>
-          </select>
-        </div>
-        <div class="field">
-          <label>Word count</label>
-          <input type="text" id="fWordCount" placeholder="85,000">
-          <div class="wc-note" id="fWcNote"></div>
-        </div>
-      </div>
-      <div class="field">
-        <label>Standalone / series</label>
-        <select id="fSeries">
-          <option value="standalone">Standalone</option>
-          <option value="series-potential">Standalone with series potential</option>
-          <option value="series-open">First in a planned series</option>
-          <option value="series-complete">First in a series (subsequent books outlined)</option>
+        <label>Genre</label>
+        <select id="fGenre">
+          <option value="">Select a genre…</option>
+          <optgroup label="Adult Fiction">
+            <option value="literary fiction">Literary Fiction</option>
+            <option value="upmarket fiction">Upmarket Fiction</option>
+            <option value="commercial fiction">Commercial Fiction</option>
+            <option value="women's fiction">Women's Fiction</option>
+            <option value="historical fiction">Historical Fiction</option>
+            <option value="thriller">Thriller / Suspense</option>
+            <option value="mystery">Mystery / Crime</option>
+            <option value="horror">Horror</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="epic fantasy">Epic Fantasy</option>
+            <option value="science fiction">Science Fiction</option>
+            <option value="speculative fiction">Speculative Fiction</option>
+            <option value="romance">Romance</option>
+            <option value="contemporary romance">Contemporary Romance</option>
+            <option value="historical romance">Historical Romance</option>
+          </optgroup>
+          <optgroup label="YA / MG">
+            <option value="YA contemporary fiction">YA Contemporary</option>
+            <option value="YA fantasy">YA Fantasy</option>
+            <option value="YA thriller">YA Thriller</option>
+            <option value="YA romance">YA Romance</option>
+            <option value="YA science fiction">YA Science Fiction</option>
+            <option value="YA historical fiction">YA Historical Fiction</option>
+            <option value="middle grade fiction">Middle Grade Fiction</option>
+            <option value="middle grade fantasy">Middle Grade Fantasy</option>
+          </optgroup>
         </select>
       </div>
-      <div class="field hidden" id="fSeriesNameWrap">
-        <label>Series name <span class="sub">(optional)</span></label>
-        <input type="text" id="fSeriesName" placeholder="The Erased Archives">
+      <div class="field">
+        <label>Word count</label>
+        <input type="text" id="fWordCount" placeholder="85,000">
+        <div class="wc-note" id="fWcNote"></div>
       </div>
     </div>
+    <div class="field">
+      <label>Standalone / series</label>
+      <select id="fSeries">
+        <option value="standalone">Standalone</option>
+        <option value="series-potential">Standalone with series potential</option>
+        <option value="series-open">First in a planned series</option>
+        <option value="series-complete">First in a series (subsequent books outlined)</option>
+      </select>
+    </div>
+    <div class="field hidden" id="fSeriesNameWrap">
+      <label>Series name <span class="sub"> — optional</span></label>
+      <input type="text" id="fSeriesName" placeholder="The Erased Archives">
+    </div>
+  </div>
 
-    <!-- 03 COMP TITLES -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">03</span><h3>Comp Titles</h3></div>
-      <div class="guidance">Comp titles tell agents where your book sits in the market. Two is standard; three is fine.
-        <ul>
-          <li>Published within the last 4–5 years — no classics, no mega-bestsellers</li>
-          <li>Similar in tone, audience, or sensibility — not just "same genre"</li>
-          <li>Specific: <em>The Bone Shard Daughter</em> by Andrea Stewart, not "epic fantasy novels"</li>
-          <li>Avoid Harry Potter, The Hunger Games, Twilight — too broad to mean anything</li>
-        </ul>
+  <!-- F3: Comp Titles -->
+  <div class="form-section hidden" id="sec-f3">
+    <div class="section-head"><h3>Comp Titles</h3></div>
+    <div class="guidance">Comp titles tell agents where your book sits in the market. Two is standard; three is fine.
+      <ul>
+        <li>Published within the last 4–5 years — no classics, no mega-bestsellers</li>
+        <li>Similar in tone, audience, or sensibility — not just "same genre"</li>
+        <li>Specific: <em>The Bone Shard Daughter</em> by Andrea Stewart, not "epic fantasy novels"</li>
+        <li>Avoid Harry Potter, The Hunger Games, Twilight — too broad to mean anything</li>
+      </ul>
+    </div>
+    <div class="field">
+      <label>Comp 1</label>
+      <input type="text" id="fComp1" placeholder="The Bone Shard Daughter by Andrea Stewart">
+    </div>
+    <div class="field">
+      <label>Comp 2</label>
+      <input type="text" id="fComp2" placeholder="A Memory Called Empire by Arkady Martine">
+    </div>
+    <div class="field">
+      <label>Comp 3 <span class="sub"> — optional</span></label>
+      <input type="text" id="fComp3" placeholder="">
+    </div>
+  </div>
+
+  <!-- ─── NONFICTION SECTIONS ───────────────────────────────────────── -->
+
+  <!-- N0: Personalization (shared) -->
+
+  <!-- N1: Hook -->
+  <div class="form-section hidden" id="sec-n1">
+    <div class="section-head"><h3>The Hook</h3></div>
+    <div class="guidance">Open with a compelling reason this book needs to exist — now, by you. A striking fact, a counterintuitive argument, or a single vivid scene. 1–3 sentences.</div>
+    <div class="field">
+      <textarea id="nHook" class="tall" placeholder="Every year, thousands of writers finish a manuscript and then spend months wondering why their query letters aren't working. The problem is almost never the book."></textarea>
+    </div>
+  </div>
+
+  <!-- N2: Pitch -->
+  <div class="form-section hidden" id="sec-n2">
+    <div class="section-head"><h3>The Pitch</h3></div>
+    <div class="guidance">What is the book about? What does it do for the reader — what problem does it solve, what insight does it deliver, what experience does it give? 2–4 sentences.</div>
+    <div class="field">
+      <textarea id="nPitch" class="tall" placeholder="The Query Workshop is a step-by-step guide to writing, revising, and sending a query letter that agents actually read…"></textarea>
+    </div>
+    <div class="field">
+      <label>Target audience</label>
+      <input type="text" id="nAudience" placeholder="Fiction writers preparing to query for the first time">
+    </div>
+  </div>
+
+  <!-- N3: Book Details -->
+  <div class="form-section hidden" id="sec-n3">
+    <div class="section-head"><h3>Book Details</h3></div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="nTitle" placeholder="The Query Workshop">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Category</label>
+        <select id="nCategory">
+          <option value="">Select a category…</option>
+          <option value="narrative nonfiction">Narrative Nonfiction</option>
+          <option value="memoir">Memoir</option>
+          <option value="self-help">Self-Help</option>
+          <option value="prescriptive nonfiction">Prescriptive Nonfiction</option>
+          <option value="personal development">Personal Development</option>
+          <option value="business">Business</option>
+          <option value="health and wellness">Health &amp; Wellness</option>
+          <option value="true crime">True Crime</option>
+          <option value="history">History</option>
+          <option value="science">Science</option>
+          <option value="technology">Technology</option>
+          <option value="biography">Biography</option>
+          <option value="essay collection">Essay Collection</option>
+          <option value="humor">Humor</option>
+          <option value="cultural commentary">Cultural Commentary</option>
+          <option value="current events">Current Events</option>
+        </select>
       </div>
       <div class="field">
-        <label>Comp 1</label>
-        <input type="text" id="fComp1" placeholder="The Bone Shard Daughter by Andrea Stewart">
-      </div>
-      <div class="field">
-        <label>Comp 2</label>
-        <input type="text" id="fComp2" placeholder="A Memory Called Empire by Arkady Martine">
-      </div>
-      <div class="field">
-        <label>Comp 3 <span class="sub">(optional)</span></label>
-        <input type="text" id="fComp3" placeholder="">
+        <label>Word count</label>
+        <input type="text" id="nWordCount" placeholder="75,000">
+        <div class="wc-note">Typically 60,000–80,000 words. Memoir can run longer.</div>
       </div>
     </div>
+  </div>
 
-  </div><!-- /fictionFields -->
-
-  <!-- ═══ NONFICTION FIELDS ════════════════════════════════════════════ -->
-  <div id="nonfictionFields" class="hidden">
-
-    <!-- 01 THE HOOK -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">01</span><h3>The Hook</h3></div>
-      <div class="guidance">Open with a compelling reason this book needs to exist — now, by you. A striking fact, a counterintuitive argument, or a single vivid scene. 1–3 sentences.</div>
-      <div class="field">
-        <textarea id="nHook" class="tall" placeholder="Every year, thousands of writers finish a manuscript and then spend months wondering why their query letters aren't working. The problem is almost never the book."></textarea>
-      </div>
+  <!-- N4: Comp Titles -->
+  <div class="form-section hidden" id="sec-n4">
+    <div class="section-head"><h3>Comp Titles</h3></div>
+    <div class="guidance">For nonfiction, comps confirm the market exists. Include 2–3 titles from the last 5 years. You can note how your book differs — <em>"for readers of X who want Y angle"</em> — but keep it brief.</div>
+    <div class="field">
+      <label>Comp 1</label>
+      <input type="text" id="nComp1" placeholder="Bird by Bird by Anne Lamott">
     </div>
-
-    <!-- 02 THE PITCH -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">02</span><h3>The Pitch</h3></div>
-      <div class="guidance">What is the book about? What does it do for the reader — what problem does it solve, what insight does it deliver, what experience does it give? 2–4 sentences.</div>
-      <div class="field">
-        <textarea id="nPitch" class="tall" placeholder="The Query Workshop is a step-by-step guide to writing, revising, and sending a query letter that agents actually read…"></textarea>
-      </div>
-      <div class="field">
-        <label>Target audience</label>
-        <input type="text" id="nAudience" placeholder="Fiction writers preparing to query for the first time">
-      </div>
+    <div class="field">
+      <label>Comp 2</label>
+      <input type="text" id="nComp2" placeholder="">
     </div>
-
-    <!-- 03 BOOK DETAILS -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">03</span><h3>Book Details</h3></div>
-      <div class="field">
-        <label>Title</label>
-        <input type="text" id="nTitle" placeholder="The Query Workshop">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Category</label>
-          <select id="nCategory">
-            <option value="">Select…</option>
-            <option value="narrative nonfiction">Narrative Nonfiction</option>
-            <option value="memoir">Memoir</option>
-            <option value="self-help">Self-Help</option>
-            <option value="prescriptive nonfiction">Prescriptive Nonfiction</option>
-            <option value="personal development">Personal Development</option>
-            <option value="business">Business</option>
-            <option value="health and wellness">Health &amp; Wellness</option>
-            <option value="true crime">True Crime</option>
-            <option value="history">History</option>
-            <option value="science">Science</option>
-            <option value="technology">Technology</option>
-            <option value="biography">Biography</option>
-            <option value="essay collection">Essay Collection</option>
-            <option value="humor">Humor</option>
-            <option value="cultural commentary">Cultural Commentary</option>
-            <option value="current events">Current Events</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Word count</label>
-          <input type="text" id="nWordCount" placeholder="75,000">
-          <div class="wc-note">Typically 60,000–80,000 words. Memoir can run longer.</div>
-        </div>
-      </div>
+    <div class="field">
+      <label>Comp 3 <span class="sub"> — optional</span></label>
+      <input type="text" id="nComp3" placeholder="">
     </div>
+  </div>
 
-    <!-- 04 COMPS -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">04</span><h3>Comp Titles</h3></div>
-      <div class="guidance">For nonfiction, comps confirm the market exists. Include 2–3 titles from the last 5 years. You can note how your book differs — <em>"for readers of X who want Y angle"</em> — but keep it brief.</div>
-      <div class="field">
-        <label>Comp 1</label>
-        <input type="text" id="nComp1" placeholder="Bird by Bird by Anne Lamott">
-      </div>
-      <div class="field">
-        <label>Comp 2</label>
-        <input type="text" id="nComp2" placeholder="">
-      </div>
-      <div class="field">
-        <label>Comp 3 <span class="sub">(optional)</span></label>
-        <input type="text" id="nComp3" placeholder="">
-      </div>
+  <!-- N5: Platform -->
+  <div class="form-section hidden" id="sec-n5">
+    <div class="section-head"><h3>Your Platform</h3></div>
+    <div class="guidance">For nonfiction, platform is essential. Agents want to know <strong>why you</strong> are the person to write this book and <strong>how you will reach buyers</strong>. Include: relevant credentials or expertise, audience size (newsletter, social following, speaking history), and any previous publications.</div>
+    <div class="field">
+      <textarea id="nPlatform" class="tall" placeholder="I have worked as a literary agent for ten years. My newsletter, The Submission Window, has 14,000 subscribers. I have spoken at AWP, Tin House, and the Sewanee Writers' Conference."></textarea>
     </div>
+  </div>
 
-    <!-- 05 PLATFORM -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">05</span><h3>Your Platform</h3></div>
-      <div class="guidance">For nonfiction, platform is essential. Agents want to know <strong>why you</strong> are the person to write this book and <strong>how you will reach buyers</strong>. Include: relevant credentials or expertise, audience size (newsletter, social following, speaking history), and any previous publications.</div>
-      <div class="field">
-        <textarea id="nPlatform" class="tall" placeholder="I have worked as a literary agent for ten years. My newsletter, The Submission Window, has 14,000 subscribers. I have spoken at AWP, Tin House, and the Sewanee Writers' Conference."></textarea>
-      </div>
+  <!-- N6: Chapter Overview -->
+  <div class="form-section hidden" id="sec-n6">
+    <div class="section-head"><h3>Chapter Overview <span class="opt-tag">Optional</span></h3></div>
+    <div class="guidance">A brief description of each chapter — 1–3 sentences per chapter. Some agents want a formal list; others just want a sense of the arc. When in doubt, include it. Leave blank to skip.</div>
+    <div class="field">
+      <textarea id="nChapters" class="xtall" placeholder="Chapter 1: Why queries fail — and why it's almost never the book.&#10;Chapter 2: The hook: the single sentence that opens every door.&#10;Chapter 3: The pitch paragraph — plotting your own story on the page.&#10;…"></textarea>
     </div>
+  </div>
 
-    <!-- 06 CHAPTER OVERVIEW -->
-    <div class="form-section">
-      <div class="section-head"><span class="section-num">06</span>
-        <h3>Chapter Overview</h3>
-        <span class="opt-tag">Optional</span>
-      </div>
-      <div class="guidance">A brief description of each chapter — 1–3 sentences per chapter. Some agents want a formal list; others just want a sense of the arc. When in doubt, include it. Leave blank if your pitch already conveys the structure.</div>
-      <div class="field">
-        <textarea id="nChapters" class="xtall" placeholder="Chapter 1: Why queries fail — and why it's almost never the book.&#10;Chapter 2: The hook: the single sentence that opens every door.&#10;Chapter 3: The pitch paragraph — plotting your own story on the page.&#10;…"></textarea>
-      </div>
-    </div>
-
-  </div><!-- /nonfictionFields -->
-
-  <!-- SHARED: BIO -->
-  <div class="form-section">
-    <div class="section-head">
-      <span class="section-num" id="bioNum">04</span>
-      <h3>Author Bio</h3>
-    </div>
+  <!-- SHARED: Bio -->
+  <div class="form-section hidden" id="sec-bio">
+    <div class="section-head"><h3>Author Bio</h3></div>
     <div class="guidance">2–4 sentences. Writing credentials (publications, awards, relevant memberships like RWA, SFWA, HWA), anything that qualifies you to write this book, where you live. No writing credits yet? That's fine — say so briefly. Most querying writers are unpublished. Don't apologize for it.</div>
     <div class="field">
       <textarea id="qBio" class="tall" placeholder="I am a member of the Science Fiction and Fantasy Writers of America. My short fiction has appeared in Clarkesworld and Strange Horizons. I live in Edinburgh."></textarea>
     </div>
   </div>
 
-  <!-- SHARED: CLOSING -->
-  <div class="form-section">
-    <div class="section-head">
-      <span class="section-num" id="closingNum">05</span>
-      <h3>Salutation &amp; Closing</h3>
-    </div>
+  <!-- SHARED: Closing -->
+  <div class="form-section hidden" id="sec-closing">
+    <div class="section-head"><h3>Salutation &amp; Closing</h3></div>
+    <div class="guidance">Fill in the agent's name for the salutation and your name for the sign-off. Your letter is ready to copy once you're done.</div>
     <div class="field-row">
       <div class="field">
         <label>Agent name</label>
@@ -447,8 +468,17 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
       </div>
       <div class="field">
         <label>Your name</label>
-        <input type="text" id="qAuthor" placeholder="Aubrey Haskett">
+        <input type="text" id="qAuthor" placeholder="Your Name">
       </div>
+    </div>
+  </div>
+
+  <!-- Step nav -->
+  <div class="step-nav" id="stepNav">
+    <button class="back-btn" id="backBtn" onclick="prevStep()">← Back</button>
+    <div class="step-nav-right">
+      <button class="continue-btn" id="continueBtn" onclick="nextStep()">Continue →</button>
+      <button class="skip-link hidden" id="skipBtn" onclick="nextStep()">Skip this step</button>
     </div>
   </div>
 
@@ -475,7 +505,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 
 <div class="footer">
   <p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p>
-  <p class="footer-meta"><a href="index.html">Manuscript Reader</a> &middot; <a href="lint.html">Manuscript Lint</a> &middot; <a href="query.html">Query Letter</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a></p>
+  <p class="footer-meta"><a href="index.html">Manuscript Reader</a> &middot; <a href="lint.html">Prose Analysis</a> &middot; <a href="query.html">Query Letter</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a></p>
 </div>
 </div><!-- /page -->
 
@@ -485,47 +515,57 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   const SUN='M12 3V1m0 22v-2m9-9h2M1 12h2m15.07-7.07 1.42-1.42M3.51 20.49l1.42-1.42M20.49 20.49l-1.42-1.42M4.93 4.93 3.51 3.51M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z';
   const MOON='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z';
   function dark(){const s=localStorage.getItem('theme');return s?s==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;}
-  function icon(){const i=document.getElementById('themeIcon');if(i)i.setAttribute('d',dark()?SUN:MOON);}
-  // themeIcon is an svg, need path child
-  function updateIcon(){
-    const svg=document.getElementById('themeIcon');if(!svg)return;
-    svg.innerHTML='<path d="'+(dark()?SUN:MOON)+'"/>';
-  }
+  function updateIcon(){const svg=document.getElementById('themeIcon');if(!svg)return;svg.innerHTML='<path d="'+(dark()?SUN:MOON)+'"/>';}
   function toggle(){const n=dark()?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);updateIcon();}
-  document.addEventListener('DOMContentLoaded',function(){
-    updateIcon();
-    document.getElementById('themeToggle').addEventListener('click',toggle);
-  });
+  document.addEventListener('DOMContentLoaded',function(){updateIcon();document.getElementById('themeToggle').addEventListener('click',toggle);});
   window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',function(){if(!localStorage.getItem('theme'))updateIcon();});
 })();
 
 // ── State ────────────────────────────────────────────────────────────────────
 let qType = 'fiction';
 let qPronoun = {sub:'she', obj:'her', pos:'her'};
+let currentStep = 0;
+
+// Step definitions: {id, label, optional}
+const FICTION_STEPS = [
+  {id:'sec-f0', label:'Personalize', optional:true},
+  {id:'sec-f1', label:'Pitch'},
+  {id:'sec-f2', label:'Book Details'},
+  {id:'sec-f3', label:'Comp Titles'},
+  {id:'sec-bio', label:'Bio'},
+  {id:'sec-closing', label:'Closing'},
+];
+const NONFICTION_STEPS = [
+  {id:'sec-f0', label:'Personalize', optional:true},
+  {id:'sec-n1', label:'Hook'},
+  {id:'sec-n2', label:'Pitch'},
+  {id:'sec-n3', label:'Book Details'},
+  {id:'sec-n4', label:'Comp Titles'},
+  {id:'sec-n5', label:'Platform'},
+  {id:'sec-n6', label:'Chapters', optional:true},
+  {id:'sec-bio', label:'Bio'},
+  {id:'sec-closing', label:'Closing'},
+];
+
+function steps(){return qType==='fiction'?FICTION_STEPS:NONFICTION_STEPS;}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function v(id){const e=document.getElementById(id);return e?e.value.trim():'';}
-function e(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function gap(label){return '<span class="gap">['+label+']</span>';}
-function ok(text){return '<span class="ok">'+e(text)+'</span>';}
+function ok(text){return '<span class="ok">'+esc(text)+'</span>';}
 function okHtml(html){return '<span class="ok">'+html+'</span>';}
-function titleHtml(t){return t?'<em class="t">'+e(t)+'</em>':gap('Title');}
+function titleHtml(t){return t?'<em class="t">'+esc(t)+'</em>':gap('Title');}
 function art(word){return(!word||'aeiou'.includes(word.trim().toLowerCase()[0]))?'an':'a';}
 
-// Genre labels for the spec line
 const GENRE_LABEL={
-  'middle grade fiction':'middle grade novel',
-  'middle grade fantasy':'middle grade fantasy novel',
-  'YA contemporary fiction':'YA contemporary novel',
-  'YA fantasy':'YA fantasy novel',
-  'YA thriller':'YA thriller',
-  'YA romance':'YA romance',
-  'YA science fiction':'YA science fiction novel',
-  'YA historical fiction':'YA historical novel',
+  'middle grade fiction':'middle grade novel','middle grade fantasy':'middle grade fantasy novel',
+  'YA contemporary fiction':'YA contemporary novel','YA fantasy':'YA fantasy novel',
+  'YA thriller':'YA thriller','YA romance':'YA romance',
+  'YA science fiction':'YA science fiction novel','YA historical fiction':'YA historical novel',
 };
 function genreLabel(g){return g?(GENRE_LABEL[g]||(g+' novel')):'novel';}
 
-// Word count guidance
 const WC_GUIDE={
   'literary fiction':'80,000–110,000 words typical.',
   'upmarket fiction':'75,000–100,000 words typical.',
@@ -552,136 +592,76 @@ const WC_GUIDE={
   'middle grade fantasy':'30,000–55,000 words typical.',
 };
 
-document.getElementById('fGenre').addEventListener('change',function(){
-  document.getElementById('fWcNote').textContent=WC_GUIDE[this.value]||'';
-  render();
-});
-
-// ── Series field visibility ───────────────────────────────────────────────────
-document.getElementById('fSeries').addEventListener('change',function(){
-  const show=this.value==='series-open'||this.value==='series-complete';
-  document.getElementById('fSeriesNameWrap').classList.toggle('hidden',!show);
-  render();
-});
-
-// ── Series note builder ───────────────────────────────────────────────────────
+// ── Series / comp helpers ─────────────────────────────────────────────────────
 function seriesNote(val,name){
-  const sn=name?' of the '+e(name)+' series':' of a planned series';
+  const sn=name?' of the '+esc(name)+' series':' of a planned series';
   if(val==='series-potential') return ' It is standalone with series potential.';
   if(val==='series-open') return ' It is the first book'+sn+'.';
   if(val==='series-complete') return ' It is the first book'+sn+' (subsequent books outlined).';
   return '';
 }
-
-// ── Comp note builder ─────────────────────────────────────────────────────────
 function compNote(c1,c2,c3){
   const cs=[c1,c2,c3].filter(Boolean);
   if(!cs.length) return '';
-  const list=cs.map(c=>e(c));
+  const list=cs.map(c=>esc(c));
   if(cs.length===1) return ' It will appeal to readers of '+list[0]+'.';
   if(cs.length===2) return ' It will appeal to readers of '+list[0]+' and '+list[1]+'.';
   return ' It will appeal to readers of '+list[0]+', '+list[1]+', and '+list[2]+'.';
 }
 
-// ── Render fiction ────────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 function renderFiction(){
-  const personal=v('qPersonal');
-  const name=v('fName');
-  const desc=v('fDesc');
-  const inciting=v('fInciting');
-  const conflict=v('fConflict');
-  const stakes=v('fStakes');
-  const pitch2=v('fPitch2');
-  const ftitle=v('fTitle');
-  const genre=v('fGenre');
-  const wc=v('fWordCount');
-  const seriesVal=document.getElementById('fSeries').value;
-  const seriesName=v('fSeriesName');
-  const c1=v('fComp1'),c2=v('fComp2'),c3=v('fComp3');
-  const bio=v('qBio');
-  const agent=v('qAgent');
-  const author=v('qAuthor');
-
+  const personal=v('qPersonal'),name=v('fName'),desc=v('fDesc'),
+    inciting=v('fInciting'),conflict=v('fConflict'),stakes=v('fStakes'),pitch2=v('fPitch2'),
+    ftitle=v('fTitle'),genre=v('fGenre'),wc=v('fWordCount'),
+    seriesVal=document.getElementById('fSeries').value,seriesName=v('fSeriesName'),
+    c1=v('fComp1'),c2=v('fComp2'),c3=v('fComp3'),bio=v('qBio'),agent=v('qAgent'),author=v('qAuthor');
   let html='';
-  const agentLine=agent?ok('Dear '+agent+','):gap('Dear [Agent Name],');
-  html+='<p>'+agentLine+'</p>';
+  html+='<p>'+(agent?ok('Dear '+agent+','):gap('Dear [Agent Name],'))+'</p>';
   if(personal) html+='<p>'+ok(personal)+'</p>';
-
-  // Pitch p1
   const pName=name?ok(name):gap('Name');
   const pDesc=desc?ok(desc):gap('protagonist description');
   const pInc=inciting?ok(inciting):gap('inciting event');
-  const pSub=ok(qPronoun.sub);
   const pConf=conflict?ok(conflict):gap('what they must do');
-  let p1=pName+' is '+pDesc+'. When '+pInc+', '+pSub+' must '+pConf+'.';
+  let p1=pName+' is '+pDesc+'. When '+pInc+', '+ok(qPronoun.sub)+' must '+pConf+'.';
   if(stakes) p1+=' '+ok(stakes);
   html+='<p>'+p1+'</p>';
-
   if(pitch2) html+='<p>'+ok(pitch2)+'</p>';
-
-  // Specs line
-  const gl=genreLabel(genre);
-  const a=art(genre);
+  const gl=genreLabel(genre),a=art(genre);
   const specGenre=genre?ok(a+' '+gl):(gap('a')+' '+gap('genre novel'));
   const specWc=wc?ok(wc+' words'):gap('[word count] words');
   const sNote=seriesNote(seriesVal,seriesName);
   const cNote=compNote(c1,c2,c3);
   html+='<p>'+titleHtml(ftitle)+' is '+specGenre+' complete at '+specWc+'.'+(sNote?okHtml(sNote):'')+(cNote?okHtml(cNote):'')+'</p>';
-
   html+='<p>'+(bio?ok(bio):gap('Author bio — writing credentials, memberships, relevant experience.'))+'</p>';
   html+='<p>'+ok('Thank you for your time and consideration.')+'</p>';
   html+='<p>'+(author?ok(author):gap('[Your name]'))+'</p>';
   return html;
 }
-
-// ── Render nonfiction ─────────────────────────────────────────────────────────
 function renderNonfiction(){
-  const personal=v('qPersonal');
-  const hook=v('nHook');
-  const pitch=v('nPitch');
-  const audience=v('nAudience');
-  const ntitle=v('nTitle');
-  const cat=v('nCategory');
-  const wc=v('nWordCount');
-  const c1=v('nComp1'),c2=v('nComp2'),c3=v('nComp3');
-  const platform=v('nPlatform');
-  const chapters=v('nChapters');
-  const bio=v('qBio');
-  const agent=v('qAgent');
-  const author=v('qAuthor');
-
+  const personal=v('qPersonal'),hook=v('nHook'),pitch=v('nPitch'),audience=v('nAudience'),
+    ntitle=v('nTitle'),cat=v('nCategory'),wc=v('nWordCount'),
+    c1=v('nComp1'),c2=v('nComp2'),c3=v('nComp3'),platform=v('nPlatform'),
+    chapters=v('nChapters'),bio=v('qBio'),agent=v('qAgent'),author=v('qAuthor');
   let html='';
   html+='<p>'+(agent?ok('Dear '+agent+','):gap('Dear [Agent Name],'))+'</p>';
   if(personal) html+='<p>'+ok(personal)+'</p>';
   if(hook) html+='<p>'+ok(hook)+'</p>';
   html+='<p>'+(pitch?ok(pitch):gap('Your pitch — what the book is about and what it does for the reader.'))+'</p>';
-
-  // Specs
   const specCat=cat?ok(cat):gap('category');
   const specWc=wc?ok(wc+'-word'):gap('[word count]-word');
   let specLine=titleHtml(ntitle)+' is a '+specWc+' '+specCat+'.';
   if(audience) specLine+=' '+ok('It is written for '+audience+'.');
   html+='<p>'+specLine+'</p>';
-
   const cNote=compNote(c1,c2,c3);
   if(cNote) html+='<p>'+okHtml(cNote.trim())+'</p>';
-
   html+='<p>'+(platform?ok(platform):gap('Your platform — credentials, expertise, audience, why you are the person to write this book.'))+'</p>';
-
-  if(chapters){
-    const lines=chapters.split('\n').filter(l=>l.trim());
-    if(lines.length){
-      html+='<p>'+lines.map(l=>'<span class="ok">'+e(l.trim())+'</span>').join('<br>')+'</p>';
-    }
-  }
-
+  if(chapters){const lines=chapters.split('\n').filter(l=>l.trim());if(lines.length)html+='<p>'+lines.map(l=>'<span class="ok">'+esc(l.trim())+'</span>').join('<br>')+'</p>';}
   html+='<p>'+(bio?ok(bio):gap('Author bio.'))+'</p>';
   html+='<p>'+ok('Thank you for your time and consideration.')+'</p>';
   html+='<p>'+(author?ok(author):gap('[Your name]'))+'</p>';
   return html;
 }
-
-// ── Main render ───────────────────────────────────────────────────────────────
 function render(){
   const out=document.getElementById('letterOut');
   out.innerHTML=qType==='fiction'?renderFiction():renderNonfiction();
@@ -690,60 +670,129 @@ function render(){
   save();
 }
 
+// ── Stepper ───────────────────────────────────────────────────────────────────
+function buildIndicator(){
+  const ind=document.getElementById('stepIndicator');
+  const ss=steps();
+  let html='';
+  ss.forEach(function(s,i){
+    if(i>0) html+='<div class="step-connector'+(i<=currentStep?' done':'')+'"></div>';
+    let cls='step-dot';
+    if(i<currentStep) cls+=' done';
+    else if(i===currentStep) cls+=' current';
+    const clickable=i<currentStep;
+    html+='<div class="'+cls+'">';
+    html+='<button class="step-dot-btn"'+(clickable?' onclick="goToStep('+i+')"':'')+' aria-label="Step '+(i+1)+': '+s.label+'">';
+    html+=i<currentStep?'✓':(i+1);
+    html+='</button>';
+    html+='<div class="step-dot-label">'+s.label+'</div>';
+    html+='</div>';
+  });
+  ind.innerHTML=html;
+}
+function showCurrentSection(){
+  const ss=steps();
+  // Hide all sections
+  document.querySelectorAll('.form-section').forEach(function(el){el.classList.add('hidden');});
+  // Show current
+  const sec=document.getElementById(ss[currentStep].id);
+  if(sec) sec.classList.remove('hidden');
+  // Back button
+  const back=document.getElementById('backBtn');
+  back.disabled=currentStep===0;
+  // Continue button
+  const cont=document.getElementById('continueBtn');
+  const isLast=currentStep===ss.length-1;
+  cont.textContent=isLast?'Copy & Finish':'Continue →';
+  cont.classList.toggle('finish',isLast);
+  // Skip button
+  const skip=document.getElementById('skipBtn');
+  if(ss[currentStep].optional){skip.classList.remove('hidden');}
+  else{skip.classList.add('hidden');}
+  buildIndicator();
+}
+function nextStep(){
+  const ss=steps();
+  if(currentStep===ss.length-1){
+    // Last step — copy letter
+    copyLetter();
+    return;
+  }
+  currentStep=Math.min(currentStep+1,ss.length-1);
+  showCurrentSection();
+  document.getElementById('formPanel').scrollTop=0;
+}
+function prevStep(){
+  currentStep=Math.max(currentStep-1,0);
+  showCurrentSection();
+}
+function goToStep(n){
+  if(n>=0&&n<steps().length){currentStep=n;showCurrentSection();}
+}
+
+// ── Genre / series wiring ─────────────────────────────────────────────────────
+document.getElementById('fGenre').addEventListener('change',function(){
+  document.getElementById('fWcNote').textContent=WC_GUIDE[this.value]||'';
+  render();
+});
+document.getElementById('fSeries').addEventListener('change',function(){
+  const show=this.value==='series-open'||this.value==='series-complete';
+  document.getElementById('fSeriesNameWrap').classList.toggle('hidden',!show);
+  render();
+});
+
+// ── Pronoun toggle ────────────────────────────────────────────────────────────
+document.querySelectorAll('.pronoun-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.pronoun-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    qPronoun={sub:this.dataset.sub,obj:this.dataset.obj,pos:this.dataset.pos};
+    render();
+  });
+});
+
+// ── Type toggle ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.type-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    qType=this.dataset.type;
+    currentStep=0;
+    showCurrentSection();
+    render();
+  });
+});
+
 // ── Copy ──────────────────────────────────────────────────────────────────────
 function copyLetter(){
   const out=document.getElementById('letterOut');
   let text='';
-  out.querySelectorAll('p').forEach(p=>{text+=p.textContent.trim()+'\n\n';});
+  out.querySelectorAll('p').forEach(function(p){text+=p.textContent.trim()+'\n\n';});
   text=text.trim();
   if(!text) return;
   const btn=document.getElementById('copyBtn');
-  function flash(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy Letter';btn.classList.remove('copied');},2000);}
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(flash).catch(()=>{fbCopy(text);flash();});
-  } else {fbCopy(text);flash();}
+  function flash(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy Letter';btn.classList.remove('copied');},2000);}
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(flash).catch(function(){fbCopy(text);flash();});}
+  else{fbCopy(text);flash();}
 }
 function fbCopy(t){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0;';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
 
 // ── Clear ─────────────────────────────────────────────────────────────────────
 document.getElementById('clearBtn').addEventListener('click',function(){
   if(!confirm('Clear all fields and start fresh?')) return;
-  FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  FIELDS.forEach(function(id){const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('fSeries').value='standalone';
   document.getElementById('fGenre').value='';
   document.getElementById('nCategory').value='';
   document.getElementById('fSeriesNameWrap').classList.add('hidden');
   document.getElementById('fWcNote').textContent='';
-  document.querySelectorAll('.pronoun-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pronoun-btn').forEach(function(b){b.classList.remove('active');});
   document.querySelector('.pronoun-btn[data-sub="she"]').classList.add('active');
   qPronoun={sub:'she',obj:'her',pos:'her'};
-  try{localStorage.removeItem('qd2');}catch(e){}
+  currentStep=0;
+  try{localStorage.removeItem('qd2');}catch(ex){}
+  showCurrentSection();
   render();
-});
-
-// ── Type toggle ───────────────────────────────────────────────────────────────
-document.querySelectorAll('.type-btn').forEach(btn=>{
-  btn.addEventListener('click',function(){
-    document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
-    this.classList.add('active');
-    qType=this.dataset.type;
-    const isFic=qType==='fiction';
-    document.getElementById('fictionFields').classList.toggle('hidden',!isFic);
-    document.getElementById('nonfictionFields').classList.toggle('hidden',isFic);
-    document.getElementById('bioNum').textContent=isFic?'04':'07';
-    document.getElementById('closingNum').textContent=isFic?'05':'08';
-    render();
-  });
-});
-
-// ── Pronoun toggle ────────────────────────────────────────────────────────────
-document.querySelectorAll('.pronoun-btn').forEach(btn=>{
-  btn.addEventListener('click',function(){
-    document.querySelectorAll('.pronoun-btn').forEach(b=>b.classList.remove('active'));
-    this.classList.add('active');
-    qPronoun={sub:this.dataset.sub,obj:this.dataset.obj,pos:this.dataset.pos};
-    render();
-  });
 });
 
 // ── Save / Restore ────────────────────────────────────────────────────────────
@@ -756,8 +805,8 @@ const FIELDS=[
 ];
 function save(){
   try{
-    const d={t:qType,p:qPronoun};
-    FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)d[id]=el.value;});
+    const d={t:qType,p:qPronoun,step:currentStep};
+    FIELDS.forEach(function(id){const el=document.getElementById(id);if(el)d[id]=el.value;});
     localStorage.setItem('qd2',JSON.stringify(d));
   }catch(ex){}
 }
@@ -766,28 +815,31 @@ function restore(){
     const raw=localStorage.getItem('qd2');
     if(!raw)return;
     const d=JSON.parse(raw);
-    FIELDS.forEach(id=>{const el=document.getElementById(id);if(el&&d[id]!=null)el.value=d[id];});
-    // type
-    if(d.t&&d.t!=='fiction'){document.getElementById('typeNonfiction').click();}
-    // pronoun
+    if(d.t&&d.t!=='fiction'){
+      qType='nonfiction';
+      document.getElementById('typeNonfiction').classList.add('active');
+      document.getElementById('typeFiction').classList.remove('active');
+      document.getElementById('typeNonfiction').classList.add('active');
+    }
+    FIELDS.forEach(function(id){const el=document.getElementById(id);if(el&&d[id]!=null)el.value=d[id];});
     if(d.p&&d.p.sub){
       const pb=document.querySelector('.pronoun-btn[data-sub="'+d.p.sub+'"]');
-      if(pb){document.querySelectorAll('.pronoun-btn').forEach(b=>b.classList.remove('active'));pb.classList.add('active');qPronoun=d.p;}
+      if(pb){document.querySelectorAll('.pronoun-btn').forEach(function(b){b.classList.remove('active');});pb.classList.add('active');qPronoun=d.p;}
     }
-    // series visibility
+    if(typeof d.step==='number') currentStep=d.step;
     const sv=document.getElementById('fSeries').value;
     document.getElementById('fSeriesNameWrap').classList.toggle('hidden',sv!=='series-open'&&sv!=='series-complete');
-    // genre note
     const gv=document.getElementById('fGenre').value;
     if(gv)document.getElementById('fWcNote').textContent=WC_GUIDE[gv]||'';
   }catch(ex){}
 }
 
-// ── Wire up all inputs ────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',function(){
   restore();
+  showCurrentSection();
   render();
-  FIELDS.forEach(id=>{
+  FIELDS.forEach(function(id){
     const el=document.getElementById(id);
     if(el)el.addEventListener('input',render);
   });
