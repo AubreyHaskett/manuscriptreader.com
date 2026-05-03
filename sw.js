@@ -1,7 +1,10 @@
 // Service Worker for Manuscript Reader
 // Caches the Kokoro TTS model for faster subsequent loads
 
-const CACHE_NAME = 'kokoro-model-v1';
+// Issue 18: bump SW_VERSION whenever you change the model URL pattern or
+// quantization so old clients don't silently keep a stale model forever.
+const SW_VERSION = 2;
+const CACHE_NAME = `kokoro-model-v${SW_VERSION}`;
 const MODEL_PATTERNS = [
   'huggingface.co',
   'cdn-lfs',
@@ -14,9 +17,18 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - claim all clients
+// Activate event - delete stale model caches, then claim all clients
+// Issue 18: removes old kokoro-model-vN caches when SW_VERSION is bumped
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys
+          .filter(k => k.startsWith('kokoro-model-') && k !== CACHE_NAME)
+          .map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+  );
 });
 
 // Fetch event - cache model files

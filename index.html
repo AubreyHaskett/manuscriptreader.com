@@ -1501,7 +1501,9 @@
 
   // Pre-generated audio cache: batchIndex -> AudioBuffer
   const audioCache = new Map();
-  const prefetchInFlight = new Set(); // track which batch indices are currently being generated
+  // Issue 6: Map<batchIndex, Promise> instead of Set so concurrent callers
+  // await the same promise rather than each spinning a 50ms polling loop.
+  const prefetchInFlight = new Map();
 
   // Screen Wake Lock to prevent phone from sleeping during playback
   let wakeLock = null;
@@ -1680,8 +1682,20 @@
   // Transform text for better TTS prosody (display text stays unchanged)
   function preprocessForTTS(text) {
     return text
+      // Issue 3: normalize smart ellipsis BEFORE the strip pass so it isn't silently dropped
+      .replace(/\u2026/g, '...')
+      // Issue 4: normalize left single curly quote to straight apostrophe
+      .replace(/\u2018/g, "'")
+      // Issue 4: expand common symbols to spoken words before stripping
+      .replace(/&/g, ' and ')
+      .replace(/\$(\d)/g, '$1 dollars ')
+      .replace(/(\d)%/g, '$1 percent')
+      .replace(/(\d)\s*\u00b0\s*[Ff]\b/g, '$1 degrees Fahrenheit')
+      .replace(/(\d)\s*\u00b0\s*[Cc]\b/g, '$1 degrees Celsius')
+      .replace(/(\d)\s*\u00b0/g, '$1 degrees')
       .replace(/[^\p{L}\p{N}\s.,!?;:\-'\u2019\u2014]/gu, '')  // keep only letters, numbers, basic punctuation
-      .replace(/\.{3,}/g, '.')                         // collapse ellipsis to period
+      .replace(/\.{3,}/g, '...')                        // normalise ASCII ellipsis runs to exactly three dots
+      .replace(/\s{2,}/g, ' ')                          // collapse any double-spaces left by expansions
       .trim();
   }
 
@@ -1698,8 +1712,10 @@
       const trimmed = para.trim();
       if (!trimmed) return;
 
-      // Detect scene breaks: ***, * * *, ---, . . ., ..., ~~~, ###, etc.
-      if (detectSceneBreaks && /^([*\-~#]{3,}|(\*\s+){2,}\*|(\.\s+){2,}\.|\.{3,}|\u2026)$/.test(trimmed)) {
+      // Detect scene breaks: ***, * * *, ---, . . ., ~~~, ###, etc.
+      // Issue 5: removed \.{3,} and \u2026 arms \u2014 a bare "..." or "\u2026" is a
+      // common trailing-dialogue beat and must NOT be treated as a scene break.
+      if (detectSceneBreaks && /^([*\-~#]{3,}|(\*\s+){2,}\*|(\.\s+){2,}\.)$/.test(trimmed)) {
         result.push({ text: '', paragraphEnd: true, isDialogue: false, isSceneBreak: true });
         return;
       }
@@ -1707,15 +1723,39 @@
       // Detect if this paragraph starts with dialogue (opening quote)
       const isDialogue = /^[\u201C\u2018"']/.test(trimmed);
 
-      // Split on sentence boundaries (. ! ?) and em dashes
-      const parts = trimmed.match(/[^.!?\u2014]*[.!?]+[\s"'\u201D\u2019)]*|[^.!?\u2014]*\u2014\s*|[^.!?\u2014]+$/g) || [trimmed];
+      // Issue 1: protect periods that are NOT sentence-terminal.
+      // A Unicode private-use character is used as placeholder.
+      const PH = '\uE000';
+      let s = trimmed
+        // Known honorifics and title abbreviations (case-insensitive)
+        .replace(/\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|Rev|Gen|Col|Maj|Sgt|Cpl|Dept|Univ|Ave|Blvd|vs|etc)\./gi,
+                 (_, a) => a + PH)
+        // Two-letter abbrevs with internal dot: i.e., e.g., a.m., p.m., U.S., U.K.
+        .replace(/\b([A-Za-z])\.([A-Za-z])\./g,
+                 (_, a, b) => a + PH + b + PH)
+        // Initials: single capital + dot followed by another capital sequence (J.R.R.)
+        .replace(/\b([A-Z])\.(?=[A-Z][\.\s])/g,
+                 (_, c) => c + PH)
+        // Decimals and version strings: digit.digit
+        .replace(/(\d)\.(\d)/g,
+                 (_, a, b) => a + PH + b)
+        // Catch-all: period followed by lowercase or digit is never a sentence terminal
+        .replace(/\.(?=[a-z\d])/g, PH);
+
+      // Issue 2: removed \u2014 (em-dash) from the split regex.
+      // Em-dashes are parenthetical pauses, not sentence resets \u2014 splitting on
+      // them causes Kokoro to apply falling intonation mid-phrase.
+      const parts = s.match(/[^.!?]*[.!?]+[\s"'\u201D\u2019)]*|[^.!?]+$/g) || [s];
 
       // Further split at commas when comma pause is enabled
       const splitCommas = parseInt(commaPauseRange.value) > 0;
 
-      parts.forEach(s => {
-        const cleaned = s.trim();
-        if (!cleaned || cleaned.length <= 1) return;
+      parts.forEach(raw => {
+        // Restore protected periods before storing
+        const cleaned = raw.replace(/\uE000/g, '.').trim();
+        // Issue 9: was `!cleaned || cleaned.length <= 1` \u2014 dropped the length
+        // guard so single-character fragments ("I." or "?") are preserved.
+        if (!cleaned) return;
 
         // Detect quote boundaries for pause control
         const startsWithQuote = /^[\u201C\u2018"']/.test(cleaned);
@@ -1725,7 +1765,7 @@
           const commaParts = cleaned.match(/[^,]*,\s*|[^,]+$/g) || [cleaned];
           commaParts.forEach(cp => {
             const trimCP = cp.trim();
-            if (trimCP && trimCP.length > 1) {
+            if (trimCP) {
               result.push({ text: trimCP, paragraphEnd: false, isDialogue, isSceneBreak: false, startsWithQuote, endsWithQuote });
             }
           });
@@ -1822,7 +1862,34 @@
       merged.push(batch);
     }
 
-    return merged;
+    // Issue 10: a single sentence that already exceeds MAX_BATCH_LENGTH blows
+    // Kokoro's ~510-token cap and gets silently truncated mid-sentence.
+    // Sub-split any over-length batch at clause boundaries (commas/semicolons).
+    const safeBatches = [];
+    for (const batch of merged) {
+      if (batch.isSceneBreak || !batch.text || batch.text.length <= MAX_BATCH_LENGTH) {
+        safeBatches.push(batch);
+        continue;
+      }
+      // Try to split at clause boundaries
+      const clauses = batch.text.match(/[^,;]*[,;]\s*|[^,;]+$/g) || [batch.text];
+      let cur = '';
+      let isFirst = true;
+      for (const clause of clauses) {
+        if (cur && (cur + clause).length > MAX_BATCH_LENGTH) {
+          safeBatches.push({ ...batch, text: cur.trim(), paragraphEnd: false, sentenceIndices: isFirst ? batch.sentenceIndices : [] });
+          cur = clause;
+          isFirst = false;
+        } else {
+          cur += clause;
+        }
+      }
+      if (cur.trim()) {
+        safeBatches.push({ ...batch, text: cur.trim() });
+      }
+    }
+
+    return safeBatches;
   }
 
   // ─── Generate Audio via Worker ─────────────────────
@@ -1835,33 +1902,34 @@
   }
 
   // ─── Prefetch Pipeline ──────────────────────────────
-  // Generate audio for a specific batch index, with deduplication
-  async function ensureGenerated(batchIndex) {
-    if (batchIndex >= batches.length) return null;
-    if (batches[batchIndex].isSceneBreak) return null; // no audio for scene breaks
-    if (audioCache.has(batchIndex)) return audioCache.get(batchIndex);
+  // Generate audio for a specific batch index, with deduplication.
+  // Issue 6: replaced Set+polling-loop with a Promise map so a second caller
+  // awaits the same in-flight promise instead of spinning every 50ms.
+  function ensureGenerated(batchIndex) {
+    if (batchIndex >= batches.length) return Promise.resolve(null);
+    if (batches[batchIndex].isSceneBreak) return Promise.resolve(null);
+    if (audioCache.has(batchIndex)) return Promise.resolve(audioCache.get(batchIndex));
     if (prefetchInFlight.has(batchIndex)) {
-      // Already generating — wait for it
-      while (!audioCache.has(batchIndex) && !stopRequested) {
-        await new Promise(r => setTimeout(r, 50));
-      }
-      return audioCache.get(batchIndex);
+      // Already generating — return the same promise so both callers share it
+      return prefetchInFlight.get(batchIndex);
     }
 
-    prefetchInFlight.add(batchIndex);
-    try {
+    const promise = (async () => {
       const voice = voiceSelect.value;
       const speed = parseFloat(speedRange.value);
       const ttsText = preprocessForTTS(batches[batchIndex].text);
       const buffer = await generateAudio(ttsText, voice, speed);
       if (!stopRequested) audioCache.set(batchIndex, buffer);
       return buffer;
-    } catch (e) {
+    })().catch(e => {
       console.warn('Generation failed for batch', batchIndex, e);
       return null;
-    } finally {
+    }).finally(() => {
       prefetchInFlight.delete(batchIndex);
-    }
+    });
+
+    prefetchInFlight.set(batchIndex, promise);
+    return promise;
   }
 
   // Fire-and-forget prefetch for upcoming batches - prefetch aggressively
