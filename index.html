@@ -283,6 +283,11 @@ body::before {
   content: "+";
 }
 .privacy-banner[open] summary .arrow::after { content: "\2212"; }
+/* Hover affordance — makes it obvious the row is clickable */
+.privacy-banner { transition: background 0.1s; }
+.privacy-banner:hover { background: var(--paper-deep); }
+.privacy-banner summary:hover { color: var(--proof); }
+.privacy-banner summary:hover .arrow::after { color: var(--proof-deep); }
 
 .privacy-points {
   margin-top: 14px;
@@ -1099,6 +1104,79 @@ kbd {
 .mast-nav a.current::before{content:"▸  ";}
 .mast-nav .meta{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);}
 ::selection{background:var(--proof);color:var(--paper);}
+
+/* — Featured pub note — */
+.pub-note {
+  text-align: center;
+  padding: 28px var(--gut);
+  margin-bottom: 28px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+.pub-note p {
+  font-family: var(--serif);
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+.pub-note .coffee-link {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+.pub-note .coffee-link:hover { color: var(--proof); }
+
+/* — Voice cast list — */
+.voice-section-hint {
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+.voice-cast { margin-top: 6px; border-top: 1px solid var(--rule); }
+.voice-group-label {
+  font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--ink-faint);
+  padding: 10px 0 6px; border-bottom: 1px solid var(--rule-soft);
+}
+.voice-row {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 10px; align-items: center;
+  padding: 9px 4px; border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer; transition: background 0.12s;
+}
+.voice-row:hover { background: var(--paper-deep); margin: 0 -4px; padding: 9px 8px; }
+.voice-row.selected .voice-name { color: var(--proof); }
+.voice-row.selected .voice-name::before { content: "\25B8\00a0"; }
+.voice-name {
+  font-family: var(--serif); font-size: 0.92rem; font-weight: 500;
+  color: var(--ink); margin-bottom: 2px;
+}
+.voice-star { color: var(--proof); font-size: 0.7rem; }
+.voice-desc {
+  font-style: italic; font-size: 0.76rem;
+  color: var(--ink-muted); line-height: 1.35;
+}
+.voice-preview-btn {
+  background: transparent; border: 1px solid var(--rule);
+  padding: 4px 9px; font-family: var(--mono); font-size: 0.65rem;
+  color: var(--ink-faint); cursor: pointer; flex-shrink: 0;
+  transition: all 0.15s; letter-spacing: 0.05em;
+}
+.voice-preview-btn:hover { border-color: var(--proof); color: var(--proof); }
+.voice-preview-btn.active { border-color: var(--ink); color: var(--ink); }
+.voice-preview-btn:disabled { opacity: 0.35; cursor: default; }
+
 </style>
 </head>
 <body>
@@ -1190,7 +1268,7 @@ kbd {
     <summary>
       <span class="lock-icon"><svg viewBox="0 0 24 24"><path d="M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2zm-1-2V7a6 6 0 10-12 0v2h-1v2h14V9h-1zm-10 0V7a4 4 0 118 0v2H8z"/></svg></span>
       Your manuscript stays private — here's how
-      <span class="arrow">▸</span>
+      <span class="arrow" title="Click to expand">▸</span>
     </summary>
     <div class="privacy-points">
       <div class="privacy-point">
@@ -1216,7 +1294,7 @@ kbd {
     <summary>
       <span class="lock-icon" style="background: var(--proof-wash);"><svg viewBox="0 0 24 24" style="fill: var(--proof);"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
       Best experience: Chrome or Edge on desktop
-      <span class="arrow">▸</span>
+      <span class="arrow" title="Click to expand">▸</span>
     </summary>
     <div class="privacy-points">
       <div class="privacy-point">
@@ -1278,10 +1356,18 @@ kbd {
     <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
   </div>
 
+  <div class="pub-note">
+    <p>Made by a writer, for writers.</p>
+    <a class="coffee-link" href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">If this helped your work — buy me a coffee ↗</a>
+  </div>
+
   <div class="settings">
     <div class="setting">
-      <div class="setting-label"><span>Voice</span></div>
-      <select id="voiceSelect">
+      <div class="setting-label">
+        <span>Voice</span>
+        <span class="voice-section-hint">Select a voice below</span>
+      </div>
+      <select id="voiceSelect" style="display:none">
         <optgroup label="American Female">
           <option value="af_heart">Heart</option>
           <option value="af_bella">Bella</option>
@@ -1305,6 +1391,7 @@ kbd {
           <option value="bm_lewis">Lewis</option>
         </optgroup>
       </select>
+      <div class="voice-cast" id="voiceCast"></div>
     </div>
     <div class="setting">
       <div class="setting-label">
@@ -1379,10 +1466,7 @@ kbd {
   </div>
 
   <div class="footer">
-    <p class="support-line">
-      Made by a writer, for writers.<br>
-      If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.
-    </p>
+
 
     <details class="feedback-details">
       <summary>Send feedback</summary>
@@ -1573,6 +1657,101 @@ kbd {
   const resetAllBtn = document.getElementById('resetAllBtn');
   const stopBtn = document.getElementById('stopBtn');
   const voiceSelect = document.getElementById('voiceSelect');
+
+  // ─── Voice Cast ────────────────────────────────────────
+  const VOICE_DATA = [
+    { id:'af_heart',    name:'Heart',    group:'American Female', desc:'Warm and expressive, with an emotional depth that suits intimate prose.' },
+    { id:'af_bella',    name:'Bella',    group:'American Female', desc:'Clear and bright, naturally conversational.' },
+    { id:'af_nicole',   name:'Nicole',   group:'American Female', desc:'Hushed and close, like someone reading over your shoulder.' },
+    { id:'af_sarah',    name:'Sarah',    group:'American Female', desc:'Crisp and energetic, brisk American delivery.' },
+    { id:'af_sky',      name:'Sky',      group:'American Female', desc:'Light and airy, youthful and unhurried.' },
+    { id:'af_nova',     name:'Nova',     group:'American Female', desc:'Neutral broadcast quality, clean and versatile.' },
+    { id:'af_river',    name:'River',    group:'American Female', desc:'Measured and flowing, calm even pacing.' },
+    { id:'af_alloy',    name:'Alloy',    group:'American Female', desc:'Confident and modern, crisp articulation.' },
+    { id:'am_adam',     name:'Adam',     group:'American Male',   desc:'Deep and authoritative, with a commanding presence.' },
+    { id:'am_michael',  name:'Michael',  group:'American Male',   desc:'Warm and natural, approachable.' },
+    { id:'bf_emma',     name:'Emma',     group:'British Female',  desc:'Soft and literary, intimate warmth. The default.', star:true },
+    { id:'bf_isabella', name:'Isabella', group:'British Female',  desc:'Crisp and composed, precise articulation.' },
+    { id:'bm_george',   name:'George',   group:'British Male',    desc:'Dry and gravelly, quietly distinguished.' },
+    { id:'bm_lewis',    name:'Lewis',    group:'British Male',    desc:'Low and understated, quietly compelling.' },
+  ];
+
+  const VOICE_DEMO = 'It was the best of times, it was the worst of times.';
+  let demoSource = null;
+
+  function stopDemo() {
+    if (demoSource) { try { demoSource.stop(); } catch(e) {} demoSource = null; }
+    document.querySelectorAll('.voice-preview-btn').forEach(b => { b.textContent = '▶'; b.classList.remove('active'); });
+  }
+
+  function renderVoiceCast() {
+    const castEl = document.getElementById('voiceCast');
+    if (!castEl) return;
+    let html = '';
+    let curGroup = '';
+    VOICE_DATA.forEach(v => {
+      if (v.group !== curGroup) {
+        curGroup = v.group;
+        html += '<div class="voice-group-label">' + curGroup + '</div>';
+      }
+      const sel = v.id === voiceSelect.value;
+      html += '<div class="voice-row' + (sel ? ' selected' : '') + '" data-voice="' + v.id + '">'
+        + '<div><div class="voice-name">' + v.name + (v.star ? ' <span class="voice-star">★</span>' : '') + '</div>'
+        + '<div class="voice-desc">' + v.desc + '</div></div>'
+        + '<button class="voice-preview-btn" data-voice="' + v.id + '" title="Preview" aria-label="Preview ' + v.name + '">▶</button>'
+        + '</div>';
+    });
+    castEl.innerHTML = html;
+
+    castEl.querySelectorAll('.voice-row').forEach(row => {
+      row.addEventListener('click', function(e) {
+        if (e.target.classList.contains('voice-preview-btn')) return;
+        voiceSelect.value = row.dataset.voice;
+        castEl.querySelectorAll('.voice-row').forEach(r =>
+          r.classList.toggle('selected', r.dataset.voice === row.dataset.voice));
+      });
+    });
+
+    castEl.querySelectorAll('.voice-preview-btn').forEach(btn => {
+      btn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        if (!modelReady) return;
+
+        // If this voice is already playing, stop it
+        if (btn.classList.contains('active')) { stopDemo(); return; }
+
+        // Stop any other demo
+        stopDemo();
+
+        btn.textContent = '…';
+        btn.disabled = true;
+
+        try {
+          const buffer = await generateAudio(VOICE_DEMO, btn.dataset.voice, 1.0);
+          btn.textContent = '■';
+          btn.disabled = false;
+          btn.classList.add('active');
+
+          const ctx = getAudioContext();
+          if (ctx.state === 'suspended') await ctx.resume();
+          const src = ctx.createBufferSource();
+          src.buffer = buffer;
+          src.connect(ctx.destination);
+          demoSource = src;
+          src.onended = function() {
+            btn.textContent = '▶';
+            btn.classList.remove('active');
+            demoSource = null;
+          };
+          src.start();
+        } catch(err) {
+          btn.textContent = '▶';
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
   const speedRange = document.getElementById('speedRange');
   const speedVal = document.getElementById('speedVal');
   const progressWrap = document.getElementById('progressWrap');
@@ -1612,6 +1791,7 @@ kbd {
           modelDetail.textContent = `Model loaded with ${deviceLabel} acceleration`;
 
           modelReady = true;
+          renderVoiceCast();
           playBtn.disabled = false;
           downloadBtn.disabled = false;
           skipBackBtn.disabled = false;
@@ -2132,6 +2312,9 @@ kbd {
     isPlaying = true;
     requestWakeLock(); // Keep screen awake during playback
     isPaused = false;
+    // Activate browser media session so hardware keys (headphones) work
+    document.getElementById('msKeepalive').play().catch(function(){});
+    stopDemo(); // Stop any voice preview
     stopRequested = false;
     updateUI();
 
@@ -2274,6 +2457,7 @@ kbd {
       isPaused = true;
       isPlaying = false;
       releaseWakeLock(); // Allow screen to sleep while paused
+      document.getElementById('msKeepalive').pause();
       updateUI();
       statusEl.textContent = 'Paused.';
 
@@ -2295,6 +2479,7 @@ kbd {
     isPaused = false;
     isPreparing = false;
     releaseWakeLock();
+    document.getElementById('msKeepalive').pause();
     currentBatchIndex = 0;
     batches = [];
     audioCache.clear();
@@ -2696,6 +2881,7 @@ kbd {
   // Register Media Session action handlers so headphone buttons and
   // lock-screen controls work immediately (before any audio plays).
   initMediaSession();
+  renderVoiceCast();
 
   // ─── Event Listeners ──────────────────────────────
   playBtn.addEventListener('click', togglePlay);
@@ -2805,5 +2991,6 @@ kbd {
     document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
   })();
 </script>
+<audio id="msKeepalive" loop preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" style="display:none"></audio>
 </body>
 </html>
