@@ -209,19 +209,18 @@ body::before {
 .safari-warning,
 .mobile-warning {
   display: none;
-  border: 1px solid var(--rule);
-  padding: 14px 48px 14px 18px;
+  border: 1px solid var(--warn);
+  padding: 12px 16px;
   margin-bottom: 14px;
   font-family: var(--serif);
   font-size: 15px;
   line-height: 1.6;
-  color: var(--ink-muted);
-  position: relative;
-  background: var(--paper-deep);
+  color: var(--warn-deep);
+  background: var(--warn-wash);
 }
 
-.safari-warning strong,
-.mobile-warning strong { color: var(--ink-strong); font-weight: 500; }
+.safari-warning strong { color: var(--ink-strong); font-weight: 500; }
+.mobile-warning strong { color: var(--warn-deep); font-weight: 600; }
 
 .safari-warning a {
   color: var(--ink);
@@ -231,8 +230,7 @@ body::before {
   text-underline-offset: 2px;
 }
 
-.safari-warning .dismiss-btn,
-.mobile-warning .dismiss-btn {
+.safari-warning .dismiss-btn {
   position: absolute;
   top: 10px; right: 12px;
   background: none; border: none;
@@ -242,8 +240,7 @@ body::before {
   line-height: 1; padding: 0 4px;
 }
 
-.safari-warning .dismiss-btn:hover,
-.mobile-warning .dismiss-btn:hover { color: var(--proof); }
+.safari-warning .dismiss-btn:hover { color: var(--proof); }
 
 /* Privacy banners */
 .privacy-banner {
@@ -1067,7 +1064,7 @@ kbd {
 
 .footer-meta a { color: var(--ink-faint); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 2px; }
 .footer-meta a:hover { color: var(--ink-muted); }
-.footer-coffee { font-family: var(--serif); font-size: 14px; color: var(--ink-muted); margin-bottom: 16px; }
+.footer-coffee { font-family: var(--serif); font-size: 14px; color: var(--ink-muted); margin-bottom: 16px; text-align: center; }
 .footer-coffee a { color: var(--ink-muted); text-decoration: underline; text-underline-offset: 2px; }
 .footer-coffee a:hover { color: var(--proof); }
 
@@ -1118,15 +1115,7 @@ kbd {
 .mast-nav .meta{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);padding-bottom:8px;}
 ::selection{background:var(--proof);color:var(--paper);}
 
-/* — Browser-hint warning colours — */
-.privacy-banner.browser-hint { border-color: var(--warn); background: var(--warn-wash); }
-.privacy-banner.browser-hint:hover { background: var(--warn-wash); filter: brightness(0.96); }
-.privacy-banner.browser-hint summary { color: var(--warn-deep); }
-.privacy-banner.browser-hint summary:hover { color: var(--warn-deep); }
-.privacy-banner.browser-hint summary .lock-icon { background: transparent !important; }
-.privacy-banner.browser-hint summary .lock-icon svg { fill: var(--warn) !important; }
-.privacy-banner.browser-hint summary .arrow::after { color: var(--warn); }
-.privacy-banner.browser-hint summary:hover .arrow::after { color: var(--warn-deep); }
+/* — Mobile warning: warning colour, non-dismissible — */
 
 /* — Voice picker dropdown — */
 .voice-cast { margin-top: 6px; }
@@ -1222,7 +1211,7 @@ kbd {
     var ua = navigator.userAgent;
     var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
     var isSafari = /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR|Brave/.test(ua);
-    if (isMobile && !isSafari && !localStorage.getItem('mobileWarnDismissed')) {
+    if (isMobile && !isSafari) {
       document.addEventListener('DOMContentLoaded', function() {
         var el = document.getElementById('mobileWarning');
         if (el) el.style.display = 'block';
@@ -1237,11 +1226,10 @@ kbd {
   </div>
 
   <div class="mobile-warning" id="mobileWarning">
-    <button class="dismiss-btn" onclick="document.getElementById('mobileWarning').style.display='none';localStorage.setItem('mobileWarnDismissed','1')" aria-label="Dismiss">&times;</button>
     <strong>Mobile browsers work, but this tool isn't optimised for them.</strong>
-    The voice model (~90 MB) must download in full before playback can begin — expect a wait on a mobile connection.
-    Once loaded, audio generation runs on CPU only with no GPU acceleration, so it's noticeably slower than desktop and will drain your battery during long sessions.
-    For the best experience, try <strong>Chrome or Edge on a desktop or laptop</strong>.
+    The voice model (~90 MB) must download before playback can begin — expect a wait on a mobile connection.
+    Audio generation is CPU-only on mobile, so it's slower than desktop and will drain your battery during long sessions.
+    For the best experience, use <strong>Chrome or Edge on a desktop or laptop</strong>.
   </div>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <svg id="themeIcon" viewBox="0 0 24 24"></svg>
@@ -1260,7 +1248,6 @@ kbd {
 <a href="index.html" class="current">Read&nbsp;Aloud</a>
 <a href="lint.html">Manuscript&nbsp;Lint</a>
 </div>
-<div class="meta">Beta</div>
 </nav>
 </header>
 
