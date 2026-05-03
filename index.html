@@ -33,6 +33,9 @@
   --proof-deep:   #8C2920;
   --proof-wash:   #F2D9D4;
   --indigo:       #1F3A6B;
+  --warn:         #7A5C00;
+  --warn-deep:    #5C4500;
+  --warn-wash:    #FEF6D8;
   --t-mast:clamp(54px,9vw,132px);--t-h1:clamp(36px,5vw,64px);--t-h2:clamp(26px,3vw,38px);--t-h3:22px;--t-body:17px;--t-small:14px;--t-mono:12px;--t-caps:11px;--gut:clamp(20px,4vw,56px);--rule-w:1px;
   --serif:  "Newsreader", "Iowan Old Style", Charter, Georgia, serif;
   --mono:   "IBM Plex Mono", "JetBrains Mono", "SF Mono", ui-monospace, monospace;
@@ -53,6 +56,9 @@
     --proof-deep: #C04435;
     --proof-wash: #2A1714;
     --indigo:     #88A8DD;
+    --warn:       #D4A017;
+    --warn-deep:  #B8860B;
+    --warn-wash:  #2A2410;
   }
 }
 
@@ -70,6 +76,9 @@
   --proof-deep: #C04435;
   --proof-wash: #2A1714;
   --indigo:     #88A8DD;
+  --warn:       #D4A017;
+  --warn-deep:  #B8860B;
+  --warn-wash:  #2A2410;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -1058,6 +1067,9 @@ kbd {
 
 .footer-meta a { color: var(--ink-faint); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 2px; }
 .footer-meta a:hover { color: var(--ink-muted); }
+.footer-coffee { font-family: var(--serif); font-size: 14px; color: var(--ink-muted); margin-bottom: 16px; }
+.footer-coffee a { color: var(--ink-muted); text-decoration: underline; text-underline-offset: 2px; }
+.footer-coffee a:hover { color: var(--proof); }
 
 /* Theme toggle */
 .theme-toggle {
@@ -1087,63 +1099,51 @@ kbd {
   stroke-linejoin: round;
 }
 /* — Masthead — */
-.masthead{padding:18px 0 28px;border-bottom:2px solid var(--ink);}
-.mast-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:28px;}
-.mast-vol{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-muted);}
-.mast-vol .dot{display:inline-block;width:6px;height:6px;background:var(--proof);border-radius:50%;margin:0 8px 1px;vertical-align:middle;}
-.wordmark{position:relative;display:flex;align-items:flex-end;gap:clamp(16px,3vw,36px);flex-wrap:wrap;}
+.masthead{padding:18px 0 0;border-bottom:none;}
+.wordmark{position:relative;display:flex;align-items:flex-end;gap:clamp(16px,3vw,36px);flex-wrap:wrap;padding-bottom:20px;border-bottom:2px solid var(--ink);}
 .wordmark .name{font-family:var(--serif);font-weight:350;font-size:var(--t-mast);line-height:0.86;letter-spacing:-0.04em;color:var(--ink-strong);font-feature-settings:"ss01","lnum";}
 .wordmark .name em{font-style:italic;font-weight:350;}
 .caret{position:relative;display:inline-block;}
-
-.wordmark .gloss{flex:1;min-width:220px;align-self:flex-end;padding-bottom:0.6em;font-style:italic;font-size:var(--t-h3);line-height:1.25;color:var(--ink-muted);max-width:32ch;}
-.mast-nav{display:flex;justify-content:space-between;margin-top:22px;padding-top:12px;border-top:1px solid var(--rule-soft);}
-.mast-nav .links{display:flex;gap:24px;}
-.mast-nav a{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;color:var(--ink);}
-.mast-nav a.current{color:var(--proof);}
-.mast-nav a.current::before{content:"▸  ";}
-.mast-nav .meta{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);}
+.wordmark .gloss{flex:1;min-width:220px;align-self:flex-end;padding-bottom:0.3em;max-width:36ch;}
+.gloss-writer{font-family:var(--serif);font-style:italic;font-size:var(--t-h3);line-height:1.2;color:var(--ink);margin-bottom:5px;}
+.gloss-desc{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ink-muted);margin-bottom:8px;line-height:1.3;}
+.gloss-trust{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.16em;color:var(--ink-faint);line-height:1.6;}
+/* — Tab nav — */
+.mast-nav{display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px;border-bottom:1px solid var(--rule);}
+.mast-nav .links{display:flex;gap:0;align-items:flex-end;}
+.mast-nav a{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;color:var(--ink-muted);padding:7px 16px 6px;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;transition:color 0.1s,background 0.1s;}
+.mast-nav a:hover{color:var(--ink);background:var(--paper-deep);border-color:var(--rule-soft);}
+.mast-nav a.current{color:var(--ink-strong);background:var(--paper);border-color:var(--rule);border-bottom-color:var(--paper);}
+.mast-nav a.current::before{content:none;}
+.mast-nav .meta{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);padding-bottom:8px;}
 ::selection{background:var(--proof);color:var(--paper);}
 
-/* — Featured pub note — */
-.pub-note {
-  text-align: center;
-  padding: 28px var(--gut);
-  margin-bottom: 28px;
-  border-top: 2px solid var(--ink);
-  border-bottom: 2px solid var(--ink);
-}
-.pub-note p {
-  font-family: var(--serif);
-  font-size: clamp(18px, 2.5vw, 26px);
-  font-style: italic;
-  font-weight: 400;
-  color: var(--ink);
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-}
-.pub-note .coffee-link {
-  display: block;
-  margin-top: 10px;
-  font-family: var(--mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--ink-muted);
-  text-decoration: none;
-}
-.pub-note .coffee-link:hover { color: var(--proof); }
+/* — Browser-hint warning colours — */
+.privacy-banner.browser-hint { border-color: var(--warn); background: var(--warn-wash); }
+.privacy-banner.browser-hint:hover { background: var(--warn-wash); filter: brightness(0.96); }
+.privacy-banner.browser-hint summary { color: var(--warn-deep); }
+.privacy-banner.browser-hint summary:hover { color: var(--warn-deep); }
+.privacy-banner.browser-hint summary .lock-icon { background: transparent !important; }
+.privacy-banner.browser-hint summary .lock-icon svg { fill: var(--warn) !important; }
+.privacy-banner.browser-hint summary .arrow::after { color: var(--warn); }
+.privacy-banner.browser-hint summary:hover .arrow::after { color: var(--warn-deep); }
 
-/* — Voice cast list — */
-.voice-section-hint {
-  font-family: var(--mono);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--ink-faint);
-  margin-top: 2px;
+/* — Voice picker dropdown — */
+.voice-cast { margin-top: 6px; }
+.voice-picker { border: 1px solid var(--rule); }
+.voice-selected {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; cursor: pointer;
+  background: var(--paper-soft); user-select: none; transition: background 0.1s;
 }
-.voice-cast { margin-top: 6px; border-top: 1px solid var(--rule); }
+.voice-selected:hover { background: var(--paper-deep); }
+.vs-info { flex: 1; min-width: 0; }
+.vs-name { font-family: var(--serif); font-size: 0.92rem; font-weight: 500; color: var(--ink); }
+.vs-desc { font-style: italic; font-size: 0.76rem; color: var(--ink-muted); line-height: 1.3; margin-top: 1px; }
+.vs-chevron { font-family: var(--mono); font-size: 13px; color: var(--ink-faint); flex-shrink: 0; transition: transform 0.15s; }
+.voice-picker.open .vs-chevron { transform: rotate(180deg); }
+.voice-dropdown { display: none; border-top: 1px solid var(--rule); max-height: 360px; overflow-y: auto; }
+.voice-picker.open .voice-dropdown { display: block; }
 .voice-group-label {
   font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--ink-faint);
@@ -1247,13 +1247,13 @@ kbd {
     <svg id="themeIcon" viewBox="0 0 24 24"></svg>
   </button>
   <header class="masthead">
-<div class="mast-top">
-<div class="mast-vol">Manuscript Reader <span class="dot"></span> Read Aloud</div>
-<div class="mast-vol">Free &amp; Private</div>
-</div>
 <div class="wordmark">
 <div class="name">Manuscript<br>Reader<em>.</em></div>
-<div class="gloss">Hear your writing read aloud — free, private, no signup.</div>
+<div class="gloss">
+  <p class="gloss-writer">Made by a writer, for writers.</p>
+  <p class="gloss-desc">Hear your writing read aloud — free, private, no signup.</p>
+  <p class="gloss-trust">No AI involved &middot; Your manuscript never leaves your browser &middot; No accounts &middot; Nothing stored</p>
+</div>
 </div>
 <nav class="mast-nav">
 <div class="links">
@@ -1356,17 +1356,9 @@ kbd {
     <kbd>Space</kbd> play / pause &nbsp;&middot;&nbsp; <kbd>←</kbd> back 30s &nbsp;&middot;&nbsp; <kbd>→</kbd> forward 30s
   </div>
 
-  <div class="pub-note">
-    <p>Made by a writer, for writers.</p>
-    <a class="coffee-link" href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">If this helped your work — buy me a coffee ↗</a>
-  </div>
-
   <div class="settings">
     <div class="setting">
-      <div class="setting-label">
-        <span>Voice</span>
-        <span class="voice-section-hint">Select a voice below</span>
-      </div>
+      <div class="setting-label"><span>Voice</span></div>
       <select id="voiceSelect" style="display:none">
         <optgroup label="American Female">
           <option value="af_heart">Heart</option>
@@ -1466,7 +1458,7 @@ kbd {
   </div>
 
   <div class="footer">
-
+    <p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.</p>
 
     <details class="feedback-details">
       <summary>Send feedback</summary>
@@ -1687,51 +1679,73 @@ kbd {
   function renderVoiceCast() {
     const castEl = document.getElementById('voiceCast');
     if (!castEl) return;
-    let html = '';
+
+    // Preserve open state across re-renders
+    const existingPicker = castEl.querySelector('.voice-picker');
+    const isOpen = existingPicker ? existingPicker.classList.contains('open') : false;
+
+    const cur = VOICE_DATA.find(v => v.id === voiceSelect.value) || VOICE_DATA[0];
+
+    // Build dropdown rows
+    let dropHtml = '';
     let curGroup = '';
     VOICE_DATA.forEach(v => {
       if (v.group !== curGroup) {
         curGroup = v.group;
-        html += '<div class="voice-group-label">' + curGroup + '</div>';
+        dropHtml += '<div class="voice-group-label">' + curGroup + '</div>';
       }
       const sel = v.id === voiceSelect.value;
-      html += '<div class="voice-row' + (sel ? ' selected' : '') + '" data-voice="' + v.id + '">'
+      dropHtml += '<div class="voice-row' + (sel ? ' selected' : '') + '" data-voice="' + v.id + '">'
         + '<div><div class="voice-name">' + v.name + (v.star ? ' <span class="voice-star">★</span>' : '') + '</div>'
         + '<div class="voice-desc">' + v.desc + '</div></div>'
-        + '<button class="voice-preview-btn" data-voice="' + v.id + '" title="Preview" aria-label="Preview ' + v.name + '">▶</button>'
+        + '<button class="voice-preview-btn" data-voice="' + v.id + '" title="Preview"'
+        + (!modelReady ? ' disabled' : '') + ' aria-label="Preview ' + v.name + '">▶</button>'
         + '</div>';
     });
-    castEl.innerHTML = html;
 
+    castEl.innerHTML = '<div class="voice-picker' + (isOpen ? ' open' : '') + '">'
+      + '<div class="voice-selected">'
+      + '<div class="vs-info">'
+      + '<div class="vs-name">' + cur.name + (cur.star ? ' <span class="voice-star">★</span>' : '') + '</div>'
+      + '<div class="vs-desc">' + cur.desc + '</div>'
+      + '</div>'
+      + '<span class="vs-chevron">▾</span>'
+      + '</div>'
+      + '<div class="voice-dropdown">' + dropHtml + '</div>'
+      + '</div>';
+
+    const picker = castEl.querySelector('.voice-picker');
+
+    // Toggle open/closed
+    castEl.querySelector('.voice-selected').addEventListener('click', function() {
+      picker.classList.toggle('open');
+    });
+
+    // Select a voice — close dropdown and re-render header
     castEl.querySelectorAll('.voice-row').forEach(row => {
       row.addEventListener('click', function(e) {
         if (e.target.classList.contains('voice-preview-btn')) return;
         voiceSelect.value = row.dataset.voice;
-        castEl.querySelectorAll('.voice-row').forEach(r =>
-          r.classList.toggle('selected', r.dataset.voice === row.dataset.voice));
+        stopDemo();
+        picker.classList.remove('open');
+        renderVoiceCast();
       });
     });
 
+    // Preview buttons
     castEl.querySelectorAll('.voice-preview-btn').forEach(btn => {
       btn.addEventListener('click', async function(e) {
         e.stopPropagation();
         if (!modelReady) return;
-
-        // If this voice is already playing, stop it
         if (btn.classList.contains('active')) { stopDemo(); return; }
-
-        // Stop any other demo
         stopDemo();
-
         btn.textContent = '…';
         btn.disabled = true;
-
         try {
           const buffer = await generateAudio(VOICE_DEMO, btn.dataset.voice, 1.0);
           btn.textContent = '■';
           btn.disabled = false;
           btn.classList.add('active');
-
           const ctx = getAudioContext();
           if (ctx.state === 'suspended') await ctx.resume();
           const src = ctx.createBufferSource();
