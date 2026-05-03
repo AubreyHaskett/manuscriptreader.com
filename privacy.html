@@ -48,23 +48,15 @@ body::before{
 ::selection{background:var(--proof);color:var(--paper);}
 .page{max-width:680px;margin:0 auto;padding:clamp(32px,6vw,72px) var(--gut) 64px;}
 /* Masthead */
-.masthead{padding-bottom:20px;border-bottom:2px solid var(--ink);margin-bottom:36px;}
-.wordmark .name{
-  font-family:var(--serif);font-weight:350;font-size:clamp(40px,7vw,88px);
-  line-height:0.86;letter-spacing:-0.04em;color:var(--ink-strong);
-  font-feature-settings:"ss01","lnum";margin-bottom:12px;
-}
+.masthead{padding:18px 0 0;border-bottom:2px solid var(--ink);margin-bottom:36px;}
+.wordmark{display:flex;align-items:flex-end;gap:clamp(16px,3vw,36px);flex-wrap:wrap;padding-bottom:22px;}
+.wordmark .name{font-family:var(--serif);font-weight:350;font-size:var(--t-mast);line-height:0.86;letter-spacing:-0.04em;color:var(--ink-strong);font-feature-settings:"ss01","lnum";}
 .wordmark .name em{font-style:italic;font-weight:350;}
-.mast-nav{display:flex;align-items:flex-end;margin-top:20px;border-bottom:1px solid var(--rule);}
-.mast-nav .links{display:flex;gap:0;align-items:flex-end;}
-.mast-nav a{
-  font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;
-  text-decoration:none;color:var(--ink-muted);padding:7px 16px 6px;
-  border:1px solid transparent;border-bottom:none;margin-bottom:-1px;
-  transition:color 0.1s,background 0.1s;
-}
-.mast-nav a:hover{color:var(--ink);background:var(--paper-deep);border-color:var(--rule-soft);}
-.mast-nav a.current{color:var(--ink-strong);background:var(--paper);border-color:var(--rule);border-bottom-color:var(--paper);}
+.mast-nav{margin-top:0;border-top:1px solid var(--rule-soft);}
+.mast-nav .links{display:flex;gap:0;}
+.mast-nav a{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;color:var(--ink);padding:8px 16px;border:1px solid transparent;border-bottom:none;margin-bottom:-2px;display:inline-block;}
+.mast-nav a:hover{color:var(--proof);text-decoration:none;}
+.mast-nav a.current{color:var(--ink);border-color:var(--rule);border-bottom-color:var(--paper);background:var(--paper);}
 /* Doc styles */
 .doc-header{margin-bottom:40px;}
 .doc-title{
