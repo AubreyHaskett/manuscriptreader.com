@@ -85,13 +85,15 @@ ul li{margin-bottom:6px;}
   color:var(--ink-faint);text-decoration:none;
 }
 .back-link:hover{color:var(--proof);}
-.footer-legal{
-  margin-top:48px;padding-top:20px;border-top:1px solid var(--rule-soft);
-  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--ink-faint);text-align:center;
-}
-.footer-legal a{color:var(--ink-faint);text-decoration:underline;text-underline-offset:2px;}
-.footer-legal a:hover{color:var(--ink-muted);}
+.footer{margin-top:60px;text-align:center;animation:fadeUp 0.6s ease 0.4s both;}
+.footer p{font-size:0.74rem;line-height:1.7;color:var(--ink-faint);}
+.footer a{color:var(--ink-muted);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;transition:color 0.2s;}
+.footer a:hover{color:var(--proof);}
+.footer-meta{font-family:var(--mono);font-size:0.65rem;color:var(--ink-faint);text-align:center;letter-spacing:0.04em;text-transform:uppercase;}
+.footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;}
+.footer-meta a:hover{color:var(--ink-muted);}
+.footer-coffee{font-family:var(--serif);font-size:0.95rem;color:var(--ink-muted);text-align:center;margin-bottom:12px;}
+.footer-coffee a{color:var(--proof);text-decoration:none;font-weight:500;}.footer-coffee a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -119,7 +121,7 @@ ul li{margin-bottom:6px;}
     <p class="doc-meta">Last updated: May 2025</p>
   </div>
 
-  <p class="doc-intro">Manuscript Reader is designed from the ground up to be private by default. Your manuscript text is never uploaded, stored, or shared — it stays entirely inside your browser.</p>
+  <p class="doc-intro">Manuscript Reader, Prose Analysis, and the Query Letter builder are all designed from the ground up to be private by default. Everything happens inside your browser — no text, no manuscripts, and no query drafts are ever uploaded, stored, or shared.</p>
 
   <h2>What we collect</h2>
   <p>We collect <strong>anonymous page-visit counts</strong> using <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>, an open-source, privacy-friendly analytics tool. GoatCounter does not use cookies, does not track individuals across sessions, and does not collect personal data. It records only that a page was visited — not who visited it, not what they typed, and not what they listened to.</p>
@@ -127,12 +129,15 @@ ul li{margin-bottom:6px;}
 
   <h2>What we do not collect</h2>
   <ul>
-    <li>Your manuscript text — it is never sent anywhere. Processing happens entirely in your browser.</li>
+    <li>Your manuscript text or query letter draft — nothing is ever sent anywhere. All processing happens entirely in your browser.</li>
     <li>Audio output — generated audio exists only in your browser's memory and is discarded when you close the tab.</li>
     <li>Your name, email address, or any account information — there are no accounts.</li>
     <li>Cookies or persistent identifiers of any kind.</li>
     <li>IP addresses — GoatCounter does not log or store them.</li>
   </ul>
+
+  <h2>The tools</h2>
+  <p>Manuscript Reader (read-aloud), Prose Analysis (manuscript linting), and the Query Letter builder all operate entirely client-side. No text leaves your device at any point.</p>
 
   <h2>The voice model</h2>
   <p>Manuscript Reader uses the <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> text-to-speech model (Apache 2.0 licence), which runs entirely inside your browser via WebAssembly and WebGPU. The model is downloaded once from a public CDN and then cached locally on your device by the service worker. No text is ever sent to an external server to generate audio.</p>
@@ -149,11 +154,10 @@ ul li{margin-bottom:6px;}
   <h2>Contact</h2>
   <p>Questions? Use the feedback form on the <a href="index.html">main page</a>.</p>
 
-  <div class="footer-legal">
-    <a href="index.html">Manuscript Reader</a> &nbsp;&middot;&nbsp;
-    <a href="privacy.html">Privacy Policy</a> &nbsp;&middot;&nbsp;
-    <a href="terms.html">Terms of Use</a>
-  </div>
+<div class="footer">
+  <p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p>
+  <p class="footer-meta"><a href="index.html">Manuscript Reader</a> &nbsp;&middot;&nbsp; <a href="lint.html">Prose Analysis</a> &nbsp;&middot;&nbsp; <a href="query.html">Query Letter</a> &nbsp;&middot;&nbsp; <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="terms.html">Terms</a></p>
+</div>
 </div>
 <script data-goatcounter="https://manuscriptreader.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>

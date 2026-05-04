@@ -85,13 +85,15 @@ ul li{margin-bottom:6px;}
   color:var(--ink-faint);text-decoration:none;
 }
 .back-link:hover{color:var(--proof);}
-.footer-legal{
-  margin-top:48px;padding-top:20px;border-top:1px solid var(--rule-soft);
-  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--ink-faint);text-align:center;
-}
-.footer-legal a{color:var(--ink-faint);text-decoration:underline;text-underline-offset:2px;}
-.footer-legal a:hover{color:var(--ink-muted);}
+.footer{margin-top:60px;text-align:center;animation:fadeUp 0.6s ease 0.4s both;}
+.footer p{font-size:0.74rem;line-height:1.7;color:var(--ink-faint);}
+.footer a{color:var(--ink-muted);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;transition:color 0.2s;}
+.footer a:hover{color:var(--proof);}
+.footer-meta{font-family:var(--mono);font-size:0.65rem;color:var(--ink-faint);text-align:center;letter-spacing:0.04em;text-transform:uppercase;}
+.footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;}
+.footer-meta a:hover{color:var(--ink-muted);}
+.footer-coffee{font-family:var(--serif);font-size:0.95rem;color:var(--ink-muted);text-align:center;margin-bottom:12px;}
+.footer-coffee a{color:var(--proof);text-decoration:none;font-weight:500;}.footer-coffee a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -119,13 +121,13 @@ ul li{margin-bottom:6px;}
     <p class="doc-meta">Last updated: May 2025</p>
   </div>
 
-  <p class="doc-intro">Manuscript Reader is a free tool for writers. By using it, you agree to these terms. They are short, plain-English, and written in good faith.</p>
+  <p class="doc-intro">Manuscript Reader is a suite of free tools for writers — including the read-aloud reader, Prose Analysis, and the Query Letter builder. By using any of these tools, you agree to these terms. They are short, plain-English, and written in good faith.</p>
 
   <h2>What this tool does</h2>
-  <p>Manuscript Reader converts text you paste into spoken audio using an AI voice model that runs entirely inside your browser. No text leaves your device. No audio is stored or transmitted. The tool is provided free of charge, with no accounts required.</p>
+  <p>All tools on this site operate entirely inside your browser. No text leaves your device — no manuscripts, no query letter drafts, no audio. The tools are provided free of charge, with no accounts required.</p>
 
   <h2>Your content</h2>
-  <p>You retain full ownership of everything you paste into Manuscript Reader. We make no claim to your writing. Because your text is never uploaded to our servers, we never have access to it in the first place.</p>
+  <p>You retain full ownership of everything you paste or type into any tool on this site. We make no claim to your writing or your queries. Because nothing is ever uploaded to our servers, we never have access to it in the first place.</p>
 
   <h2>Acceptable use</h2>
   <p>You may use Manuscript Reader for any lawful purpose. Please do not use it to process content that is illegal in your jurisdiction or that infringes the copyright of others without authorisation.</p>
@@ -145,11 +147,10 @@ ul li{margin-bottom:6px;}
   <h2>Contact</h2>
   <p>Questions? Use the feedback form on the <a href="index.html">main page</a>.</p>
 
-  <div class="footer-legal">
-    <a href="index.html">Manuscript Reader</a> &nbsp;&middot;&nbsp;
-    <a href="privacy.html">Privacy Policy</a> &nbsp;&middot;&nbsp;
-    <a href="terms.html">Terms of Use</a>
-  </div>
+<div class="footer">
+  <p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p>
+  <p class="footer-meta"><a href="index.html">Manuscript Reader</a> &nbsp;&middot;&nbsp; <a href="lint.html">Prose Analysis</a> &nbsp;&middot;&nbsp; <a href="query.html">Query Letter</a> &nbsp;&middot;&nbsp; <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="terms.html">Terms</a></p>
+</div>
 </div>
 <script data-goatcounter="https://manuscriptreader.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
