@@ -47,13 +47,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 .theme-toggle{position:fixed;top:16px;right:16px;background:var(--paper-deep);border:1px solid var(--rule);border-radius:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;color:var(--ink-faint);z-index:100;}
 .theme-toggle:hover{background:var(--paper-soft);color:var(--ink-muted);}.theme-toggle svg{width:18px;height:18px;fill:currentColor;}
 /* Privacy hero */
-.privacy-hero{background:var(--paper-soft);border:1px solid var(--rule);border-left:3px solid var(--proof);padding:20px 24px;margin-bottom:28px;animation:fadeUp 0.6s ease 0.15s both;}
-.privacy-hero-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
-.privacy-hero-icon{width:32px;height:32px;background:var(--proof-wash);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
-.privacy-hero-icon svg{width:16px;height:16px;fill:var(--proof);}
-.privacy-hero-header h3{font-family:var(--serif);font-size:1.05rem;font-weight:600;color:var(--ink-strong);line-height:1.3;}
-.privacy-hero-body{font-size:0.84rem;line-height:1.7;color:var(--ink-muted);margin-bottom:12px;}
-.privacy-hero-body strong{color:var(--ink);font-weight:600;}
+
 .privacy-proof{background:var(--paper-deep);border:1px solid var(--rule);padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--ink-muted);}
 .privacy-proof-icon{font-size:1rem;flex-shrink:0;}
 .privacy-proof em{color:var(--ink);font-style:normal;font-weight:600;}
@@ -241,7 +235,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 <img src="logo.svg" alt="" class="wordmark-logo" aria-hidden="true">
 <div class="name">Prose<br>Analysis<em>.</em></div>
 <div class="gloss">
-<p class="gloss-desc">Automated prose analysis — free, private, no signup.</p>
+<p class="gloss-desc">Automated prose analysis — free, private, no AI training, no signup.</p>
 </div>
 </div>
 <nav class="mast-nav">
@@ -252,10 +246,19 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 </div>
 </nav>
 </header>
-<div class="privacy-hero" id="privacyHero">
-<div class="privacy-hero-header"><div class="privacy-hero-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 14l-4-4 1.41-1.41L11 12.17l6.59-6.59L19 7l-8 8z"/></svg></div><h3>Zero network requests. Your manuscript never leaves this device.</h3></div>
-<div class="privacy-hero-body">This tool is <strong>entirely self-contained</strong>. Every word-count, every regex, every analysis runs in JavaScript inside your browser. There are no servers, no APIs, no database calls, no analytics on your text. Your manuscript is never transmitted anywhere — <strong>not even for a millisecond</strong>.</div>
-</div>
+<details class="privacy-banner" id="privacyHero">
+  <summary>
+    <span class="lock-icon"><svg viewBox="0 0 24 24"><path d="M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2zm-1-2V7a6 6 0 10-12 0v2h-1v2h14V9h-1zm-10 0V7a4 4 0 118 0v2H8z"/></svg></span>
+    Your manuscript stays private — here's how
+    <span class="arrow" title="Click to expand">▸</span>
+  </summary>
+  <div class="privacy-points">
+    <div class="privacy-point"><span class="check">✓</span><p><strong>No servers.</strong> Your text is never uploaded anywhere. Everything runs inside your browser on your device.</p></div>
+    <div class="privacy-point"><span class="check">✓</span><p><strong>No AI training.</strong> Your words are not used to train anything. All analysis is rule-based JavaScript — no machine learning involved.</p></div>
+    <div class="privacy-point"><span class="check">✓</span><p><strong>No accounts or personal tracking.</strong> No logins, no cookies. We count page visits but don't know who you are or what you paste.</p></div>
+    <div class="privacy-point"><span class="check">✓</span><p><strong>Nothing is saved.</strong> Close the tab and your text is gone. There is no database, no storage, no history.</p></div>
+  </div>
+</details>
 <div class="features" id="featurePreview">
 <h3>What you'll get</h3>
 <div class="feature-grid">
