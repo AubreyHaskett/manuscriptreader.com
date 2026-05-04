@@ -20,7 +20,20 @@ async function checkWebGPU() {
   if (!navigator.gpu) return false;
   try {
     const adapter = await navigator.gpu.requestAdapter();
-    return !!adapter;
+    if (!adapter) return false;
+
+    // NVIDIA + WebGPU (fp32) produces garbled audio due to driver-level precision
+    // bugs in ONNX compute shaders. Force WASM for all NVIDIA hardware.
+    try {
+      const info = await adapter.requestAdapterInfo();
+      const desc = (info.vendor || info.description || info.device || '').toLowerCase();
+      if (desc.includes('nvidia') || desc.includes('0x10de')) {
+        self.postMessage({ type: 'nvidia_fallback' });
+        return false;
+      }
+    } catch { /* requestAdapterInfo not available in all browsers — safe to ignore */ }
+
+    return true;
   } catch {
     return false;
   }
