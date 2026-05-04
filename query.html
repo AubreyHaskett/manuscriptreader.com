@@ -170,6 +170,35 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 .footer-meta{font-family:var(--mono);font-size:0.63rem;color:var(--ink-faint);letter-spacing:0.04em;text-transform:uppercase;}
 .footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;}
 .footer-meta a:hover{color:var(--ink-muted);}
+/* — Advice panel — */
+.advice{margin-top:44px;border:1px solid var(--rule);}
+.advice-summary{display:flex;align-items:baseline;gap:16px;padding:14px 22px;cursor:pointer;list-style:none;background:var(--paper-deep);border-bottom:1px solid transparent;}
+.advice-summary::-webkit-details-marker{display:none;}
+.advice[open] .advice-summary{border-bottom-color:var(--rule);}
+.advice-summary-label{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink);flex-shrink:0;}
+.advice-summary-hint{font-family:var(--serif);font-style:italic;font-size:0.82rem;color:var(--ink-faint);flex:1;}
+.advice-arrow{font-family:var(--mono);font-size:0.7rem;color:var(--ink-faint);transition:transform 0.2s;flex-shrink:0;}
+.advice[open] .advice-arrow{transform:rotate(90deg);}
+.advice-body{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:none;}
+@media(max-width:760px){.advice-body{grid-template-columns:1fr;}}
+.advice-section{padding:24px 26px;border-bottom:1px solid var(--rule-soft);}
+.advice-section:nth-child(odd){border-right:1px solid var(--rule-soft);}
+@media(max-width:760px){.advice-section:nth-child(odd){border-right:none;}}
+.advice-section:last-child,.advice-section:nth-last-child(2):nth-child(odd){border-bottom:none;}
+.advice-section h3{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.12em;text-transform:uppercase;color:var(--proof);margin-bottom:10px;}
+.advice-section p{font-family:var(--serif);font-size:0.88rem;line-height:1.7;color:var(--ink-muted);margin-bottom:8px;}
+.advice-section p:last-child{margin-bottom:0;}
+.advice-section p strong{color:var(--ink);font-weight:600;}
+.advice-section p em{font-style:italic;color:var(--ink);}
+.advice-section ul{margin:6px 0 0 0;padding:0;list-style:none;}
+.advice-section li{font-family:var(--serif);font-size:0.88rem;line-height:1.65;color:var(--ink-muted);padding-left:1.1em;position:relative;margin-bottom:4px;}
+.advice-section li::before{content:"—";position:absolute;left:0;color:var(--rule);}
+.advice-section li a,.advice-section p a{color:var(--proof);text-underline-offset:2px;}
+.advice-section li a:hover,.advice-section p a:hover{text-decoration:underline;}
+.advice-example{background:var(--paper-deep);border-left:2px solid var(--rule);padding:10px 14px;margin:10px 0;font-family:var(--serif);font-size:0.84rem;line-height:1.65;color:var(--ink-muted);font-style:italic;}
+.advice-example strong{color:var(--ink);font-style:normal;font-weight:600;}
+.advice-full{grid-column:1/-1;border-right:none!important;}
+
 ::selection{background:var(--proof);color:var(--paper);}
 .hidden{display:none!important;}
 </style>
@@ -226,10 +255,19 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   <!-- F1: The Pitch -->
   <div class="form-section hidden" id="sec-f1">
     <div class="section-head"><h3>The Pitch</h3></div>
-    <div class="guidance">The heart of your query. Fill in the fields below — watch the letter take shape on the right as you go. Each field completes a sentence in the letter.</div>
+    <div class="guidance">The heart of your query. Fill in each field and watch the letter build on the right. Optional fields are labelled — include them only if they add something.</div>
     <div class="field">
+      <label>Tagline <span class="sub"> — optional opening hook before "Dear Agent"</span></label>
+      <div class="guidance" style="margin-bottom:8px;margin-top:2px;">A single striking sentence that opens the letter. Only use one if it's genuinely strong — a weak tagline is worse than none.</div>
+      <input type="text" id="fTagline" placeholder="In a city that erases its own history, some maps are worth dying for.">
+    </div>
+    <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
       <label>Protagonist name</label>
       <input type="text" id="fName" placeholder="Elara">
+    </div>
+    <div class="field">
+      <label>Age <span class="sub"> — optional; most useful for YA and MG; often omitted in adult fiction</span></label>
+      <input type="text" id="fAge" placeholder="28">
     </div>
     <div class="field">
       <label>Protagonist description <span class="sub"> — "NAME is ___"</span></label>
@@ -244,11 +282,15 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
       </div>
     </div>
     <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
-      <label>World or setting detail <span class="sub"> — optional, especially useful for SF, fantasy, horror</span></label>
+      <label>World or setting detail <span class="sub"> — optional; especially useful for SF, fantasy, horror</span></label>
       <input type="text" id="fSetting" placeholder="In a city where history is literally rewritten each decade, the maps are the only truth left.">
     </div>
+    <div class="field">
+      <label>What do they want? <span class="sub"> — "NAME just wants ___" — their desire before the story disrupts them</span></label>
+      <input type="text" id="fWants" placeholder="to finally be recognised as a real mapmaker — not just an archivist of other people's work">
+    </div>
     <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
-      <label>Inciting incident <span class="sub"> — "When ___, NAME must…"</span></label>
+      <label>Inciting incident <span class="sub"> — "but when ___, NAME must…"</span></label>
       <textarea id="fInciting" rows="2" placeholder="a forbidden map surfaces that contradicts the city's founding myth"></textarea>
     </div>
     <div class="field">
@@ -263,9 +305,13 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
       <label>Midpoint escalation <span class="sub"> — when things get worse; what raises the stakes further</span></label>
       <textarea id="fMidpoint" rows="2" placeholder="When she discovers her own past has been altered, she realises she was never the investigator — she was the target."></textarea>
     </div>
+    <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
+      <label>Outcome 1 <span class="sub"> — best case / what they think they want — "[pronoun] has to ___ or ___"</span></label>
+      <input type="text" id="fOutcome1" placeholder="expose the city's lie and restore the names of everyone who was erased">
+    </div>
     <div class="field">
-      <label>Stakes <span class="sub"> — full sentence, what happens if they fail</span></label>
-      <input type="text" id="fStakes" placeholder="If she stays silent, thousands will be erased from history — including herself.">
+      <label>Outcome 2 <span class="sub"> — worst case / what they fear</span></label>
+      <input type="text" id="fOutcome2" placeholder="accept her own erasure and let the city's history stand unchallenged forever">
     </div>
     <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
       <label>Second pitch paragraph <span class="sub"> — optional subplot or complication</span></label>
@@ -516,6 +562,77 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 
 </div><!-- /workspace -->
 
+<details class="advice" id="advicePanel">
+  <summary class="advice-summary">
+    <span class="advice-summary-label">Advice</span>
+    <span class="advice-summary-hint">What to do with your letter now — common mistakes, what to cut, and where to go next</span>
+    <span class="advice-arrow">▸</span>
+  </summary>
+  <div class="advice-body">
+
+    <div class="advice-section">
+      <h3>Three jobs, one letter</h3>
+      <p>Every query has three jobs: <strong>hook the reader</strong> with your story, <strong>situate the book in the market</strong> so they know who will buy it, and <strong>establish credibility</strong> so they trust you wrote it. The letter you've built covers all three. Now make it yours — rework the sentences in your own voice, move things around, cut what doesn't earn its place.</p>
+    </div>
+
+    <div class="advice-section">
+      <h3>Length &amp; format</h3>
+      <p>Target <strong>250–350 words</strong>. The pitch paragraph should run 150–200 words. The spec line and bio fill the rest. Over 400 words? Cut the pitch — agents read hundreds of queries a week and every unnecessary word is a reason to stop.</p>
+      <p>Business letter formatting: 12pt font, single-spaced, left-aligned, a blank line between paragraphs. If emailing, use your email client's default font and size.</p>
+    </div>
+
+    <div class="advice-section">
+      <h3>The back-cover-blurb problem</h3>
+      <p>The most common query failure is writing a pitch that's evocative but vague — the way a back-cover blurb is vague. A query needs the <strong>specific, strange, irreplaceable details</strong> of your story.</p>
+      <div class="advice-example">✗ &ldquo;She must investigate the strange circumstances surrounding the murder.&rdquo;</div>
+      <div class="advice-example">✓ &ldquo;She must find out why every victim has insect larvae burrowed into their skulls before the killer adds her name to the list.&rdquo;</div>
+      <p>The second sentence could only describe one book. That's the goal.</p>
+    </div>
+
+    <div class="advice-section">
+      <h3>Things to cut</h3>
+      <ul>
+        <li><strong>Themes and interpretations</strong> — don't say "this is a story about grief and resilience." Let the plot carry the theme.</li>
+        <li><strong>Rhetorical questions</strong> — "What would you do if everything you believed was a lie?" Cut it. Always.</li>
+        <li><strong>Complimenting the agent</strong> — "I know you have excellent taste" is not a personalisation. It's filler.</li>
+        <li><strong>Mega-bestseller comps</strong> — Harry Potter, Twilight, Gone Girl, The Hunger Games. Too broad to mean anything.</li>
+        <li><strong>Apologising</strong> — for your word count, your genre, your lack of credits. Don't.</li>
+      </ul>
+    </div>
+
+    <div class="advice-section">
+      <h3>Comp titles</h3>
+      <p>Comps tell agents where your book sits in the market. Choose two or three published in the <strong>last three to five years</strong> — not classics, not debuts from 2015. They don't need to match your plot; they should match your <strong>tone, audience, and sensibility</strong>.</p>
+      <p>Specific is better: <em>The Bone Shard Daughter by Andrea Stewart</em>, not "epic fantasy novels." If you can't think of comps, spend an afternoon on recent acquisitions announcements in your genre — that's where agents are actively buying.</p>
+    </div>
+
+    <div class="advice-section">
+      <h3>What to do next</h3>
+      <ul>
+        <li>Read <strong>50 archived queries</strong> on <a href="https://queryshark.blogspot.com" target="_blank" rel="noopener">Query Shark</a> before you send anything. Janet Reid's annotations are the best free query education available.</li>
+        <li>Research agents on <a href="https://querytracker.net" target="_blank" rel="noopener">QueryTracker</a> and <a href="https://www.manuscriptwishlist.com" target="_blank" rel="noopener">Manuscript Wishlist</a>. Build a targeted list — don't blast everyone.</li>
+        <li>Polish your <strong>first ten pages</strong> as carefully as your query. Agents who request material read the pages immediately.</li>
+        <li>Have someone else read the query <strong>for clarity, not encouragement</strong>. Ask them: does the story make sense? Do they want to read it?</li>
+        <li>Make sure your <strong>full manuscript is complete and as good as you can make it</strong> before you send anything. A same-day full request is possible.</li>
+      </ul>
+    </div>
+
+    <div class="advice-section advice-full" style="border-bottom:none;">
+      <h3>Resources</h3>
+      <ul style="columns:2;column-gap:32px;">
+        <li><a href="https://queryshark.blogspot.com" target="_blank" rel="noopener">Query Shark</a> — annotated query archive</li>
+        <li><a href="https://querytracker.net" target="_blank" rel="noopener">QueryTracker</a> — agent research &amp; tracking</li>
+        <li><a href="https://www.manuscriptwishlist.com" target="_blank" rel="noopener">Manuscript Wishlist</a> — agent MSWL database</li>
+        <li><a href="https://manuscriptacademy.com/word-count-by-genre-literary-agents-2026" target="_blank" rel="noopener">Word count by genre</a> — 2026 agent guidance</li>
+        <li><a href="https://thinkingthroughourfingers.com/2018/02/22/back-cover-blurbs-vs-query-letter-blurbs/" target="_blank" rel="noopener">Back cover blurbs vs. query blurbs</a></li>
+        <li><a href="https://www.agentquery.com/writer_hq.aspx" target="_blank" rel="noopener">AgentQuery</a> — how to write a query letter</li>
+      </ul>
+    </div>
+
+  </div>
+</details>
+
+
 <div class="footer">
   <p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p>
   <p class="footer-meta"><a href="index.html">Manuscript Reader</a> &middot; <a href="lint.html">Prose Analysis</a> &middot; <a href="query.html">Query Letter</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a></p>
@@ -624,24 +741,30 @@ function compNote(c1,c2,c3){
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderFiction(){
-  const personal=v('qPersonal'),name=v('fName'),desc=v('fDesc'),setting=v('fSetting'),
-    inciting=v('fInciting'),conflict=v('fConflict'),antag=v('fAntag'),midpoint=v('fMidpoint'),stakes=v('fStakes'),pitch2=v('fPitch2'),
+  const personal=v('qPersonal'),tagline=v('fTagline'),name=v('fName'),age=v('fAge'),desc=v('fDesc'),setting=v('fSetting'),wants=v('fWants'),
+    inciting=v('fInciting'),conflict=v('fConflict'),antag=v('fAntag'),midpoint=v('fMidpoint'),
+    outcome1=v('fOutcome1'),outcome2=v('fOutcome2'),pitch2=v('fPitch2'),
     ftitle=v('fTitle'),genre=v('fGenre'),wc=v('fWordCount'),
     seriesVal=document.getElementById('fSeries').value,seriesName=v('fSeriesName'),
     c1=v('fComp1'),c2=v('fComp2'),c3=v('fComp3'),bio=v('qBio'),agent=v('qAgent'),author=v('qAuthor');
   let html='';
+  if(tagline) html+='<p>'+ok(tagline)+'</p>';
   html+='<p>'+(agent?ok('Dear '+agent+','):gap('Dear [Agent Name],'))+'</p>';
   if(personal) html+='<p>'+ok(personal)+'</p>';
   const pName=name?ok(name):gap('Name');
   const pDesc=desc?ok(desc):gap('protagonist description');
   const pInc=inciting?ok(inciting):gap('inciting event');
-  const pConf=conflict?ok(conflict):gap('initial goal — what they set out to do');
-  let p1=pName+' is '+pDesc+'.';
+  const pConf=conflict?ok(conflict):gap('initial goal');
+  const pSubCap=qPronoun.sub.charAt(0).toUpperCase()+qPronoun.sub.slice(1);
+  let p1=age?ok(age)+'-year-old '+pName+' is '+pDesc+'.':pName+' is '+pDesc+'.';
   if(setting) p1+=' '+ok(setting);
-  p1+=' When '+pInc+', '+ok(qPronoun.sub)+' must '+pConf+'.';
+  if(wants) p1+=' '+pName+' just wants '+ok(wants)+', but when '+pInc+', '+ok(qPronoun.sub)+' must '+pConf+'.';
+  else p1+=' When '+pInc+', '+ok(qPronoun.sub)+' must '+pConf+'.';
   if(antag) p1+=' '+ok(antag);
   if(midpoint) p1+=' '+ok(midpoint);
-  p1+=' '+(stakes?ok(stakes):gap('Stakes — what happens if they fail.'));
+  const o1=outcome1?ok(outcome1):gap('outcome 1 — best case / what they think they want');
+  const o2=outcome2?ok(outcome2):gap('outcome 2 — worst case / what they fear');
+  p1+=' '+ok(pSubCap)+' has to '+o1+' or '+o2+'.';
   html+='<p>'+p1+'</p>';
   if(pitch2) html+='<p>'+ok(pitch2)+'</p>';
   const gl=genreLabel(genre),a=art(genre);
@@ -815,7 +938,7 @@ document.getElementById('clearBtn').addEventListener('click',function(){
 // ── Save / Restore ────────────────────────────────────────────────────────────
 const FIELDS=[
   'qPersonal','qBio','qAgent','qAuthor',
-  'fName','fDesc','fSetting','fInciting','fConflict','fAntag','fMidpoint','fStakes','fPitch2',
+  'fTagline','fName','fAge','fDesc','fSetting','fWants','fInciting','fConflict','fAntag','fMidpoint','fOutcome1','fOutcome2','fPitch2',
   'fTitle','fGenre','fWordCount','fSeries','fSeriesName','fComp1','fComp2','fComp3',
   'nHook','nPitch','nAudience','nTitle','nCategory','nWordCount',
   'nComp1','nComp2','nComp3','nPlatform','nChapters'
