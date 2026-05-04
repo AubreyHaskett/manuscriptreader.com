@@ -1024,8 +1024,21 @@ function sendFeedback() {
   const btn = document.getElementById('feedbackSend');
   if (!text) { document.getElementById('feedbackText').focus(); return; }
   btn.disabled = true; btn.textContent = 'Sending…';
+  const ua = navigator.userAgent;
+  let os = 'Unknown';
+  if (/Windows NT 10.0/.test(ua)) os = 'Windows 10/11';
+  else if (/Mac OS X ([\d_]+)/.test(ua)) os = 'macOS ' + ua.match(/Mac OS X ([\d_]+)/)[1].replace(/_/g,'.');
+  else if (/Android ([\d.]+)/.test(ua)) os = 'Android ' + ua.match(/Android ([\d.]+)/)[1];
+  else if (/iPhone OS ([\d_]+)/.test(ua)) os = 'iOS ' + ua.match(/iPhone OS ([\d_]+)/)[1].replace(/_/g,'.');
+  else if (/Linux/.test(ua)) os = 'Linux';
+  let browser = 'Unknown';
+  if (/Edg\/([\d.]+)/.test(ua)) browser = 'Edge ' + ua.match(/Edg\/([\d.]+)/)[1];
+  else if (/Chrome\/([\d.]+)/.test(ua)) browser = 'Chrome ' + ua.match(/Chrome\/([\d.]+)/)[1];
+  else if (/Firefox\/([\d.]+)/.test(ua)) browser = 'Firefox ' + ua.match(/Firefox\/([\d.]+)/)[1];
+  else if (/Safari\/([\d.]+)/.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
+  const diag = `OS: ${os} | Browser: ${browser} | Screen: ${window.screen.width}x${window.screen.height} | Viewport: ${window.innerWidth}x${window.innerHeight} | Cores: ${navigator.hardwareConcurrency||'?'} | RAM: ${navigator.deviceMemory||'?'}GB`;
   const form = new FormData();
-  form.append('message', text);
+  form.append('message', text + '\n\n---\n' + diag);
   form.append('email', email || '(not provided)');
   form.append('_subject', 'Manuscript Reader Feedback');
   form.append('_captcha', 'false');
