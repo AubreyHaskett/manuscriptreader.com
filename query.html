@@ -244,12 +244,24 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
       </div>
     </div>
     <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
+      <label>World or setting detail <span class="sub"> — optional, especially useful for SF, fantasy, horror</span></label>
+      <input type="text" id="fSetting" placeholder="In a city where history is literally rewritten each decade, the maps are the only truth left.">
+    </div>
+    <div class="field" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--rule-soft);">
       <label>Inciting incident <span class="sub"> — "When ___, NAME must…"</span></label>
       <textarea id="fInciting" rows="2" placeholder="a forbidden map surfaces that contradicts the city's founding myth"></textarea>
     </div>
     <div class="field">
-      <label>Conflict <span class="sub"> — "NAME must ___"</span></label>
-      <textarea id="fConflict" rows="2" placeholder="choose between exposing the truth and protecting the only home she has ever known"></textarea>
+      <label>Initial goal <span class="sub"> — "NAME must ___" — their first response to the inciting event</span></label>
+      <textarea id="fConflict" rows="2" placeholder="expose the truth before the memory-keepers destroy the map — and her with it"></textarea>
+    </div>
+    <div class="field">
+      <label>Antagonistic forces <span class="sub"> — what stands in their way; 1–2 sentences</span></label>
+      <textarea id="fAntag" rows="2" placeholder="But the city's memory-keepers will do anything to stop her — including erasing her from the record entirely."></textarea>
+    </div>
+    <div class="field">
+      <label>Midpoint escalation <span class="sub"> — when things get worse; what raises the stakes further</span></label>
+      <textarea id="fMidpoint" rows="2" placeholder="When she discovers her own past has been altered, she realises she was never the investigator — she was the target."></textarea>
     </div>
     <div class="field">
       <label>Stakes <span class="sub"> — full sentence, what happens if they fail</span></label>
@@ -306,6 +318,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
         <label>Word count</label>
         <input type="text" id="fWordCount" placeholder="85,000">
         <div class="wc-note" id="fWcNote"></div>
+        <div class="wc-note"><a href="https://manuscriptacademy.com/word-count-by-genre-literary-agents-2026" target="_blank" rel="noopener" style="color:var(--ink-faint);text-underline-offset:2px;">Word count guide by genre →</a></div>
       </div>
     </div>
     <div class="field">
@@ -611,8 +624,8 @@ function compNote(c1,c2,c3){
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderFiction(){
-  const personal=v('qPersonal'),name=v('fName'),desc=v('fDesc'),
-    inciting=v('fInciting'),conflict=v('fConflict'),stakes=v('fStakes'),pitch2=v('fPitch2'),
+  const personal=v('qPersonal'),name=v('fName'),desc=v('fDesc'),setting=v('fSetting'),
+    inciting=v('fInciting'),conflict=v('fConflict'),antag=v('fAntag'),midpoint=v('fMidpoint'),stakes=v('fStakes'),pitch2=v('fPitch2'),
     ftitle=v('fTitle'),genre=v('fGenre'),wc=v('fWordCount'),
     seriesVal=document.getElementById('fSeries').value,seriesName=v('fSeriesName'),
     c1=v('fComp1'),c2=v('fComp2'),c3=v('fComp3'),bio=v('qBio'),agent=v('qAgent'),author=v('qAuthor');
@@ -622,9 +635,13 @@ function renderFiction(){
   const pName=name?ok(name):gap('Name');
   const pDesc=desc?ok(desc):gap('protagonist description');
   const pInc=inciting?ok(inciting):gap('inciting event');
-  const pConf=conflict?ok(conflict):gap('what they must do');
-  let p1=pName+' is '+pDesc+'. When '+pInc+', '+ok(qPronoun.sub)+' must '+pConf+'.';
-  if(stakes) p1+=' '+ok(stakes);
+  const pConf=conflict?ok(conflict):gap('initial goal — what they set out to do');
+  let p1=pName+' is '+pDesc+'.';
+  if(setting) p1+=' '+ok(setting);
+  p1+=' When '+pInc+', '+ok(qPronoun.sub)+' must '+pConf+'.';
+  if(antag) p1+=' '+ok(antag);
+  if(midpoint) p1+=' '+ok(midpoint);
+  p1+=' '+(stakes?ok(stakes):gap('Stakes — what happens if they fail.'));
   html+='<p>'+p1+'</p>';
   if(pitch2) html+='<p>'+ok(pitch2)+'</p>';
   const gl=genreLabel(genre),a=art(genre);
@@ -798,7 +815,7 @@ document.getElementById('clearBtn').addEventListener('click',function(){
 // ── Save / Restore ────────────────────────────────────────────────────────────
 const FIELDS=[
   'qPersonal','qBio','qAgent','qAuthor',
-  'fName','fDesc','fInciting','fConflict','fStakes','fPitch2',
+  'fName','fDesc','fSetting','fInciting','fConflict','fAntag','fMidpoint','fStakes','fPitch2',
   'fTitle','fGenre','fWordCount','fSeries','fSeriesName','fComp1','fComp2','fComp3',
   'nHook','nPitch','nAudience','nTitle','nCategory','nWordCount',
   'nComp1','nComp2','nComp3','nPlatform','nChapters'
