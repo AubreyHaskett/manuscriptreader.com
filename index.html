@@ -1478,7 +1478,8 @@ kbd {
       `Platform: ${navigator.platform}`,
       `Screen: ${window.screen.width}x${window.screen.height}`,
       `Viewport: ${window.innerWidth}x${window.innerHeight}`,
-      `Acceleration: ${accel === 'webgpu' ? 'WebGPU' : 'WASM (fallback)'}`,
+      `Acceleration: ${accel === 'webgpu' ? 'WebGPU' : 'WASM (CPU mode)'}`,
+      `GPU: ${window.getGPUDescription ? window.getGPUDescription() : 'unknown'}`,
       `Version: ${window.SITE_VERSIONS ? (window.SITE_VERSIONS.kokoroModel + ' / kokoro-js ' + window.SITE_VERSIONS.kokoroJs) : 'unknown'}`
     ].join('\n');
 
@@ -1554,7 +1555,9 @@ kbd {
   let worker = null;
   let modelReady = false;
   let deviceType = 'wasm'; // 'webgpu' or 'wasm'
+  let gpuDescription = 'unknown';
   window.getDeviceType = () => deviceType; // expose for feedback form
+  window.getGPUDescription = () => gpuDescription;
   let sentences = [];       // original sentences (for display)
   let batches = [];         // batched sentences (for TTS generation)
   let currentBatchIndex = 0;
@@ -1758,18 +1761,39 @@ kbd {
     statusEl.textContent = text;
   }
 
+  // ─── GPU Detection (main thread — reliable on all platforms) ──────────────
+  async function detectGPU() {
+    if (!navigator.gpu) return { useWebGPU: false, description: 'No WebGPU' };
+    try {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) return { useWebGPU: false, description: 'No adapter' };
+      // Try sync .info first (Chrome 121+), fall back to async requestAdapterInfo()
+      let info = adapter.info;
+      if (!info) { try { info = await adapter.requestAdapterInfo(); } catch {} }
+      const desc = info?.description || info?.vendor || '';
+      gpuDescription = desc || 'WebGPU (unknown GPU)';
+      const isNvidia = /nvidia|geforce|quadro|tesla/i.test(desc) ||
+                       (info?.vendor || '').toLowerCase().includes('0x10de');
+      return { useWebGPU: !isNvidia, description: gpuDescription, isNvidia };
+    } catch {
+      return { useWebGPU: false, description: 'Detection failed' };
+    }
+  }
+
   // ─── Web Worker Setup ──────────────────────────────
-  function initWorker() {
+  async function initWorker() {
+    const gpu = await detectGPU();
+    if (gpu.isNvidia) {
+      modelDetail.textContent = 'NVIDIA GPU detected — using CPU mode. WebGPU causes audio distortion on NVIDIA hardware.';
+    }
     worker = new Worker('/tts-worker.js', { type: 'module' });
+    // Send GPU config immediately — worker reads this before auto-init completes
+    worker.postMessage({ type: 'config', useWebGPU: gpu.useWebGPU });
 
     worker.onmessage = (e) => {
       const { type, id, audioData, sampleRate, device, message, error } = e.data;
 
       switch (type) {
-        case 'nvidia_fallback':
-          modelDetail.textContent = 'NVIDIA GPU detected — using CPU mode. WebGPU causes audio distortion on NVIDIA hardware.';
-          break;
-
         case 'status':
           modelStatusText.innerHTML = `<span class="spinner"></span>${message}`;
           if (device) deviceType = device;

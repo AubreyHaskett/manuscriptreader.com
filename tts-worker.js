@@ -12,28 +12,17 @@ function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-// Check WebGPU support (disabled on mobile to avoid screen glitches)
-async function checkWebGPU() {
-  // Skip WebGPU on mobile - causes screen glitches during GPU initialization
-  if (isMobile()) return false;
+// GPU detection is handled by the main thread (more reliable on Windows Chrome).
+// Main thread sends a 'config' message before init with { useWebGPU: bool }.
+let configuredUseWebGPU = null;
 
+// Fallback WebGPU check used only if no config message arrives first
+async function checkWebGPU() {
+  if (isMobile()) return false;
   if (!navigator.gpu) return false;
   try {
     const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) return false;
-
-    // NVIDIA + WebGPU (fp32) produces garbled audio due to driver-level precision
-    // bugs in ONNX compute shaders. Force WASM for all NVIDIA hardware.
-    try {
-      const info = await adapter.requestAdapterInfo();
-      const desc = (info.vendor || info.description || info.device || '').toLowerCase();
-      if (desc.includes('nvidia') || desc.includes('0x10de')) {
-        self.postMessage({ type: 'nvidia_fallback' });
-        return false;
-      }
-    } catch { /* requestAdapterInfo not available in all browsers — safe to ignore */ }
-
-    return true;
+    return !!adapter;
   } catch {
     return false;
   }
@@ -44,8 +33,10 @@ async function initModel() {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    const hasWebGPU = await checkWebGPU();
-    const device = hasWebGPU ? "webgpu" : "wasm";
+    const useWebGPU = configuredUseWebGPU !== null
+      ? configuredUseWebGPU
+      : await checkWebGPU();
+    const device = useWebGPU ? "webgpu" : "wasm";
 
     self.postMessage({
       type: 'status',
@@ -128,6 +119,11 @@ self.onmessage = async (e) => {
   const { type, id, text, voice, speed } = e.data;
 
   switch (type) {
+    case 'config':
+      // Sent by main thread before init — contains GPU detection result
+      configuredUseWebGPU = e.data.useWebGPU;
+      break;
+
     case 'init':
       try {
         await initModel();
@@ -149,10 +145,13 @@ self.onmessage = async (e) => {
   }
 };
 
-// Start initializing immediately
-initModel().catch(err => {
-  self.postMessage({
-    type: 'error',
-    error: err.message
+// Delay auto-init slightly so the main thread's 'config' message can arrive first.
+// The config message sets configuredUseWebGPU before initModel() reads it.
+setTimeout(() => {
+  initModel().catch(err => {
+    self.postMessage({
+      type: 'error',
+      error: err.message
+    });
   });
-});
+}, 50);
