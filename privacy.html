@@ -97,6 +97,25 @@ ul li{margin-bottom:6px;}
 .footer-meta a:hover{color:var(--ink-muted);}
 .footer-coffee{font-family:var(--serif);font-size:0.95rem;color:var(--ink-muted);text-align:center;margin-bottom:12px;}
 .footer-coffee a{color:var(--proof);text-decoration:none;font-weight:500;}.footer-coffee a:hover{text-decoration:underline;}
+
+/* — Feedback — */
+.feedback-details summary{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;}
+.feedback-details summary::-webkit-details-marker{display:none;}
+.feedback-details summary:hover{color:var(--ink);}
+.feedback-details summary::after{content:"+";font-family:var(--mono);font-size:16px;color:var(--proof);}
+.feedback-details[open] summary::after{content:"\2212";}
+.feedback{margin-top:16px;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;}
+.feedback textarea{width:100%;min-height:70px;padding:10px 12px;font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink);background:var(--paper-soft);border:1px solid var(--rule);border-radius:0;resize:vertical;outline:none;transition:border-color 0.15s;box-sizing:border-box;}
+.feedback textarea:focus{border-color:var(--proof);}
+.feedback textarea::placeholder{color:var(--ink-faint);font-style:italic;}
+.feedback-row{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.feedback-row input[type="email"]{flex:1;padding:7px 0 8px;font-family:var(--serif);font-size:15px;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--ink);outline:none;transition:border-color 0.15s;border-radius:0;}
+.feedback-row input[type="email"]:focus{border-bottom-color:var(--proof);}
+.feedback-row input[type="email"]::placeholder{color:var(--ink-faint);font-style:italic;}
+.send-btn{padding:9px 18px;background:var(--ink-strong);color:var(--paper);border:none;border-radius:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
+.send-btn:hover{background:var(--proof);}
+.send-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.feedback-sent{display:none;text-align:center;padding:12px 0;font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--proof);}
 </style>
 </head>
 <body>
@@ -160,9 +179,47 @@ ul li{margin-bottom:6px;}
 
 <div class="footer">
   <p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p>
+  <details class="feedback-details">
+  <summary>Send feedback</summary>
+  <div class="feedback" id="feedbackForm">
+    <textarea id="feedbackText" placeholder="Found a bug? Have a suggestion?"></textarea>
+    <div class="feedback-row">
+      <input type="email" id="feedbackEmail" placeholder="Email (optional)">
+      <button class="send-btn" id="feedbackSend" onclick="sendFeedback()">Send</button>
+    </div>
+  </div>
+  <div class="feedback-sent" id="feedbackSent">✓ Thanks for your feedback!</div>
+</details>
   <p class="footer-meta"><a href="index.html">Manuscript Reader</a> &nbsp;&middot;&nbsp; <a href="lint.html">Prose Analysis</a> &nbsp;&middot;&nbsp; <a href="query.html">Query Letter</a> &nbsp;&middot;&nbsp; <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="terms.html">Terms</a></p>
 </div>
 </div>
+<script>
+function sendFeedback() {
+  const text = document.getElementById('feedbackText').value.trim();
+  const email = document.getElementById('feedbackEmail').value.trim();
+  const btn = document.getElementById('feedbackSend');
+  if (!text) { document.getElementById('feedbackText').focus(); return; }
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const form = new FormData();
+  form.append('message', text);
+  form.append('email', email || '(not provided)');
+  form.append('_subject', 'Manuscript Reader Feedback');
+  form.append('_captcha', 'false');
+  form.append('_template', 'box');
+  fetch('https://formsubmit.co/ajax/manuscriptreadercontact@gmail.com', { method:'POST', body:form })
+    .then(r => r.json())
+    .then(() => {
+      document.getElementById('feedbackForm').style.display = 'none';
+      document.getElementById('feedbackSent').style.display = 'block';
+    })
+    .catch(() => {
+      const subject = encodeURIComponent('Manuscript Reader Feedback');
+      const body = encodeURIComponent(text + (email ? '\n\nFrom: ' + email : ''));
+      window.open('mailto:manuscriptreadercontact@gmail.com?subject=' + subject + '&body=' + body);
+      btn.disabled = false; btn.textContent = 'Send';
+    });
+}
+</script>
 <script data-goatcounter="https://manuscriptreader.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
