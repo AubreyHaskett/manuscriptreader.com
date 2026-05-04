@@ -278,7 +278,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 <div class="upload-area" id="uploadArea"><h3>Drop your manuscript here</h3><p>or click to browse</p><div class="upload-info"><span>.txt files</span><span>No size limit</span><span>Runs locally</span></div><input type="file" id="fileInput" accept=".txt"></div>
 <div class="progress-area" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Parsing chapters...</div></div>
 <div class="results" id="results"></div>
-<div class="footer"><p class="footer-coffee">If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p><details class="feedback-details">
+<div class="footer"><p class="footer-coffee">Made by a writer, for writers. If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p><details class="feedback-details">
   <summary>Send feedback</summary>
   <div class="feedback" id="feedbackForm">
     <textarea id="feedbackText" placeholder="Found a bug? Have a suggestion?"></textarea>
@@ -289,7 +289,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   </div>
   <div class="feedback-sent" id="feedbackSent">✓ Thanks for your feedback!</div>
 </details>
-  <p class="footer-meta"><a href="index.html">Manuscript Reader</a> · <a href="lint.html">Prose Analysis</a> · <a href="query.html">Query Letter</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p></div>
+  <p class="footer-meta"><a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a href="terms.html">Terms</a></p></div>
 </div>
 <script>
 (function(){const sunPath='M12 3V1m0 22v-2m9-9h2M1 12h2m15.07-7.07l1.42-1.42M3.51 20.49l1.42-1.42M20.49 20.49l-1.42-1.42M4.93 4.93L3.51 3.51M12 7a5 5 0 100 10 5 5 0 000-10z';const moonPath='M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';function isDark(){const s=localStorage.getItem('theme');if(s)return s==='dark';return window.matchMedia('(prefers-color-scheme:dark)').matches;}function updateIcon(){const i=document.getElementById('themeIcon');if(!i)return;i.innerHTML='<path d="'+(isDark()?sunPath:moonPath)+'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';}function toggle(){const d=isDark();const n=d?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);updateIcon();}document.addEventListener('DOMContentLoaded',function(){updateIcon();document.getElementById('themeToggle').addEventListener('click',toggle);});window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',function(){if(!localStorage.getItem('theme'))updateIcon();});})();
