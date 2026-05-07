@@ -855,6 +855,18 @@ input[type="range"]::-moz-range-thumb {
   border-top: 1px solid var(--rule-soft);
 }
 
+/* Audio engine override (advanced) */
+.audio-engine-hint, .audio-engine-reload {
+  margin: 8px 0 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+.audio-engine-reload { color: var(--proof); }
+.audio-engine-reload a { color: var(--proof); border-bottom: 1px dotted var(--proof); }
+
 /* Progress bar */
 .progress-wrap { margin: 14px 0 8px; display: none; }
 .progress-wrap.active { display: block; }
@@ -1426,6 +1438,18 @@ kbd {
         <input type="range" id="sceneBreakPauseRange" min="500" max="5000" step="250" value="2000">
       </div>
     </div>
+    <div class="setting full-width audio-engine-setting">
+      <div class="setting-label">
+        <span>Audio engine</span>
+      </div>
+      <select id="audioEngineSelect">
+        <option value="auto">Auto (recommended)</option>
+        <option value="wasm">Force CPU (WASM)</option>
+        <option value="webgpu">Force GPU (WebGPU)</option>
+      </select>
+      <p class="audio-engine-hint">Advanced. If your audio sounds glitched or distorted, try Force CPU. If you don't know what this is, leave it on Auto.</p>
+      <p class="audio-engine-reload" id="audioEngineReload" style="display:none;">Saved — <a href="#" id="audioEngineReloadLink">reload to apply</a>.</p>
+    </div>
   </div>
 
   <div class="progress-wrap" id="progressWrap">
@@ -1794,19 +1818,33 @@ kbd {
   }
 
   // ─── GPU Detection (main thread — reliable on all platforms) ──────────────
+  function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
   async function detectGPU() {
+    // Mobile WebGPU on Android produces corrupted audio with kokoro-js (per
+    // upstream issue hexgrad/kokoro#193). Force WASM on mobile until that's
+    // fixed upstream — the manual override below lets curious users opt in.
+    if (isMobile()) return { useWebGPU: false, description: 'Mobile (WASM)' };
     if (!navigator.gpu) return { useWebGPU: false, description: 'No WebGPU' };
     try {
-      const adapter = await navigator.gpu.requestAdapter();
+      // powerPreference: 'high-performance' hints Chrome to pick the discrete GPU
+      // on hybrid-GPU laptops (e.g. AMD iGPU + NVIDIA dGPU). Whether the OS honors
+      // this depends on Windows graphics settings, but it costs nothing to ask.
+      const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
       if (!adapter) return { useWebGPU: false, description: 'No adapter' };
       // Try sync .info first (Chrome 121+), fall back to async requestAdapterInfo()
       let info = adapter.info;
       if (!info) { try { info = await adapter.requestAdapterInfo(); } catch {} }
-      const desc = info?.description || info?.vendor || '';
-      gpuDescription = desc || 'WebGPU (unknown GPU)';
-      const isNvidia = /nvidia|geforce|quadro|tesla/i.test(desc) ||
-                       (info?.vendor || '').toLowerCase().includes('0x10de');
-      return { useWebGPU: !isNvidia, description: gpuDescription, isNvidia };
+      // Build a richer description than vendor alone — helps us triage feedback
+      // reports like "GPU: amd" where we can't tell iGPU from dGPU.
+      const parts = [info?.vendor, info?.architecture, info?.device, info?.description]
+        .map(s => (s || '').toString().trim())
+        .filter(Boolean);
+      const seen = new Set();
+      const dedup = parts.filter(p => { const k = p.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+      gpuDescription = dedup.length ? dedup.join(' / ') : 'WebGPU (unknown GPU)';
+      return { useWebGPU: true, description: gpuDescription };
     } catch {
       return { useWebGPU: false, description: 'Detection failed' };
     }
@@ -1814,13 +1852,23 @@ kbd {
 
   // ─── Web Worker Setup ──────────────────────────────
   async function initWorker() {
+    const enginePref = (localStorage.getItem('audioEnginePref') || 'auto'); // 'auto' | 'webgpu' | 'wasm'
     const gpu = await detectGPU();
-    if (gpu.isNvidia) {
-      modelDetail.textContent = 'NVIDIA GPU detected — using CPU mode. WebGPU causes audio distortion on NVIDIA hardware.';
+    let useWebGPU;
+    if (enginePref === 'wasm') {
+      useWebGPU = false;
+      modelDetail.textContent = 'Audio engine override: forcing CPU (WASM)';
+    } else if (enginePref === 'webgpu') {
+      useWebGPU = !!navigator.gpu;
+      modelDetail.textContent = useWebGPU
+        ? 'Audio engine override: forcing WebGPU'
+        : 'WebGPU unavailable on this browser — falling back to CPU (WASM)';
+    } else {
+      useWebGPU = gpu.useWebGPU;
     }
     worker = new Worker('/tts-worker.js', { type: 'module' });
     // Send GPU config immediately — worker reads this before auto-init completes
-    worker.postMessage({ type: 'config', useWebGPU: gpu.useWebGPU });
+    worker.postMessage({ type: 'config', useWebGPU });
 
     worker.onmessage = (e) => {
       const { type, id, audioData, sampleRate, device, message, error } = e.data;
@@ -3003,6 +3051,23 @@ kbd {
 
   sceneBreakPauseRange.addEventListener('input', () => {
     sceneBreakPauseVal.textContent = sceneBreakPauseRange.value + 'ms';
+  });
+
+  // Audio engine override (advanced)
+  const audioEngineSelect = document.getElementById('audioEngineSelect');
+  const audioEngineReload = document.getElementById('audioEngineReload');
+  const audioEngineReloadLink = document.getElementById('audioEngineReloadLink');
+  const savedEnginePref = localStorage.getItem('audioEnginePref') || 'auto';
+  audioEngineSelect.value = ['auto','wasm','webgpu'].includes(savedEnginePref) ? savedEnginePref : 'auto';
+  audioEngineSelect.addEventListener('change', () => {
+    const v = audioEngineSelect.value;
+    if (v === 'auto') localStorage.removeItem('audioEnginePref');
+    else localStorage.setItem('audioEnginePref', v);
+    audioEngineReload.style.display = '';
+  });
+  audioEngineReloadLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    location.reload();
   });
 
   // Keyboard shortcuts
