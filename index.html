@@ -1673,6 +1673,7 @@ kbd {
   const modelProgressWrap = document.getElementById('modelProgressWrap');
   const modelDetail = document.getElementById('modelDetail');
   const manuscriptEl = document.getElementById('manuscript');
+  try { const saved = sessionStorage.getItem('ms_text'); if (saved) manuscriptEl.value = saved; } catch(e) {}
   const readingView = document.getElementById('readingView');
   const playBtn = document.getElementById('playBtn');
   const playIcon = document.getElementById('playIcon');
@@ -2597,12 +2598,14 @@ kbd {
 
   function clearText() {
     manuscriptEl.value = '';
+    try { sessionStorage.removeItem('ms_text'); } catch(e) {}
     updateUI();
   }
 
   function resetAll() {
     stopReading();
     manuscriptEl.value = '';
+    try { sessionStorage.removeItem('ms_text'); } catch(e) {}
     speedRange.value = 1;
     speedVal.textContent = '1.00×';
     pauseRange.value = 500;
@@ -2989,7 +2992,10 @@ kbd {
   stopBtn.addEventListener('click', stopReading);
 
   // Toggle idle button visibility when text changes
-  manuscriptEl.addEventListener('input', updateUI);
+  manuscriptEl.addEventListener('input', function() {
+    updateUI();
+    try { sessionStorage.setItem('ms_text', manuscriptEl.value); } catch(e) {}
+  });
 
   downloadBtn.addEventListener('click', downloadAudio);
   skipBackBtn.addEventListener('click', skipBack);
