@@ -867,6 +867,76 @@ input[type="range"]::-moz-range-thumb {
 .audio-engine-reload { color: var(--proof); }
 .audio-engine-reload a { color: var(--proof); border-bottom: 1px dotted var(--proof); }
 
+/* Playback soundwave visualizer */
+.playback-wave {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 28px;
+  margin: 10px 0 4px;
+}
+
+.playback-wave.active { display: flex; }
+
+.playback-wave .wave-bar {
+  width: 3px;
+  height: 100%;
+  background: var(--proof);
+  border-radius: 2px;
+  animation: playbackWave 1.2s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+.playback-wave .wave-bar:nth-child(1)  { animation-delay: 0s;    height: 40%; }
+.playback-wave .wave-bar:nth-child(2)  { animation-delay: 0.1s;  height: 70%; }
+.playback-wave .wave-bar:nth-child(3)  { animation-delay: 0.2s;  height: 50%; }
+.playback-wave .wave-bar:nth-child(4)  { animation-delay: 0.05s; height: 90%; }
+.playback-wave .wave-bar:nth-child(5)  { animation-delay: 0.25s; height: 60%; }
+.playback-wave .wave-bar:nth-child(6)  { animation-delay: 0.15s; height: 100%; }
+.playback-wave .wave-bar:nth-child(7)  { animation-delay: 0.3s;  height: 55%; }
+.playback-wave .wave-bar:nth-child(8)  { animation-delay: 0.08s; height: 85%; }
+.playback-wave .wave-bar:nth-child(9)  { animation-delay: 0.22s; height: 45%; }
+.playback-wave .wave-bar:nth-child(10) { animation-delay: 0.12s; height: 65%; }
+
+@keyframes playbackWave {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+
+/* Save settings */
+.save-settings {
+  grid-column: 1 / -1;
+  background: var(--paper-soft);
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.save-settings .setting-toggle { margin: 0; }
+
+.save-settings .save-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  line-height: 1.55;
+}
+
+.save-settings .save-status {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--proof);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.save-settings .save-status.show { opacity: 1; }
+
 /* Progress bar */
 .progress-wrap { margin: 14px 0 8px; display: none; }
 .progress-wrap.active { display: block; }
@@ -1438,6 +1508,14 @@ kbd {
         <input type="range" id="sceneBreakPauseRange" min="500" max="5000" step="250" value="2000">
       </div>
     </div>
+    <div class="save-settings" id="saveSettingsWrap">
+      <label class="setting-toggle">
+        <input type="checkbox" id="saveSettingsToggle">
+        <span>Remember my settings</span>
+      </label>
+      <p class="save-hint">Saves your voice and timing preferences in this browser's local storage so they're restored next time you visit. Nothing is sent anywhere — it stays on your device.</p>
+      <span class="save-status" id="saveStatus"></span>
+    </div>
     <div class="setting full-width audio-engine-setting">
       <div class="setting-label">
         <span>Audio engine</span>
@@ -1450,6 +1528,13 @@ kbd {
       <p class="audio-engine-hint">Advanced. If your audio sounds glitched or distorted, try Force CPU. If you don't know what this is, leave it on Auto.</p>
       <p class="audio-engine-reload" id="audioEngineReload" style="display:none;">Saved — <a href="#" id="audioEngineReloadLink">reload to apply</a>.</p>
     </div>
+  </div>
+
+  <div class="playback-wave" id="playbackWave">
+    <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+    <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+    <span class="wave-bar"></span><span class="wave-bar"></span><span class="wave-bar"></span>
+    <span class="wave-bar"></span>
   </div>
 
   <div class="progress-wrap" id="progressWrap">
@@ -1624,6 +1709,7 @@ kbd {
   let downloadCancelled = false;
   let audioContext = null;
   let currentSource = null;
+  let scrollPollTimer = null;
   let stopRequested = false;
   let playbackSessionId = 0; // incremented each time playback starts to prevent double-play
 
@@ -2291,7 +2377,20 @@ kbd {
       currentSource = ctx.createBufferSource();
       currentSource.buffer = buffer;
       currentSource.connect(ctx.destination);
+      if (scrollPollTimer) clearInterval(scrollPollTimer);
+      scrollPollTimer = setInterval(() => {
+        const el = readingView.querySelector('.sentence.active');
+        if (el) {
+          const vr = readingView.getBoundingClientRect();
+          const er = el.getBoundingClientRect();
+          if (er.top < vr.top + 20 || er.bottom > vr.bottom - 20) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 1500);
       currentSource.onended = () => {
+        clearInterval(scrollPollTimer);
+        scrollPollTimer = null;
         currentSource = null;
         resolve();
       };
@@ -2549,6 +2648,7 @@ kbd {
 
     } else if (isPlaying && !isPaused) {
       // Pause: stop current source
+      if (scrollPollTimer) { clearInterval(scrollPollTimer); scrollPollTimer = null; }
       if (currentSource) {
         currentSource.onended = null;
         currentSource.stop();
@@ -2570,6 +2670,7 @@ kbd {
 
   function stopReading() {
     stopRequested = true;
+    if (scrollPollTimer) { clearInterval(scrollPollTimer); scrollPollTimer = null; }
     if (currentSource) {
       currentSource.onended = null;
       currentSource.stop();
@@ -2606,6 +2707,7 @@ kbd {
     stopReading();
     manuscriptEl.value = '';
     try { sessionStorage.removeItem('ms_text'); } catch(e) {}
+    try { localStorage.removeItem('ms_settings'); } catch(e) {}
     speedRange.value = 1;
     speedVal.textContent = '1.00×';
     pauseRange.value = 500;
@@ -2625,6 +2727,8 @@ kbd {
     sceneBreakPauseRange.value = 2000;
     sceneBreakPauseVal.textContent = '2000ms';
     sceneBreakPauseWrap.style.display = 'none';
+    var sst = document.getElementById('saveSettingsToggle');
+    if (sst) sst.checked = false;
     updateUI();
   }
 
@@ -2665,6 +2769,10 @@ kbd {
 
     // Hide keyboard hint during preparing (not useful yet)
     kbdHintEl.classList.toggle('hidden', isPreparing);
+
+    // Soundwave visualizer
+    const playbackWave = document.getElementById('playbackWave');
+    playbackWave.classList.toggle('active', isPlaying && !isPaused && !isPreparing);
 
     // Sync OS media controls (headphone buttons, lock-screen player)
     updateMediaSession();
@@ -3076,6 +3184,84 @@ kbd {
     location.reload();
   });
 
+  // ─── Save / Restore Settings ────────────────────────
+  const saveSettingsToggle = document.getElementById('saveSettingsToggle');
+  const saveStatus = document.getElementById('saveStatus');
+  const SETTINGS_KEY = 'ms_settings';
+
+  function gatherSettings() {
+    return {
+      voice: voiceSelect.value,
+      speed: speedRange.value,
+      pause: pauseRange.value,
+      paraPause: paraPauseRange.value,
+      speakerChangePause: speakerChangePauseRange.value,
+      actionBeatPause: actionBeatPauseRange.value,
+      commaPause: commaPauseRange.value,
+      emDashPause: emDashPauseRange.value,
+      sceneBreak: sceneBreakToggle.checked,
+      sceneBreakPause: sceneBreakPauseRange.value
+    };
+  }
+
+  function applySettings(s) {
+    if (!s) return;
+    if (s.voice) { voiceSelect.value = s.voice; renderVoiceCast(); }
+    if (s.speed) { speedRange.value = s.speed; speedVal.textContent = parseFloat(s.speed).toFixed(2) + '×'; }
+    if (s.pause) { pauseRange.value = s.pause; pauseVal.textContent = s.pause + 'ms'; }
+    if (s.paraPause) { paraPauseRange.value = s.paraPause; paraPauseVal.textContent = s.paraPause + 'ms'; }
+    if (s.speakerChangePause) { speakerChangePauseRange.value = s.speakerChangePause; speakerChangePauseVal.textContent = s.speakerChangePause + 'ms'; }
+    if (s.actionBeatPause) { actionBeatPauseRange.value = s.actionBeatPause; actionBeatPauseVal.textContent = s.actionBeatPause + 'ms'; }
+    if (s.commaPause) { commaPauseRange.value = s.commaPause; commaPauseVal.textContent = s.commaPause + 'ms'; }
+    if (s.emDashPause) { emDashPauseRange.value = s.emDashPause; emDashPauseVal.textContent = s.emDashPause + 'ms'; }
+    if (s.sceneBreak !== undefined) {
+      sceneBreakToggle.checked = s.sceneBreak;
+      sceneBreakPauseWrap.style.display = s.sceneBreak ? '' : 'none';
+    }
+    if (s.sceneBreakPause) { sceneBreakPauseRange.value = s.sceneBreakPause; sceneBreakPauseVal.textContent = s.sceneBreakPause + 'ms'; }
+    document.querySelectorAll('input[type="range"]').forEach(r => {
+      const mn = parseFloat(r.min) || 0, mx = parseFloat(r.max) || 100;
+      r.style.setProperty('--p', ((parseFloat(r.value) - mn) / (mx - mn) * 100).toFixed(1) + '%');
+    });
+  }
+
+  function persistSettings() {
+    if (!saveSettingsToggle.checked) return;
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(gatherSettings())); } catch(e) {}
+  }
+
+  function flashSaveStatus(msg) {
+    saveStatus.textContent = msg;
+    saveStatus.classList.add('show');
+    setTimeout(() => saveStatus.classList.remove('show'), 1500);
+  }
+
+  // Restore saved settings on load
+  try {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    if (saved) {
+      saveSettingsToggle.checked = true;
+      applySettings(JSON.parse(saved));
+    }
+  } catch(e) {}
+
+  saveSettingsToggle.addEventListener('change', () => {
+    if (saveSettingsToggle.checked) {
+      persistSettings();
+      flashSaveStatus('Settings saved');
+    } else {
+      try { localStorage.removeItem(SETTINGS_KEY); } catch(e) {}
+      flashSaveStatus('Settings cleared');
+    }
+  });
+
+  // Auto-save when any setting changes (if toggle is on)
+  [speedRange, pauseRange, paraPauseRange, speakerChangePauseRange,
+   actionBeatPauseRange, commaPauseRange, emDashPauseRange,
+   sceneBreakPauseRange].forEach(el => el.addEventListener('change', persistSettings));
+  sceneBreakToggle.addEventListener('change', persistSettings);
+  voiceSelect.addEventListener('change', persistSettings);
+
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     if (document.activeElement === manuscriptEl) return;
@@ -3113,6 +3299,24 @@ kbd {
     document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
   })();
 </script>
-<audio id="msKeepalive" loop preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA" style="display:none"></audio>
+<audio id="msKeepalive" loop preload="auto" style="display:none"></audio>
+<script>
+  // Generate a 2-second silent WAV so macOS properly registers the media
+  // session and Bluetooth headphone buttons control this page, not Apple Music.
+  (function() {
+    var sr = 8000, dur = 2, len = sr * dur;
+    var buf = new ArrayBuffer(44 + len * 2);
+    var v = new DataView(buf);
+    function ws(o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+    ws(0, 'RIFF'); v.setUint32(4, 36 + len * 2, true); ws(8, 'WAVE');
+    ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+    v.setUint16(22, 1, true); v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    ws(36, 'data'); v.setUint32(40, len * 2, true);
+    for (var i = 0; i < len; i++) v.setInt16(44 + i * 2, 1, true);
+    var blob = new Blob([buf], { type: 'audio/wav' });
+    document.getElementById('msKeepalive').src = URL.createObjectURL(blob);
+  })();
+</script>
 </body>
 </html>
