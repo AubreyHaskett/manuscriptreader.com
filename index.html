@@ -1975,7 +1975,11 @@ kbd {
           modelStatusText.innerHTML = `✓ Kokoro voice model ready (${deviceLabel})`;
           modelStatusText.classList.add('ready-text');
           modelStatus.classList.add('ready');
-          modelDetail.textContent = `Model loaded with ${deviceLabel} acceleration`;
+          // Show detailed message from worker if it includes fallback context
+          const isGPUFallback = message && message.toLowerCase().includes('gpu');
+          modelDetail.textContent = isGPUFallback && device === 'wasm'
+            ? message
+            : `Model loaded with ${deviceLabel} acceleration`;
 
           modelReady = true;
           renderVoiceCast();

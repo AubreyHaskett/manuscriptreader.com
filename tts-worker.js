@@ -28,6 +28,34 @@ async function checkWebGPU() {
   }
 }
 
+// Check if generated audio is garbled (NaN, Infinity, or abnormal energy).
+// Some integrated GPUs (e.g. AMD RDNA 2 iGPU on dual-GPU laptops) produce
+// corrupted WebGPU output even though the adapter appears functional.
+function isAudioGarbled(audioData) {
+  if (!audioData || audioData.length === 0) return true;
+
+  let sumSq = 0;
+  let nanCount = 0;
+  let clippedCount = 0;
+
+  for (let i = 0; i < audioData.length; i++) {
+    const v = audioData[i];
+    if (!isFinite(v)) { nanCount++; continue; }
+    sumSq += v * v;
+    if (Math.abs(v) > 5.0) clippedCount++;  // PCM float shouldn't exceed ~1.0
+  }
+
+  // Any NaN/Infinity → garbled
+  if (nanCount > 0) return true;
+  // More than 1% extreme-amplitude samples → noise
+  if (clippedCount / audioData.length > 0.01) return true;
+  // RMS energy: completely silent (<1e-8) or absurdly loud (>2.0) → suspect
+  const rms = Math.sqrt(sumSq / audioData.length);
+  if (rms < 1e-8 || rms > 2.0) return true;
+
+  return false;
+}
+
 // Initialize the TTS model
 async function initModel() {
   if (initPromise) return initPromise;
@@ -52,6 +80,65 @@ async function initModel() {
         "onnx-community/Kokoro-82M-v1.0-ONNX",
         { dtype, device }
       );
+
+      // ── Validate WebGPU output ─────────────────────────
+      // Some integrated GPUs produce garbled audio even though the adapter
+      // looks fine. Run a quick test phrase and check the output. If it's
+      // corrupt, tear down and re-init with WASM.
+      if (device === "webgpu") {
+        self.postMessage({
+          type: 'status',
+          message: 'Validating audio quality...',
+          device
+        });
+
+        try {
+          const test = await tts.generate("Testing one two three.", {
+            voice: "bf_emma", speed: 1
+          });
+
+          if (isAudioGarbled(test.audio)) {
+            self.postMessage({
+              type: 'status',
+              message: 'GPU audio garbled — switching to CPU...',
+              device: 'wasm'
+            });
+            // Release WebGPU model and re-init with WASM
+            tts = null;
+            tts = await KokoroTTS.from_pretrained(
+              "onnx-community/Kokoro-82M-v1.0-ONNX",
+              { dtype: "q8", device: "wasm" }
+            );
+            isInitialized = true;
+            self.postMessage({
+              type: 'ready',
+              device: 'wasm',
+              message: 'Model ready (CPU — your GPU produced garbled audio)'
+            });
+            return;
+          }
+        } catch (testErr) {
+          // Test generation itself failed — fall back to WASM
+          self.postMessage({
+            type: 'status',
+            message: 'GPU validation failed — switching to CPU...',
+            device: 'wasm'
+          });
+          tts = null;
+          tts = await KokoroTTS.from_pretrained(
+            "onnx-community/Kokoro-82M-v1.0-ONNX",
+            { dtype: "q8", device: "wasm" }
+          );
+          isInitialized = true;
+          self.postMessage({
+            type: 'ready',
+            device: 'wasm',
+            message: 'Model ready (CPU — GPU validation error)'
+          });
+          return;
+        }
+      }
+
       isInitialized = true;
       self.postMessage({
         type: 'ready',
@@ -59,7 +146,7 @@ async function initModel() {
         message: `Model ready (${device.toUpperCase()})`
       });
     } catch (err) {
-      // If WebGPU fails, fall back to WASM with q4 quantization
+      // If WebGPU fails, fall back to WASM with q8 quantization
       if (device === "webgpu") {
         self.postMessage({
           type: 'status',
