@@ -1710,6 +1710,7 @@ kbd {
   let audioContext = null;
   let currentSource = null;
   let scrollPollTimer = null;
+  let userScrolledAt = 0;
   let stopRequested = false;
   let playbackSessionId = 0; // incremented each time playback starts to prevent double-play
 
@@ -2379,6 +2380,7 @@ kbd {
       currentSource.connect(ctx.destination);
       if (scrollPollTimer) clearInterval(scrollPollTimer);
       scrollPollTimer = setInterval(() => {
+        if (Date.now() - userScrolledAt < 4000) return;
         const el = readingView.querySelector('.sentence.active');
         if (el) {
           const vr = readingView.getBoundingClientRect();
@@ -2476,7 +2478,7 @@ kbd {
     });
 
     const active = readingView.querySelector('.sentence.active');
-    if (active) {
+    if (active && Date.now() - userScrolledAt >= 4000) {
       const viewRect = readingView.getBoundingClientRect();
       const elRect = active.getBoundingClientRect();
       if (elRect.top < viewRect.top + 20 || elRect.bottom > viewRect.bottom - 20) {
@@ -3094,6 +3096,7 @@ kbd {
   renderVoiceCast();
 
   // ─── Event Listeners ──────────────────────────────
+  readingView.addEventListener('scroll', () => { userScrolledAt = Date.now(); }, { passive: true });
   playBtn.addEventListener('click', togglePlay);
   clearTextBtn.addEventListener('click', clearText);
   resetAllBtn.addEventListener('click', resetAll);
