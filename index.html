@@ -1195,7 +1195,6 @@ kbd {
 .footer {
   margin-top: 56px;
   padding-top: 24px;
-  border-top: 2px solid var(--ink);
   animation: fadeUp 0.5s ease 0.3s both;
 }
 
@@ -1541,7 +1540,7 @@ kbd {
     <summary>
       <span class="lock-icon"><svg viewBox="0 0 24 24"><path d="M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2zm-1-2V7a6 6 0 10-12 0v2h-1v2h14V9h-1zm-10 0V7a4 4 0 118 0v2H8z"/></svg></span>
       Your manuscript stays private — here's how
-      <span class="arrow" title="Click to expand">▸</span>
+      <span class="arrow" title="Click to expand"></span>
     </summary>
     <div class="details-inner">
     <div class="privacy-points">
@@ -1569,7 +1568,7 @@ kbd {
     <summary>
       <span class="lock-icon" style="background: var(--proof-wash);"><svg viewBox="0 0 24 24" style="fill: var(--proof);"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></span>
       Best experience: Chrome or Edge on desktop
-      <span class="arrow" title="Click to expand">▸</span>
+      <span class="arrow" title="Click to expand"></span>
     </summary>
     <div class="details-inner">
     <div class="privacy-points">
@@ -2854,7 +2853,7 @@ kbd {
       currentBatchIndex = 0;
       buildReadingView();
       readingView.classList.add('active');
-      manuscriptEl.parentElement.classList.add('hidden');
+      manuscriptEl.closest('.input-area').classList.add('hidden');
       progressWrap.classList.add('active');
 
       // Show loading UI - pre-generate first 5 batches for smoother playback
@@ -2925,7 +2924,7 @@ kbd {
     playBtn.classList.remove('loading');
     playIcon.style.display = '';
     readingView.classList.remove('active');
-    manuscriptEl.parentElement.classList.remove('hidden');
+    manuscriptEl.closest('.input-area').classList.remove('hidden');
     progressWrap.classList.remove('active');
 
     updateUI();
