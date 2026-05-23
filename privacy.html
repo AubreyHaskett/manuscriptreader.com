@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --paper:#F2EEE2;--paper-deep:#E8E1CE;--paper-soft:#F8F5EC;
@@ -20,7 +20,10 @@
   --proof:#C0392E;--proof-deep:#8C2920;--proof-wash:#F2D9D4;
   --serif:"Newsreader","Iowan Old Style",Charter,Georgia,serif;
   --mono:"IBM Plex Mono","JetBrains Mono","SF Mono",ui-monospace,monospace;
+  --ui:"DM Sans","Inter",system-ui,sans-serif;
   --gut:clamp(20px,4vw,56px);
+  --radius:10px;--radius-sm:6px;--radius-lg:16px;--radius-pill:999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.08);--shadow-lg:0 8px 30px rgba(0,0,0,0.12);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#15140F;--paper-deep:#0E0D0A;--paper-soft:#1D1B16;
@@ -57,7 +60,7 @@ body::before{
 .wordmark-logo{height:52px;width:auto;align-self:flex-end;margin-bottom:6px;opacity:0.92;flex-shrink:0;}
 .mast-nav{margin-top:0;border-top:1px solid var(--rule-soft);}
 .mast-nav .links{display:flex;gap:0;}
-.mast-nav a{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;color:var(--ink);padding:8px 16px;border:1px solid transparent;border-bottom:none;margin-bottom:-2px;display:inline-block;}
+.mast-nav a{font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);padding:8px 16px;border:1px solid transparent;border-bottom:none;margin-bottom:-2px;display:inline-block;transition:color 0.2s;}
 .mast-nav a:hover{color:var(--proof);text-decoration:none;}
 .mast-nav a.current{color:var(--ink);border-color:var(--rule);border-bottom-color:var(--paper);background:var(--paper);}
 /* Doc styles */
@@ -66,7 +69,7 @@ body::before{
   font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,44px);
   line-height:1.1;letter-spacing:-0.02em;color:var(--ink-strong);margin-bottom:10px;
 }
-.doc-meta{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);}
+.doc-meta{font-family:var(--ui);font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);}
 .doc-intro{
   font-family:var(--serif);font-style:italic;font-size:18px;
   color:var(--ink-muted);line-height:1.5;margin-bottom:36px;
@@ -83,23 +86,23 @@ a:hover{color:var(--proof);}
 ul{margin:0 0 14px 1.4em;}
 ul li{margin-bottom:6px;}
 .back-link{
-  display:inline-block;margin-bottom:32px;
-  font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
-  color:var(--ink-faint);text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;margin-bottom:32px;
+  font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--ink-faint);text-decoration:none;transition:color 0.2s;
 }
 .back-link:hover{color:var(--proof);}
 .footer{margin-top:60px;text-align:center;animation:fadeUp 0.6s ease 0.4s both;}
 .footer p{font-size:0.74rem;line-height:1.7;color:var(--ink-faint);}
-.footer a{color:var(--ink-muted);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;transition:color 0.2s;}
+.footer a{font-family:var(--ui);color:var(--ink-muted);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;transition:color 0.2s;}
 .footer a:hover{color:var(--proof);}
-.footer-meta{font-family:var(--mono);font-size:0.65rem;color:var(--ink-faint);text-align:center;letter-spacing:0.04em;text-transform:uppercase;}
+.footer-meta{font-family:var(--ui);font-size:0.7rem;font-weight:500;color:var(--ink-faint);text-align:center;letter-spacing:0.04em;text-transform:uppercase;}
 .footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;}
 .footer-meta a:hover{color:var(--ink-muted);}
 .footer-coffee{font-family:var(--serif);font-size:0.95rem;color:var(--ink-muted);text-align:center;margin-bottom:12px;}
 .footer-coffee a{color:var(--proof);text-decoration:none;font-weight:500;}.footer-coffee a:hover{text-decoration:underline;}
 
 /* — Feedback — */
-.feedback-details summary{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;}
+.feedback-details summary{font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;}
 .feedback-details summary::-webkit-details-marker{display:none;}
 .feedback-details summary:hover{color:var(--ink);}
 .feedback-details summary::after{content:"+";font-family:var(--mono);font-size:16px;color:var(--proof);}
@@ -116,6 +119,22 @@ ul li{margin-bottom:6px;}
 .send-btn:hover{background:var(--proof);}
 .send-btn:disabled{opacity:0.35;cursor:not-allowed;}
 .feedback-sent{display:none;text-align:center;padding:12px 0;font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--proof);}
+
+/* — Animated details — */
+.animated-details{interpolate-size:allow-keywords;}
+.animated-details::details-content{overflow:hidden;height:0;opacity:0;transition:height 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease,content-visibility 0.4s allow-discrete;}
+.animated-details[open]::details-content{height:auto;opacity:1;}
+
+/* — Privacy banner expand/collapse arrows — */
+.privacy-banner summary .arrow{margin-left:auto;width:20px;height:20px;position:relative;flex-shrink:0;}
+.privacy-banner summary .arrow::before,.privacy-banner summary .arrow::after{content:"";position:absolute;top:50%;left:50%;width:14px;height:2px;background:var(--proof);border-radius:1px;transform:translate(-50%,-50%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),opacity 0.25s ease;}
+.privacy-banner summary .arrow::before{transform:translate(-50%,-50%) rotate(90deg);}
+.privacy-banner[open] summary .arrow::before{transform:translate(-50%,-50%) rotate(0deg);opacity:0;}
+
+/* — Open Source badge — */
+.open-source-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-size:12px;color:var(--ink-faint);background:var(--paper-deep);border:1px solid var(--rule-soft);border-radius:var(--radius-pill);padding:3px 10px 3px 7px;margin-top:6px;transition:color 0.2s,border-color 0.2s;text-decoration:none;}
+.open-source-badge:hover{color:var(--ink-muted);border-color:var(--rule);}
+.open-source-badge svg{opacity:0.7;}
 </style>
 </head>
 <body>
@@ -138,6 +157,7 @@ ul li{margin-bottom:6px;}
   </header>
 
   <a class="back-link" href="index.html">← Back to Manuscript Reader</a>
+  <br><a href="https://github.com/AubreyHaskett/manuscriptreader.com" target="_blank" rel="noopener" class="open-source-badge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg> Open Source</a>
 
   <div class="doc-header">
     <h1 class="doc-title">Privacy Policy</h1>
@@ -179,7 +199,7 @@ ul li{margin-bottom:6px;}
 
 <div class="footer">
   <p class="footer-coffee">Made by a writer, for writers. If this helped your work, <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee ☕</a>.</p>
-  <details class="feedback-details">
+  <details class="feedback-details animated-details">
   <summary>Send feedback</summary>
   <div class="feedback" id="feedbackForm">
     <textarea id="feedbackText" placeholder="Found a bug? Have a suggestion?"></textarea>
