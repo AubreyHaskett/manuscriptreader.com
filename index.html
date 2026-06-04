@@ -2455,10 +2455,13 @@ kbd {
       batches.push(currentBatch);
     }
 
-    // Merge tiny batches (< 10 chars after TTS preprocessing) into the previous batch
-    // to avoid Kokoro artifacts on very short inputs
-    const MIN_TTS_LENGTH = 10;
+    // Merge short batches (< 25 chars after TTS preprocessing) into pairs to
+    // avoid Kokoro's slow/over-enunciated delivery on very short inputs.
+    // Only one merge per target batch to prevent snowballing all short dialogue
+    // into a single rapid-fire batch.
+    const MIN_TTS_LENGTH = 25;
     const merged = [];
+    const alreadyMerged = new Set();
     for (const batch of batches) {
       if (batch.isSceneBreak || !batch.text) {
         merged.push(batch);
@@ -2467,14 +2470,34 @@ kbd {
       const ttsLen = preprocessForTTS(batch.text).length;
       if (ttsLen < MIN_TTS_LENGTH && merged.length > 0) {
         const prev = merged[merged.length - 1];
-        if (!prev.isSceneBreak && prev.text) {
+        if (!prev.isSceneBreak && prev.text && !alreadyMerged.has(prev) &&
+            (prev.text.length + 1 + batch.text.length) <= MAX_BATCH_LENGTH) {
           prev.text += ' ' + batch.text;
           prev.sentenceIndices.push(...batch.sentenceIndices);
           prev.paragraphEnd = batch.paragraphEnd;
+          alreadyMerged.add(prev);
           continue;
         }
       }
       merged.push(batch);
+    }
+
+    // Forward-merge: if a batch is still too short (e.g. first batch, or after
+    // a scene break), merge it into the next batch.
+    for (let i = 0; i < merged.length - 1; i++) {
+      const batch = merged[i];
+      if (batch.isSceneBreak || !batch.text) continue;
+      const ttsLen = preprocessForTTS(batch.text).length;
+      if (ttsLen < MIN_TTS_LENGTH) {
+        const next = merged[i + 1];
+        if (!next.isSceneBreak && next.text && (batch.text.length + 1 + next.text.length) <= MAX_BATCH_LENGTH) {
+          next.text = batch.text + ' ' + next.text;
+          next.sentenceIndices = [...batch.sentenceIndices, ...next.sentenceIndices];
+          next.dialogueBreak = false;
+          merged.splice(i, 1);
+          i--;
+        }
+      }
     }
 
     // Issue 10: a single sentence that already exceeds MAX_BATCH_LENGTH blows
