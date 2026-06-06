@@ -2627,8 +2627,11 @@ kbd {
   }
 
   // ─── Play an AudioBuffer ───────────────────────────
+  let resolvePlayBuffer = null;
+
   function playBuffer(buffer) {
     return new Promise((resolve) => {
+      resolvePlayBuffer = resolve;
       const ctx = getAudioContext();
       currentSource = ctx.createBufferSource();
       currentSource.buffer = buffer;
@@ -2649,6 +2652,7 @@ kbd {
         clearInterval(scrollPollTimer);
         scrollPollTimer = null;
         currentSource = null;
+        resolvePlayBuffer = null;
         resolve();
       };
       currentSource.start();
@@ -2904,13 +2908,15 @@ kbd {
       playFrom(0);
 
     } else if (isPlaying && !isPaused) {
-      // Pause: stop current source
+      // Pause: stop current source and invalidate the playback loop
+      playbackSessionId++;
       if (scrollPollTimer) { clearInterval(scrollPollTimer); scrollPollTimer = null; }
       if (currentSource) {
         currentSource.onended = null;
         currentSource.stop();
         currentSource = null;
       }
+      if (resolvePlayBuffer) { resolvePlayBuffer(); resolvePlayBuffer = null; }
       isPaused = true;
       isPlaying = false;
       releaseWakeLock(); // Allow screen to sleep while paused
@@ -2927,12 +2933,14 @@ kbd {
 
   function stopReading() {
     stopRequested = true;
+    playbackSessionId++;
     if (scrollPollTimer) { clearInterval(scrollPollTimer); scrollPollTimer = null; }
     if (currentSource) {
       currentSource.onended = null;
       currentSource.stop();
       currentSource = null;
     }
+    if (resolvePlayBuffer) { resolvePlayBuffer(); resolvePlayBuffer = null; }
     isPlaying = false;
     isPaused = false;
     isPreparing = false;
