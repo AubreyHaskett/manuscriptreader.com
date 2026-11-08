@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Query Letter — Manuscript Reader</title>
+<meta name="description" content="Build your query letter. Step-by-step form, live preview. Supports fiction and nonfiction. Free, private — your text never leaves your browser.">
+<meta property="og:title" content="Query Letter — Manuscript Reader">
+<meta property="og:description" content="Build your query letter free, in your browser. No AI. Your text never leaves your device.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://manuscriptreader.com/query.html">
+<link rel="canonical" href="https://manuscriptreader.com/query.html">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--serif);background:var(--paper);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;font-weight:350;}
+a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
+.page{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 24px 80px;}
+
+
+.theme-toggle{position:fixed;top:16px;right:16px;background:var(--paper-deep);border:1px solid var(--rule);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-faint);z-index:100;border-radius:50%;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),background 0.2s;}
+.theme-toggle:hover{background:var(--paper-soft);color:var(--ink-muted);transform:scale(1.12);}
+.theme-toggle:active{transform:scale(0.92);}
+.theme-toggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+
+.type-bar-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:24px 0 20px;}
+.type-bar{display:flex;gap:0;border:1px solid var(--rule);border-radius:var(--radius-pill);overflow:hidden;}
+.type-btn{font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;padding:9px 20px;background:var(--paper-soft);border:none;cursor:pointer;color:var(--ink-faint);transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.type-btn:first-child{border-right:1px solid var(--rule);}
+.type-btn.active{background:var(--ink-strong);color:var(--paper);}
+.type-btn:hover:not(.active){transform:translateY(-2px) scale(1.03);}
+.type-btn:active{transform:scale(0.95);}
+.type-hint{font-family:var(--ui);font-size:0.75rem;color:var(--ink-faint);}
+
+
+.workspace{display:grid;grid-template-columns:minmax(0,500px) minmax(0,1fr);gap:0;border:1px solid var(--rule);align-items:start;}
+@media(max-width:900px){.workspace{grid-template-columns:1fr;}}
+
+
+.form-panel{border-right:1px solid var(--rule);}
+@media(max-width:900px){.form-panel{border-right:none;border-bottom:1px solid var(--rule);}}
+
+
+.step-indicator{display:flex;align-items:center;gap:0;padding:14px 22px;border-bottom:1px solid var(--rule);background:var(--paper-deep);overflow-x:auto;}
+.step-dot{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+.step-dot-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--rule);background:var(--paper);font-family:var(--ui);font-size:0.6rem;font-weight:700;color:var(--ink-faint);cursor:default;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative;}
+.step-dot.done .step-dot-btn{background:var(--ink-muted);border-color:var(--ink-muted);color:var(--paper);cursor:pointer;}
+.step-dot.done .step-dot-btn:hover{background:var(--ink);border-color:var(--ink);}
+.step-dot.current .step-dot-btn{background:var(--proof);border-color:var(--proof);color:var(--paper);cursor:default;}
+.step-dot-label{font-family:var(--ui);font-size:11px;letter-spacing:normal;text-transform:none;color:var(--ink-faint);white-space:nowrap;max-width:54px;text-align:center;line-height:1.2;}
+.step-dot.current .step-dot-label{color:var(--proof);}
+.step-dot.done .step-dot-label{color:var(--ink-muted);}
+.step-connector{width:18px;height:2px;background:var(--rule-soft);flex-shrink:0;margin-bottom:20px;}
+.step-connector.done{background:var(--ink-muted);}
+
+
+.form-section{padding:22px 22px 0;}
+.form-section.hidden{display:none!important;}
+.section-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;}
+.section-head h3{font-family:var(--serif);font-size:1.08rem;font-weight:600;color:var(--ink-strong);}
+.opt-tag{font-family:var(--ui);font-size:13px;color:var(--ink-faint);letter-spacing:normal;text-transform:none;margin-left:auto;flex-shrink:0;}
+.guidance{font-size:0.8rem;line-height:1.65;color:var(--ink-muted);margin-bottom:16px;}
+.guidance strong{color:var(--ink);font-weight:600;}
+.guidance em{color:var(--ink);}
+.guidance ul{margin:5px 0 0 14px;}.guidance li{margin-bottom:3px;}
+
+
+.field{margin-bottom:14px;}.field:last-child{margin-bottom:0;}
+.field label{display:block;font-family:var(--ui);font-size:13px;font-weight:600;text-transform:none;letter-spacing:normal;color:var(--ink-muted);margin-bottom:5px;}
+.field label .sub{font-weight:400;text-transform:none;letter-spacing:0;font-size:0.9em;color:var(--ink-faint);}
+.field input[type="text"]{width:100%;font-family:var(--serif);font-size:0.92rem;color:var(--ink-strong);background:var(--paper-soft);border:1px solid var(--rule);outline:none;padding:9px 12px;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;border-radius:var(--radius-sm);line-height:1.4;}
+.field input[type="text"]:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.field select{width:100%;font-family:var(--serif);font-size:0.92rem;color:var(--ink-strong);background:var(--paper-soft);border:1px solid var(--rule);outline:none;padding:9px 32px 9px 12px;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;border-radius:var(--radius-sm);cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238C8676' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field select:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.field textarea{width:100%;font-family:var(--serif);font-size:0.92rem;color:var(--ink-strong);background:var(--paper-soft);border:1px solid var(--rule);outline:none;padding:10px 12px;transition:border-color 0.2s,box-shadow 0.2s;line-height:1.55;resize:vertical;min-height:80px;border-radius:var(--radius-sm);}
+.field textarea:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.field textarea.tall{min-height:114px;}
+.field textarea.xtall{min-height:168px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.wc-note{font-family:var(--ui);font-size:12px;color:var(--ink-faint);margin-top:4px;min-height:1em;line-height:1.4;}
+::placeholder{color:var(--ink-faint);opacity:1;}
+
+
+.pronoun-group{display:flex;gap:0;border:1px solid var(--rule);margin-top:4px;width:fit-content;border-radius:var(--radius-pill);overflow:hidden;}
+.pronoun-btn{font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;padding:7px 14px;background:var(--paper-soft);border:none;cursor:pointer;color:var(--ink-muted);transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.pronoun-btn:not(:last-child){border-right:1px solid var(--rule);}
+.pronoun-btn.active{background:var(--ink-strong);color:var(--paper);}
+.pronoun-btn:hover:not(.active){background:var(--paper-deep);transform:translateY(-2px) scale(1.03);}
+.pronoun-btn:active{transform:scale(0.95);}
+
+
+.step-nav{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 22px;gap:12px;}
+.back-btn{font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:4px 0;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.back-btn:hover{color:var(--ink-muted);transform:translateY(-2px) scale(1.03);}
+.back-btn:active{transform:scale(0.95);}
+.back-btn:disabled{opacity:0;pointer-events:none;}
+
+@keyframes pulse-glow{
+  0%,100%{box-shadow:0 0 0 0 rgba(192,57,46,0);}
+  50%{box-shadow:0 0 0 7px rgba(192,57,46,0.18);}
+}
+.continue-btn{font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:11px 28px;background:var(--proof);border:2px solid var(--proof);color:var(--paper);cursor:pointer;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),background 0.15s,border-color 0.15s;border-radius:2px;animation:pulse-glow 2.2s ease-in-out infinite;}
+.continue-btn:hover{background:var(--proof-deep);border-color:var(--proof-deep);animation:none;transform:translateY(-2px) scale(1.03);}
+.continue-btn:active{transform:scale(0.95);}
+.continue-btn.finish{background:var(--ink-strong);border-color:var(--ink-strong);animation:none;}
+.continue-btn.finish:hover{background:var(--proof);border-color:var(--proof);animation:pulse-glow 2.2s ease-in-out infinite;transform:translateY(-2px) scale(1.03);}
+.skip-link{font-family:var(--ui);font-size:13px;color:var(--ink-faint);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;}
+.skip-link:hover{color:var(--ink-muted);}
+.step-nav-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+
+
+.preview-panel{display:flex;flex-direction:column;position:sticky;top:0;max-height:100vh;overflow:hidden;}
+@media(max-width:900px){.preview-panel{position:static;max-height:none;}}
+.preview-header{padding:12px 18px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--paper);flex-shrink:0;}
+.preview-label{font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:normal;text-transform:none;color:var(--ink-muted);}
+.preview-wc{font-family:var(--ui);font-size:12px;color:var(--ink-faint);}
+.preview-actions{display:flex;gap:6px;align-items:center;}
+.copy-btn{font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:5px 13px;border:1px solid var(--rule);background:transparent;color:var(--ink-muted);cursor:pointer;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),all 0.15s;border-radius:2px;}
+.copy-btn:hover{background:var(--ink-strong);color:var(--paper);border-color:var(--ink-strong);transform:translateY(-2px) scale(1.03);}
+.copy-btn:active{transform:scale(0.95);}
+.copy-btn.copied{background:var(--proof);color:var(--paper);border-color:var(--proof);}
+.clear-btn{font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:4px 6px;opacity:0.7;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.clear-btn:hover{color:var(--proof);opacity:1;transform:translateY(-2px) scale(1.03);}
+.clear-btn:active{transform:scale(0.95);}
+.letter-scroll{overflow-y:auto;flex:1;}
+@media(max-width:900px){.letter-scroll{overflow:visible;}}
+.letter-output{padding:28px 28px 44px;font-family:var(--serif);font-size:0.95rem;line-height:1.8;color:var(--ink-muted);}
+.letter-output p{margin-bottom:1.45em;}.letter-output p:last-child{margin-bottom:0;}
+.letter-output .gap{color:var(--proof);opacity:0.65;font-style:italic;}
+.letter-output .ok{color:var(--ink);}
+.letter-output em.t{font-style:italic;color:var(--ink);}
+
+
+.footer{margin-top:44px;text-align:center;}
+.footer-coffee{font-family:var(--serif);font-size:0.93rem;color:var(--ink-muted);margin-bottom:10px;}
+.footer-coffee a{color:var(--proof);text-decoration:none;font-weight:500;}.footer-coffee a:hover{text-decoration:underline;}
+.footer-meta{font-family:var(--ui);font-size:12px;color:var(--ink-faint);letter-spacing:normal;text-transform:none;}
+.footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;}
+.footer-meta a:hover{color:var(--ink-muted);}
+
+.advice{margin-top:44px;border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;}
+.advice-summary{display:flex;align-items:baseline;gap:16px;padding:14px 22px;cursor:pointer;list-style:none;background:var(--paper-deep);border-bottom:1px solid transparent;}
+.advice-summary::-webkit-details-marker{display:none;}
+.advice[open] .advice-summary{border-bottom-color:var(--rule);}
+.advice-summary-label{font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:normal;text-transform:none;color:var(--ink);flex-shrink:0;}
+.advice-summary-hint{font-family:var(--serif);font-style:italic;font-size:0.82rem;color:var(--ink-faint);flex:1;}
+.advice-arrow{font-family:var(--ui);font-size:0.7rem;color:var(--ink-faint);transition:transform 0.2s;flex-shrink:0;}
+.advice[open] .advice-arrow{transform:rotate(90deg);}
+.advice-body{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:none;}
+@media(max-width:760px){.advice-body{grid-template-columns:1fr;}}
+.advice-section{padding:24px 26px;border-bottom:1px solid var(--rule-soft);}
+.advice-section:nth-child(odd){border-right:1px solid var(--rule-soft);}
+@media(max-width:760px){.advice-section:nth-child(odd){border-right:none;}}
+.advice-section:last-child,.advice-section:nth-last-child(2):nth-child(odd){border-bottom:none;}
+.advice-section h3{font-family:var(--mono);font-size:var(--t-caps);letter-spacing:0.12em;text-transform:uppercase;color:var(--proof);margin-bottom:10px;}
+.advice-section p{font-family:var(--serif);font-size:0.88rem;line-height:1.7;color:var(--ink-muted);margin-bottom:8px;}
+.advice-section p:last-child{margin-bottom:0;}
+.advice-section p strong{color:var(--ink);font-weight:600;}
+.advice-section p em{font-style:italic;color:var(--ink);}
+.advice-section ul{margin:6px 0 0 0;padding:0;list-style:none;}
+.advice-section li{font-family:var(--serif);font-size:0.88rem;line-height:1.65;color:var(--ink-muted);padding-left:1.1em;position:relative;margin-bottom:4px;}
+.advice-section li::before{content:"—";position:absolute;left:0;color:var(--rule);}
+.advice-section li a,.advice-section p a{color:var(--proof);text-underline-offset:2px;}
+.advice-section li a:hover,.advice-section p a:hover{text-decoration:underline;}
+.advice-example{background:var(--paper-deep);border-left:2px solid var(--rule);padding:10px 14px;margin:10px 0;font-family:var(--serif);font-size:0.84rem;line-height:1.65;color:var(--ink-muted);font-style:italic;border-radius:var(--radius-sm);}
+.advice-example strong{color:var(--ink);font-style:normal;font-weight:600;}
+.advice-full{grid-column:1/-1;border-right:none!important;}
+
+
+.open-source-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-size:12px;color:var(--ink-faint);background:var(--paper-deep);border:1px solid var(--rule-soft);border-radius:var(--radius-pill);padding:3px 10px 3px 7px;margin-top:6px;transition:color 0.2s,border-color 0.2s;text-decoration:none;}
+.open-source-badge:hover{color:var(--ink-muted);border-color:var(--rule);}
+.open-source-badge svg{opacity:0.7;}
+
+
+.animated-details { interpolate-size: allow-keywords; }
+.animated-details::details-content {
+  overflow: hidden; height: 0; opacity: 0;
+  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              content-visibility 0.4s allow-discrete;
+}
+.animated-details[open]::details-content { height: auto; opacity: 1; }
+
+
+.arrow-icon {
+  width: 20px; height: 20px;
+  position: relative;
+  flex-shrink: 0;
+}
+.arrow-icon::before,
+.arrow-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 14px; height: 2px;
+  background: var(--proof);
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+.arrow-icon::before { transform: translate(-50%, -50%) rotate(90deg); }
+[open] .arrow-icon::before { transform: translate(-50%, -50%) rotate(0deg); opacity: 0; }
+
+::selection{background:var(--proof);color:var(--paper);}
+.hidden{display:none!important;}
+
+
+.feedback-details summary{font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;color:var(--ink-faint);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;}
+.feedback-details summary::-webkit-details-marker{display:none;}
+.feedback-details summary:hover{color:var(--ink);}
+.feedback-details summary::after{content:"+";font-family:var(--ui);font-size:16px;color:var(--proof);}
+.feedback-details[open] summary::after{content:"\2212";}
+.feedback{margin-top:16px;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;}
+.feedback textarea{width:100%;min-height:70px;padding:10px 12px;font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink);background:var(--paper-soft);border:1px solid var(--rule);border-radius:var(--radius-sm);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;box-sizing:border-box;}
+.feedback textarea:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.feedback textarea::placeholder{color:var(--ink-faint);font-style:italic;}
+.feedback-row{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.feedback-row input[type="email"]{flex:1;padding:7px 12px 8px;font-family:var(--serif);font-size:15px;color:var(--ink);background:var(--paper-soft);border:1px solid var(--rule);outline:none;transition:border-color 0.15s,box-shadow 0.15s;border-radius:var(--radius-sm);}
+.feedback-row input[type="email"]:focus{border-color:var(--proof);box-shadow:0 0 0 3px var(--proof-wash);}
+.feedback-row input[type="email"]::placeholder{color:var(--ink-faint);font-style:italic;}
+.send-btn{padding:9px 18px;background:var(--ink-strong);color:var(--paper);border:none;border-radius:var(--radius-pill);font-family:var(--ui);font-size:13px;font-weight:500;letter-spacing:normal;text-transform:none;cursor:pointer;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),background 0.15s;white-space:nowrap;}
+.send-btn:hover{background:var(--proof);transform:translateY(-2px) scale(1.03);}
+.send-btn:active{transform:scale(0.95);}
+.send-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none;}
+.feedback-sent{display:none;text-align:center;padding:12px 0;font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;color:var(--proof);}
+</style>
+<link rel="stylesheet" href="assets/storybook.css">
+</head>
+<body>
+<script>
+(function() {
+  var s = localStorage.getItem("theme");
+  if (s) document.documentElement.setAttribute("data-theme", s);
+})();
+</script>
+<div class="page">
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode"><svg id="themeIcon" viewBox="0 0 24 24"></svg></button>
+
+<header class="masthead">
+    <p class="name">
+      <span class="sr-only">Manuscript Reader</span>
+      <span class="word" aria-hidden="true"><span class="illum illum-m"></span>anuscript</span>
+      <span class="word" aria-hidden="true"><span class="illum illum-r"></span>eader</span>
+    </p>
+    <nav class="mast-nav" aria-label="Contents">
+      <div class="links">
+        <a href="index.html">Read Aloud</a>
+        <a href="lint.html">Prose Analysis</a>
+        <a href="query.html" aria-current="page">Query Letter</a>
+      </div>
+    </nav>
+  </header>
+
+  <figure class="plate">
+    <div class="plate-frame"><img src="assets/plate-journey.png" alt="A young man and woman run across a hilltop as swallows wheel overhead"></div>
+  </figure>
+
+  <h1 class="sr-only">Query Letter</h1>
+  <p class="chapter-sub">Fill in the blanks to draft your query letter.</p>
+  <p class="badge-line"><a href="https://github.com/AubreyHaskett/manuscriptreader.com" target="_blank" rel="noopener" class="open-source-badge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg> Open Source</a></p>
+
+<div class="type-bar-row">
+<div class="type-bar">
+<button class="type-btn active" data-type="fiction" id="typeFiction">Fiction</button>
+<button class="type-btn" data-type="nonfiction" id="typeNonfiction">Nonfiction</button>
+</div>
+<span class="type-hint">Draft saves automatically in your browser.</span>
+</div>
+
+<div class="workspace">
+
+
+<div class="form-panel" id="formPanel">
+
+  
+  <div class="step-indicator" id="stepIndicator"></div>
+
+  
+
+  
+  <div class="form-section hidden" id="sec-f0">
+    <div class="section-head"><h3>Personalization <span class="opt-tag">Optional</span></h3></div>
+    <div class="field">
+      <label>Why this agent?</label>
+      <textarea id="qPersonal" rows="2" placeholder="I read your MSWL post seeking fantasy with political stakes and unreliable maps…"></textarea>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-f1">
+    <div class="section-head"><h3>The Pitch</h3></div>
+    <div class="field">
+      <label>Opening line <span class="sub">optional</span></label>
+      <input type="text" id="fTagline" placeholder="In a city that erases its own history, some maps are worth dying for.">
+    </div>
+    <div class="field" style="margin-top:26px;">
+      <label>Main character&rsquo;s name</label>
+      <input type="text" id="fName" placeholder="Elara">
+    </div>
+    <div class="field">
+      <label>Age <span class="sub">optional</span></label>
+      <input type="text" id="fAge" placeholder="28">
+    </div>
+    <div class="field">
+      <label>Who they are</label>
+      <input type="text" id="fDesc" placeholder="a disgraced cartographer in a city that erases its own history">
+    </div>
+    <div class="field">
+      <label>Pronouns</label>
+      <div class="pronoun-group" id="pronounGroup">
+        <button class="pronoun-btn active" data-sub="she" data-obj="her" data-pos="her">she/her</button>
+        <button class="pronoun-btn" data-sub="he" data-obj="him" data-pos="his">he/him</button>
+        <button class="pronoun-btn" data-sub="they" data-obj="them" data-pos="their">they/them</button>
+        <button class="pronoun-btn" data-custom="true">other</button>
+      </div>
+      <input type="text" id="fPronounOther" class="pronoun-other hidden" placeholder="e.g. xe" aria-label="Your character&rsquo;s pronoun">
+    </div>
+    <div class="field" style="margin-top:26px;">
+      <label>World or setting <span class="sub">optional</span></label>
+      <div class="guidance">Helpful for science fiction, fantasy, and horror.</div>
+      <input type="text" id="fSetting" placeholder="In a city where history is literally rewritten each decade, the maps are the only truth left.">
+    </div>
+    <div class="field">
+      <label>What they want</label>
+      <input type="text" id="fWants" placeholder="to finally be recognised as a real mapmaker — not just an archivist of other people's work">
+    </div>
+    <div class="field" style="margin-top:26px;">
+      <label>Inciting incident</label>
+      <textarea id="fInciting" rows="2" placeholder="a forbidden map surfaces that contradicts the city's founding myth"></textarea>
+    </div>
+    <div class="field">
+      <label>What they have to do</label>
+      <textarea id="fConflict" rows="2" placeholder="expose the truth before the memory-keepers destroy the map — and her with it"></textarea>
+    </div>
+    <div class="field">
+      <label>What stands in their way</label>
+      <textarea id="fAntag" rows="2" placeholder="But the city's memory-keepers will do anything to stop her — including erasing her from the record entirely."></textarea>
+    </div>
+    <div class="field">
+      <label>What makes it worse</label>
+      <textarea id="fMidpoint" rows="2" placeholder="When she discovers her own past has been altered, she realises she was never the investigator — she was the target."></textarea>
+    </div>
+    <div class="field" style="margin-top:26px;">
+      <label>Best outcome</label>
+      <input type="text" id="fOutcome1" placeholder="expose the city's lie and restore the names of everyone who was erased">
+    </div>
+    <div class="field">
+      <label>Worst outcome</label>
+      <input type="text" id="fOutcome2" placeholder="accept her own erasure and let the city's history stand unchallenged forever">
+    </div>
+    <div class="field" style="margin-top:26px;">
+      <label>Second paragraph <span class="sub">optional</span></label>
+      <textarea id="fPitch2" class="tall" placeholder="Leave blank if your pitch fits in one paragraph."></textarea>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-f2">
+    <div class="section-head"><h3>Book Details</h3></div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="fTitle" placeholder="The Cartographer's Erasure">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Genre</label>
+        <select id="fGenre">
+          <option value="">Select a genre…</option>
+          <optgroup label="Adult Fiction">
+            <option value="literary fiction">Literary Fiction</option>
+            <option value="upmarket fiction">Upmarket Fiction</option>
+            <option value="commercial fiction">Commercial Fiction</option>
+            <option value="women's fiction">Women's Fiction</option>
+            <option value="historical fiction">Historical Fiction</option>
+            <option value="thriller">Thriller / Suspense</option>
+            <option value="mystery">Mystery / Crime</option>
+            <option value="horror">Horror</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="epic fantasy">Epic Fantasy</option>
+            <option value="science fiction">Science Fiction</option>
+            <option value="speculative fiction">Speculative Fiction</option>
+            <option value="romance">Romance</option>
+            <option value="contemporary romance">Contemporary Romance</option>
+            <option value="historical romance">Historical Romance</option>
+          </optgroup>
+          <optgroup label="YA / MG">
+            <option value="YA contemporary fiction">YA Contemporary</option>
+            <option value="YA fantasy">YA Fantasy</option>
+            <option value="YA thriller">YA Thriller</option>
+            <option value="YA romance">YA Romance</option>
+            <option value="YA science fiction">YA Science Fiction</option>
+            <option value="YA historical fiction">YA Historical Fiction</option>
+            <option value="middle grade fiction">Middle Grade Fiction</option>
+            <option value="middle grade fantasy">Middle Grade Fantasy</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>Word count</label>
+        <input type="text" id="fWordCount" placeholder="85,000">
+        <div class="wc-note" id="fWcNote"></div>
+        <div class="wc-note"><a href="https://manuscriptacademy.com/word-count-by-genre-literary-agents-2026" target="_blank" rel="noopener" style="color:var(--ink-faint);text-underline-offset:2px;">Word count guide by genre →</a></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Standalone / series</label>
+      <select id="fSeries">
+        <option value="standalone">Standalone</option>
+        <option value="series-potential">Standalone with series potential</option>
+        <option value="series-open">First in a planned series</option>
+        <option value="series-complete">First in a series (subsequent books outlined)</option>
+      </select>
+    </div>
+    <div class="field hidden" id="fSeriesNameWrap">
+      <label>Series name <span class="sub">optional</span></label>
+      <input type="text" id="fSeriesName" placeholder="The Erased Archives">
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-f3">
+    <div class="section-head"><h3>Comp Titles</h3></div>
+    <div class="field">
+      <label>A recent book like yours</label>
+      <input type="text" id="fComp1" placeholder="The Bone Shard Daughter by Andrea Stewart">
+    </div>
+    <div class="field">
+      <label>Another one</label>
+      <input type="text" id="fComp2" placeholder="A Memory Called Empire by Arkady Martine">
+    </div>
+    <div class="field">
+      <label>One more <span class="sub">optional</span></label>
+      <input type="text" id="fComp3" placeholder="">
+    </div>
+  </div>
+
+  
+
+  
+
+  
+  <div class="form-section hidden" id="sec-n1">
+    <div class="section-head"><h3>The Hook</h3></div>
+    <div class="field">
+      <label>Why this book, and why you?</label>
+      <textarea id="nHook" class="tall" placeholder="Every year, thousands of writers finish a manuscript and then spend months wondering why their query letters aren't working. The problem is almost never the book."></textarea>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-n2">
+    <div class="section-head"><h3>The Pitch</h3></div>
+    <div class="field">
+      <label>What it&rsquo;s about and what readers get</label>
+      <textarea id="nPitch" class="tall" placeholder="The Query Workshop is a step-by-step guide to writing, revising, and sending a query letter that agents actually read…"></textarea>
+    </div>
+    <div class="field">
+      <label>Target audience</label>
+      <input type="text" id="nAudience" placeholder="Fiction writers preparing to query for the first time">
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-n3">
+    <div class="section-head"><h3>Book Details</h3></div>
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="nTitle" placeholder="The Query Workshop">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Category</label>
+        <select id="nCategory">
+          <option value="">Select a category…</option>
+          <option value="narrative nonfiction">Narrative Nonfiction</option>
+          <option value="memoir">Memoir</option>
+          <option value="self-help">Self-Help</option>
+          <option value="prescriptive nonfiction">Prescriptive Nonfiction</option>
+          <option value="personal development">Personal Development</option>
+          <option value="business">Business</option>
+          <option value="health and wellness">Health &amp; Wellness</option>
+          <option value="true crime">True Crime</option>
+          <option value="history">History</option>
+          <option value="science">Science</option>
+          <option value="technology">Technology</option>
+          <option value="biography">Biography</option>
+          <option value="essay collection">Essay Collection</option>
+          <option value="humor">Humor</option>
+          <option value="cultural commentary">Cultural Commentary</option>
+          <option value="current events">Current Events</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Word count</label>
+        <input type="text" id="nWordCount" placeholder="75,000">
+        <div class="wc-note">Typically 60,000–80,000 words. Memoir can run longer.</div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-n4">
+    <div class="section-head"><h3>Comp Titles</h3></div>
+    <div class="field">
+      <label>A recent book like yours</label>
+      <input type="text" id="nComp1" placeholder="Bird by Bird by Anne Lamott">
+    </div>
+    <div class="field">
+      <label>Another one</label>
+      <input type="text" id="nComp2" placeholder="">
+    </div>
+    <div class="field">
+      <label>One more <span class="sub">optional</span></label>
+      <input type="text" id="nComp3" placeholder="">
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-n5">
+    <div class="section-head"><h3>Your Platform</h3></div>
+    <div class="field">
+      <label>Why you, and how you&rsquo;ll reach readers</label>
+      <textarea id="nPlatform" class="tall" placeholder="I have worked as a literary agent for ten years. My newsletter, The Submission Window, has 14,000 subscribers. I have spoken at AWP, Tin House, and the Sewanee Writers' Conference."></textarea>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-n6">
+    <div class="section-head"><h3>Chapter Overview <span class="opt-tag">Optional</span></h3></div>
+    <div class="field">
+      <label>A sentence or two per chapter</label>
+      <textarea id="nChapters" class="xtall" placeholder="Chapter 1: Why queries fail — and why it's almost never the book.&#10;Chapter 2: The hook: the single sentence that opens every door.&#10;Chapter 3: The pitch paragraph — plotting your own story on the page.&#10;…"></textarea>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-bio">
+    <div class="section-head"><h3>Author Bio</h3></div>
+    <div class="field">
+      <label>About you</label>
+      <textarea id="qBio" class="tall" placeholder="I am a member of the Science Fiction and Fantasy Writers of America. My short fiction has appeared in Clarkesworld and Strange Horizons. I live in Edinburgh."></textarea>
+    </div>
+  </div>
+
+  
+  <div class="form-section hidden" id="sec-closing">
+    <div class="section-head"><h3>Salutation &amp; Closing</h3></div>
+    <div class="field-row">
+      <div class="field">
+        <label>Agent name</label>
+        <input type="text" id="qAgent" placeholder="Sarah Chen">
+      </div>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="qAuthor" placeholder="Your Name">
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="step-nav" id="stepNav">
+    <button class="back-btn" id="backBtn" onclick="prevStep()">← Back</button>
+    <div class="step-nav-right">
+      <button class="continue-btn" id="continueBtn" onclick="nextStep()">Continue →</button>
+      <button class="skip-link hidden" id="skipBtn" onclick="nextStep()">Skip this step</button>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="preview-panel">
+  <div class="preview-header">
+    <div>
+      <div class="preview-label">Letter Preview</div>
+      <div class="preview-wc" id="previewWc"></div>
+    </div>
+    <div class="preview-actions">
+      <button class="clear-btn" id="clearBtn" title="Clear all fields">Clear</button>
+      <button class="copy-btn" id="copyBtn" onclick="copyLetter()">Copy Letter</button>
+    </div>
+  </div>
+  <div class="letter-scroll">
+    <div class="letter-output" id="letterOut"></div>
+  </div>
+</div>
+
+</div>
+
+<details class="advice animated-details" id="advicePanel">
+  <summary class="advice-summary">
+    <span class="advice-summary-label">Advice</span>
+    <span class="advice-summary-hint">Mistakes to avoid and what to do next</span>
+    <span class="arrow-icon"></span>
+  </summary>
+  <div class="advice-body">
+
+    <div class="advice-section">
+      <h3>Length</h3>
+      <p>Aim for 250 to 350 words, with 150 to 200 of them on the pitch. Over 400? Trim the pitch.</p>
+    </div>
+
+    <div class="advice-section">
+      <h3>Be specific</h3>
+      <p>Vague pitches all sound alike. Use the details only your book has.</p>
+      <div class="advice-example">✗ &ldquo;She must investigate the strange circumstances surrounding the murder.&rdquo;</div>
+      <div class="advice-example">✓ &ldquo;She must find out why every victim has insect larvae burrowed into their skulls before the killer adds her name to the list.&rdquo;</div>
+    </div>
+
+    <div class="advice-section">
+      <h3>Cut</h3>
+      <ul>
+        <li>Statements about theme, like &ldquo;a story about grief&rdquo;</li>
+        <li>Rhetorical questions</li>
+        <li>Flattering the agent</li>
+        <li>Mega-bestseller comps</li>
+        <li>Apologies of any kind</li>
+      </ul>
+    </div>
+
+    <div class="advice-section advice-full" style="border-bottom:none;">
+      <h3>Before you send</h3>
+      <ul>
+        <li>Read archived queries on <a href="https://queryshark.blogspot.com" target="_blank" rel="noopener">Query Shark</a>.</li>
+        <li>Find agents on <a href="https://querytracker.net" target="_blank" rel="noopener">QueryTracker</a> and <a href="https://www.manuscriptwishlist.com" target="_blank" rel="noopener">Manuscript Wishlist</a>.</li>
+        <li>Finish the manuscript and polish the first ten pages.</li>
+        <li>Ask someone to read the query for clarity.</li>
+        <li>More: <a href="https://manuscriptacademy.com/word-count-by-genre-literary-agents-2026" target="_blank" rel="noopener">word counts by genre</a>, <a href="https://thinkingthroughourfingers.com/2018/02/22/back-cover-blurbs-vs-query-letter-blurbs/" target="_blank" rel="noopener">blurbs vs. query pitches</a>, <a href="https://www.agentquery.com/writer_hq.aspx" target="_blank" rel="noopener">AgentQuery&rsquo;s guide</a>.</li>
+      </ul>
+    </div>
+
+  </div>
+</details>
+
+<div class="footer">
+  <p class="footer-coffee">If this helps your writing, you can <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.</p>
+  <div class="footer-meta"><a href="privacy.html">Privacy</a><span aria-hidden="true">&middot;</span><a href="terms.html">Terms</a><span aria-hidden="true">&middot;</span><details class="feedback-details animated-details">
+  <summary>Send feedback</summary>
+  <div class="feedback" id="feedbackForm">
+    <textarea id="feedbackText" placeholder="Found a bug? Have a suggestion?"></textarea>
+    <div class="feedback-row">
+      <input type="email" id="feedbackEmail" placeholder="Email (optional)">
+      <button class="send-btn" id="feedbackSend" onclick="sendFeedback()">Send</button>
+    </div>
+  </div>
+  <div class="feedback-sent" id="feedbackSent">✓ Thanks for your feedback!</div>
+</details></div>
+  <p class="colophon">Drawings by William Siegel from <cite>The Shepherd and the Dragon</cite>, a 1930 edition of Božena Němcová&rsquo;s fairy tales. Drawings and initials are public domain, via <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>.</p>
+</div>
+</div>
+
+<script>
+(function() {
+  const SUN = "M12 3V1m0 22v-2m9-9h2M1 12h2m15.07-7.07 1.42-1.42M3.51 20.49l1.42-1.42M20.49 20.49l-1.42-1.42M4.93 4.93 3.51 3.51M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z";
+  const MOON = "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z";
+  function dark() {
+    const s = localStorage.getItem("theme");
+    return s ? s === "dark" : window.matchMedia("(prefers-color-scheme:dark)").matches;
+  }
+  function updateIcon() {
+    const svg = document.getElementById("themeIcon");
+    if (!svg) return;
+    svg.innerHTML = '<path d="' + (dark() ? SUN : MOON) + '"/>';
+  }
+  function toggle() {
+    const n = dark() ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", n);
+    localStorage.setItem("theme", n);
+    updateIcon();
+  }
+  document.addEventListener("DOMContentLoaded", function() {
+    updateIcon();
+    document.getElementById("themeToggle").addEventListener("click", toggle);
+  });
+  window.matchMedia("(prefers-color-scheme:dark)").addEventListener("change", function() {
+    if (!localStorage.getItem("theme")) updateIcon();
+  });
+})();
+
+let qType = "fiction";
+
+let qPronoun = {
+  sub: "she",
+  obj: "her",
+  pos: "her"
+};
+
+let currentStep = 0;
+
+const FICTION_STEPS = [ {
+  id: "sec-f0",
+  label: "Personalize",
+  optional: true
+}, {
+  id: "sec-f1",
+  label: "Pitch"
+}, {
+  id: "sec-f2",
+  label: "Book Details"
+}, {
+  id: "sec-f3",
+  label: "Comp Titles"
+}, {
+  id: "sec-bio",
+  label: "Bio"
+}, {
+  id: "sec-closing",
+  label: "Closing"
+} ];
+
+const NONFICTION_STEPS = [ {
+  id: "sec-f0",
+  label: "Personalize",
+  optional: true
+}, {
+  id: "sec-n1",
+  label: "Hook"
+}, {
+  id: "sec-n2",
+  label: "Pitch"
+}, {
+  id: "sec-n3",
+  label: "Book Details"
+}, {
+  id: "sec-n4",
+  label: "Comp Titles"
+}, {
+  id: "sec-n5",
+  label: "Platform"
+}, {
+  id: "sec-n6",
+  label: "Chapters",
+  optional: true
+}, {
+  id: "sec-bio",
+  label: "Bio"
+}, {
+  id: "sec-closing",
+  label: "Closing"
+} ];
+
+function steps() {
+  return qType === "fiction" ? FICTION_STEPS : NONFICTION_STEPS;
+}
+
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function gap(label) {
+  return '<span class="gap">[' + label + "]</span>";
+}
+
+function ok(text) {
+  return '<span class="ok">' + esc(text) + "</span>";
+}
+
+function okHtml(html) {
+  return '<span class="ok">' + html + "</span>";
+}
+
+function titleHtml(t) {
+  return t ? '<em class="t">' + esc(t) + "</em>" : gap("Title");
+}
+
+function art(word) {
+  return !word || "aeiou".includes(word.trim().toLowerCase()[0]) ? "an" : "a";
+}
+
+const GENRE_LABEL = {
+  "middle grade fiction": "middle grade novel",
+  "middle grade fantasy": "middle grade fantasy novel",
+  "YA contemporary fiction": "YA contemporary novel",
+  "YA fantasy": "YA fantasy novel",
+  "YA thriller": "YA thriller",
+  "YA romance": "YA romance",
+  "YA science fiction": "YA science fiction novel",
+  "YA historical fiction": "YA historical novel"
+};
+
+function genreLabel(g) {
+  return g ? GENRE_LABEL[g] || g + " novel" : "novel";
+}
+
+const WC_GUIDE = {
+  "literary fiction": "80,000–110,000 words typical.",
+  "upmarket fiction": "75,000–100,000 words typical.",
+  "commercial fiction": "70,000–100,000 words typical.",
+  "women's fiction": "80,000–100,000 words typical.",
+  "historical fiction": "85,000–110,000 words typical.",
+  thriller: "70,000–90,000 words typical.",
+  mystery: "65,000–90,000 words typical.",
+  horror: "70,000–100,000 words typical.",
+  fantasy: "90,000–120,000 words typical.",
+  "epic fantasy": "90,000–150,000 words. Debut over 120k is a harder sell.",
+  "science fiction": "80,000–120,000 words typical.",
+  "speculative fiction": "80,000–110,000 words typical.",
+  romance: "75,000–100,000 words typical.",
+  "contemporary romance": "70,000–100,000 words typical.",
+  "historical romance": "80,000–100,000 words typical.",
+  "YA contemporary fiction": "55,000–85,000 words typical.",
+  "YA fantasy": "70,000–95,000 words typical.",
+  "YA thriller": "55,000–80,000 words typical.",
+  "YA romance": "55,000–80,000 words typical.",
+  "YA science fiction": "70,000–90,000 words typical.",
+  "YA historical fiction": "60,000–90,000 words typical.",
+  "middle grade fiction": "25,000–50,000 words typical.",
+  "middle grade fantasy": "30,000–55,000 words typical."
+};
+
+function seriesNote(val, name) {
+  const sn = name ? " of the " + esc(name) + " series" : " of a planned series";
+  if (val === "series-potential") return " It is standalone with series potential.";
+  if (val === "series-open") return " It is the first book" + sn + ".";
+  if (val === "series-complete") return " It is the first book" + sn + " (subsequent books outlined).";
+  return "";
+}
+
+function compNote(c1, c2, c3) {
+  const cs = [ c1, c2, c3 ].filter(Boolean);
+  if (!cs.length) return "";
+  const list = cs.map(c => esc(c));
+  if (cs.length === 1) return " It will appeal to readers of " + list[0] + ".";
+  if (cs.length === 2) return " It will appeal to readers of " + list[0] + " and " + list[1] + ".";
+  return " It will appeal to readers of " + list[0] + ", " + list[1] + ", and " + list[2] + ".";
+}
+
+function renderFiction() {
+  const personal = v("qPersonal"), tagline = v("fTagline"), name = v("fName"), age = v("fAge"), desc = v("fDesc"), setting = v("fSetting"), wants = v("fWants"), inciting = v("fInciting"), conflict = v("fConflict"), antag = v("fAntag"), midpoint = v("fMidpoint"), outcome1 = v("fOutcome1"), outcome2 = v("fOutcome2"), pitch2 = v("fPitch2"), ftitle = v("fTitle"), genre = v("fGenre"), wc = v("fWordCount"), seriesVal = document.getElementById("fSeries").value, seriesName = v("fSeriesName"), c1 = v("fComp1"), c2 = v("fComp2"), c3 = v("fComp3"), bio = v("qBio"), agent = v("qAgent"), author = v("qAuthor");
+  let html = "";
+  if (tagline) html += "<p>" + ok(tagline) + "</p>";
+  html += "<p>" + (agent ? ok("Dear " + agent + ",") : gap("Dear [Agent Name],")) + "</p>";
+  if (personal) html += "<p>" + ok(personal) + "</p>";
+  const pName = name ? ok(name) : gap("Name");
+  const pDesc = desc ? ok(desc) : gap("protagonist description");
+  const pInc = inciting ? ok(inciting) : gap("inciting event");
+  const pConf = conflict ? ok(conflict) : gap("initial goal");
+  const subRaw = qPronoun.custom ? (document.getElementById("fPronounOther").value.split("/")[0] || "").trim() : qPronoun.sub;
+  const pSub = subRaw ? ok(subRaw) : gap("pronoun");
+  const pSubCap = subRaw ? ok(subRaw.charAt(0).toUpperCase() + subRaw.slice(1)) : gap("Pronoun");
+  const pHas = /^they$/i.test(subRaw) ? "have" : "has";
+  let p1 = age ? ok(age) + "-year-old " + pName + " is " + pDesc + "." : pName + " is " + pDesc + ".";
+  if (setting) p1 += " " + ok(setting);
+  if (wants) p1 += " " + pName + " just wants " + ok(wants) + ", but when " + pInc + ", " + pSub + " must " + pConf + "."; else p1 += " When " + pInc + ", " + pSub + " must " + pConf + ".";
+  if (antag) p1 += " " + ok(antag);
+  if (midpoint) p1 += " " + ok(midpoint);
+  const o1 = outcome1 ? ok(outcome1) : gap("best outcome");
+  const o2 = outcome2 ? ok(outcome2) : gap("worst outcome");
+  p1 += " " + pSubCap + " " + pHas + " to " + o1 + " or " + o2 + ".";
+  html += "<p>" + p1 + "</p>";
+  if (pitch2) html += "<p>" + ok(pitch2) + "</p>";
+  const gl = genreLabel(genre), a = art(genre);
+  const specGenre = genre ? ok(a + " " + gl) : gap("a") + " " + gap("genre novel");
+  const specWc = wc ? ok(wc + " words") : gap("[word count] words");
+  const sNote = seriesNote(seriesVal, seriesName);
+  const cNote = compNote(c1, c2, c3);
+  html += "<p>" + titleHtml(ftitle) + " is " + specGenre + " complete at " + specWc + "." + (sNote ? okHtml(sNote) : "") + (cNote ? okHtml(cNote) : "") + "</p>";
+  html += "<p>" + (bio ? ok(bio) : gap("Author bio")) + "</p>";
+  html += "<p>" + ok("Thank you for your time and consideration.") + "</p>";
+  html += "<p>" + (author ? ok(author) : gap("[Your name]")) + "</p>";
+  return html;
+}
+
+function renderNonfiction() {
+  const personal = v("qPersonal"), hook = v("nHook"), pitch = v("nPitch"), audience = v("nAudience"), ntitle = v("nTitle"), cat = v("nCategory"), wc = v("nWordCount"), c1 = v("nComp1"), c2 = v("nComp2"), c3 = v("nComp3"), platform = v("nPlatform"), chapters = v("nChapters"), bio = v("qBio"), agent = v("qAgent"), author = v("qAuthor");
+  let html = "";
+  html += "<p>" + (agent ? ok("Dear " + agent + ",") : gap("Dear [Agent Name],")) + "</p>";
+  if (personal) html += "<p>" + ok(personal) + "</p>";
+  if (hook) html += "<p>" + ok(hook) + "</p>";
+  html += "<p>" + (pitch ? ok(pitch) : gap("Your pitch")) + "</p>";
+  const specCat = cat ? ok(cat) : gap("category");
+  const specWc = wc ? ok(wc + "-word") : gap("[word count]-word");
+  let specLine = titleHtml(ntitle) + " is a " + specWc + " " + specCat + ".";
+  if (audience) specLine += " " + ok("It is written for " + audience + ".");
+  html += "<p>" + specLine + "</p>";
+  const cNote = compNote(c1, c2, c3);
+  if (cNote) html += "<p>" + okHtml(cNote.trim()) + "</p>";
+  html += "<p>" + (platform ? ok(platform) : gap("Your platform")) + "</p>";
+  if (chapters) {
+    const lines = chapters.split("\n").filter(l => l.trim());
+    if (lines.length) html += "<p>" + lines.map(l => '<span class="ok">' + esc(l.trim()) + "</span>").join("<br>") + "</p>";
+  }
+  html += "<p>" + (bio ? ok(bio) : gap("Author bio.")) + "</p>";
+  html += "<p>" + ok("Thank you for your time and consideration.") + "</p>";
+  html += "<p>" + (author ? ok(author) : gap("[Your name]")) + "</p>";
+  return html;
+}
+
+function render() {
+  const out = document.getElementById("letterOut");
+  out.innerHTML = qType === "fiction" ? renderFiction() : renderNonfiction();
+  const wc = (out.innerText || "").match(/\b\w+\b/g);
+  document.getElementById("previewWc").textContent = wc && wc.length > 10 ? wc.length + " words" : "";
+  save();
+}
+
+function buildIndicator() {
+  const ind = document.getElementById("stepIndicator");
+  const ss = steps();
+  let html = "";
+  ss.forEach(function(s, i) {
+    if (i > 0) html += '<div class="step-connector' + (i <= currentStep ? " done" : "") + '"></div>';
+    let cls = "step-dot";
+    if (i < currentStep) cls += " done"; else if (i === currentStep) cls += " current";
+    const clickable = i < currentStep;
+    html += '<div class="' + cls + '">';
+    html += '<button class="step-dot-btn"' + (clickable ? ' onclick="goToStep(' + i + ')"' : "") + ' aria-label="Step ' + (i + 1) + ": " + s.label + '">';
+    html += i < currentStep ? "✓" : i + 1;
+    html += "</button>";
+    html += '<div class="step-dot-label">' + s.label + "</div>";
+    html += "</div>";
+  });
+  ind.innerHTML = html;
+}
+
+function showCurrentSection() {
+  const ss = steps();
+  document.querySelectorAll(".form-section").forEach(function(el) {
+    el.classList.add("hidden");
+  });
+  const sec = document.getElementById(ss[currentStep].id);
+  if (sec) sec.classList.remove("hidden");
+  const back = document.getElementById("backBtn");
+  back.disabled = currentStep === 0;
+  const cont = document.getElementById("continueBtn");
+  const isLast = currentStep === ss.length - 1;
+  cont.textContent = isLast ? "Copy & Finish" : "Continue →";
+  cont.classList.toggle("finish", isLast);
+  const skip = document.getElementById("skipBtn");
+  if (ss[currentStep].optional) {
+    skip.classList.remove("hidden");
+  } else {
+    skip.classList.add("hidden");
+  }
+  buildIndicator();
+}
+
+function nextStep() {
+  const ss = steps();
+  if (currentStep === ss.length - 1) {
+    copyLetter();
+    return;
+  }
+  currentStep = Math.min(currentStep + 1, ss.length - 1);
+  showCurrentSection();
+  document.getElementById("formPanel").scrollTop = 0;
+}
+
+function prevStep() {
+  currentStep = Math.max(currentStep - 1, 0);
+  showCurrentSection();
+}
+
+function goToStep(n) {
+  if (n >= 0 && n < steps().length) {
+    currentStep = n;
+    showCurrentSection();
+  }
+}
+
+document.getElementById("fGenre").addEventListener("change", function() {
+  document.getElementById("fWcNote").textContent = WC_GUIDE[this.value] || "";
+  render();
+});
+
+document.getElementById("fSeries").addEventListener("change", function() {
+  const show = this.value === "series-open" || this.value === "series-complete";
+  document.getElementById("fSeriesNameWrap").classList.toggle("hidden", !show);
+  render();
+});
+
+document.querySelectorAll(".pronoun-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".pronoun-btn").forEach(function(b) {
+      b.classList.remove("active");
+    });
+    this.classList.add("active");
+    qPronoun = this.dataset.custom ? {
+      sub: "",
+      obj: "",
+      pos: "",
+      custom: true
+    } : {
+      sub: this.dataset.sub,
+      obj: this.dataset.obj,
+      pos: this.dataset.pos
+    };
+    const other = document.getElementById("fPronounOther");
+    other.classList.toggle("hidden", !qPronoun.custom);
+    if (qPronoun.custom) other.focus();
+    render();
+  });
+});
+
+document.querySelectorAll(".type-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".type-btn").forEach(function(b) {
+      b.classList.remove("active");
+    });
+    this.classList.add("active");
+    qType = this.dataset.type;
+    currentStep = 0;
+    showCurrentSection();
+    render();
+  });
+});
+
+function copyLetter() {
+  const out = document.getElementById("letterOut");
+  let text = "";
+  out.querySelectorAll("p").forEach(function(p) {
+    text += p.textContent.trim() + "\n\n";
+  });
+  text = text.trim();
+  if (!text) return;
+  const btn = document.getElementById("copyBtn");
+  function flash() {
+    btn.textContent = "Copied!";
+    btn.classList.add("copied");
+    setTimeout(function() {
+      btn.textContent = "Copy Letter";
+      btn.classList.remove("copied");
+    }, 2e3);
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(flash).catch(function() {
+      fbCopy(text);
+      flash();
+    });
+  } else {
+    fbCopy(text);
+    flash();
+  }
+}
+
+function fbCopy(t) {
+  const ta = document.createElement("textarea");
+  ta.value = t;
+  ta.style.cssText = "position:fixed;opacity:0;";
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+}
+
+document.getElementById("clearBtn").addEventListener("click", function() {
+  if (!confirm("Clear all fields and start fresh?")) return;
+  FIELDS.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("fSeries").value = "standalone";
+  document.getElementById("fGenre").value = "";
+  document.getElementById("nCategory").value = "";
+  document.getElementById("fSeriesNameWrap").classList.add("hidden");
+  document.getElementById("fWcNote").textContent = "";
+  document.querySelectorAll(".pronoun-btn").forEach(function(b) {
+    b.classList.remove("active");
+  });
+  document.querySelector('.pronoun-btn[data-sub="she"]').classList.add("active");
+  document.getElementById("fPronounOther").classList.add("hidden");
+  qPronoun = {
+    sub: "she",
+    obj: "her",
+    pos: "her"
+  };
+  currentStep = 0;
+  try {
+    localStorage.removeItem("qd2");
+  } catch (ex) {}
+  showCurrentSection();
+  render();
+});
+
+const FIELDS = [ "qPersonal", "qBio", "qAgent", "qAuthor", "fTagline", "fName", "fAge", "fDesc", "fSetting", "fWants", "fInciting", "fConflict", "fAntag", "fMidpoint", "fOutcome1", "fOutcome2", "fPronounOther", "fPitch2", "fTitle", "fGenre", "fWordCount", "fSeries", "fSeriesName", "fComp1", "fComp2", "fComp3", "nHook", "nPitch", "nAudience", "nTitle", "nCategory", "nWordCount", "nComp1", "nComp2", "nComp3", "nPlatform", "nChapters" ];
+
+function save() {
+  try {
+    const d = {
+      t: qType,
+      p: qPronoun,
+      step: currentStep
+    };
+    FIELDS.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) d[id] = el.value;
+    });
+    localStorage.setItem("qd2", JSON.stringify(d));
+  } catch (ex) {}
+}
+
+function restore() {
+  try {
+    const raw = localStorage.getItem("qd2");
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.t && d.t !== "fiction") {
+      qType = "nonfiction";
+      document.getElementById("typeNonfiction").classList.add("active");
+      document.getElementById("typeFiction").classList.remove("active");
+      document.getElementById("typeNonfiction").classList.add("active");
+    }
+    FIELDS.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el && d[id] != null) el.value = d[id];
+    });
+    if (d.p && (d.p.sub || d.p.custom)) {
+      const pb = d.p.custom ? document.querySelector(".pronoun-btn[data-custom]") : document.querySelector('.pronoun-btn[data-sub="' + d.p.sub + '"]');
+      if (pb) {
+        document.querySelectorAll(".pronoun-btn").forEach(function(b) {
+          b.classList.remove("active");
+        });
+        pb.classList.add("active");
+        qPronoun = d.p;
+        document.getElementById("fPronounOther").classList.toggle("hidden", !d.p.custom);
+      }
+    }
+    if (typeof d.step === "number") currentStep = d.step;
+    const sv = document.getElementById("fSeries").value;
+    document.getElementById("fSeriesNameWrap").classList.toggle("hidden", sv !== "series-open" && sv !== "series-complete");
+    const gv = document.getElementById("fGenre").value;
+    if (gv) document.getElementById("fWcNote").textContent = WC_GUIDE[gv] || "";
+  } catch (ex) {}
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  restore();
+  showCurrentSection();
+  render();
+  FIELDS.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", render);
+  });
+});
+</script>
+<script>
+function sendFeedback() {
+  const text = document.getElementById("feedbackText").value.trim();
+  const email = document.getElementById("feedbackEmail").value.trim();
+  const btn = document.getElementById("feedbackSend");
+  if (!text) {
+    document.getElementById("feedbackText").focus();
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = "Sending…";
+  const ua = navigator.userAgent;
+  let os = "Unknown";
+  if (/Windows NT 10.0/.test(ua)) os = "Windows 10/11"; else if (/Mac OS X ([\d_]+)/.test(ua)) os = "macOS " + ua.match(/Mac OS X ([\d_]+)/)[1].replace(/_/g, "."); else if (/Android ([\d.]+)/.test(ua)) os = "Android " + ua.match(/Android ([\d.]+)/)[1]; else if (/iPhone OS ([\d_]+)/.test(ua)) os = "iOS " + ua.match(/iPhone OS ([\d_]+)/)[1].replace(/_/g, "."); else if (/Linux/.test(ua)) os = "Linux";
+  let browser = "Unknown";
+  if (/Edg\/([\d.]+)/.test(ua)) browser = "Edge " + ua.match(/Edg\/([\d.]+)/)[1]; else if (/Chrome\/([\d.]+)/.test(ua)) browser = "Chrome " + ua.match(/Chrome\/([\d.]+)/)[1]; else if (/Firefox\/([\d.]+)/.test(ua)) browser = "Firefox " + ua.match(/Firefox\/([\d.]+)/)[1]; else if (/Safari\/([\d.]+)/.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
+  const diag = `OS: ${os} | Browser: ${browser} | Screen: ${window.screen.width}x${window.screen.height} | Viewport: ${window.innerWidth}x${window.innerHeight} | Cores: ${navigator.hardwareConcurrency || "?"} | RAM: ${navigator.deviceMemory || "?"}GB`;
+  const form = new FormData;
+  form.append("message", text + "\n\n---\n" + diag);
+  form.append("email", email || "(not provided)");
+  form.append("_subject", "Manuscript Reader Feedback");
+  form.append("_captcha", "false");
+  form.append("_template", "box");
+  fetch("https://formsubmit.co/ajax/manuscriptreadercontact@gmail.com", {
+    method: "POST",
+    body: form
+  }).then(r => r.json()).then(() => {
+    document.getElementById("feedbackForm").style.display = "none";
+    document.getElementById("feedbackSent").style.display = "block";
+  }).catch(() => {
+    const subject = encodeURIComponent("Manuscript Reader Feedback");
+    const body = encodeURIComponent(text + (email ? "\n\nFrom: " + email : ""));
+    window.open("mailto:manuscriptreadercontact@gmail.com?subject=" + subject + "&body=" + body);
+    btn.disabled = false;
+    btn.textContent = "Send";
+  });
+}
+</script>
+<script data-goatcounter="https://manuscriptreader.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

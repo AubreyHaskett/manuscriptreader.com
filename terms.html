@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Use — Manuscript Reader</title>
+<meta name="description" content="Terms of use for Manuscript Reader.">
+<link rel="canonical" href="https://manuscriptreader.com/terms.html">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;}
+*{margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  font-family:var(--serif);background:var(--paper);color:var(--ink);
+  min-height:100vh;font-size:17px;line-height:1.65;
+  font-feature-settings:"ss01","onum","kern";
+  text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--proof);color:var(--paper);}
+
+.page{max-width:680px;margin:0 auto;padding:clamp(32px,6vw,72px) var(--gut) 64px;}
+
+.doc-header{margin-bottom:40px;}
+.doc-title{
+  font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,44px);
+  line-height:1.1;letter-spacing:-0.02em;color:var(--ink-strong);margin-bottom:10px;
+}
+.doc-meta{font-family:var(--ui);font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);}
+.doc-intro{
+  font-family:var(--serif);font-style:italic;font-size:18px;
+  color:var(--ink-muted);line-height:1.5;margin-bottom:36px;
+  padding-bottom:24px;border-bottom:1px solid var(--rule-soft);
+}
+h2{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--ink-faint);margin:36px 0 12px;
+}
+p{margin-bottom:14px;color:var(--ink);}
+p:last-child{margin-bottom:0;}
+a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule);}
+a:hover{color:var(--proof);}
+ul{margin:0 0 14px 1.4em;}
+ul li{margin-bottom:6px;}
+.footer{margin-top:60px;text-align:center;animation:fadeUp 0.6s ease 0.4s both;}
+.footer p{font-size:0.74rem;line-height:1.7;color:var(--ink-faint);}
+.footer a{font-family:var(--ui);color:var(--ink-muted);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;transition:color 0.2s;}
+.footer a:hover{color:var(--proof);}
+.footer-meta{font-family:var(--ui);font-size:0.7rem;font-weight:500;color:var(--ink-faint);text-align:center;letter-spacing:0.04em;text-transform:uppercase;}
+.footer-meta a{color:var(--ink-faint);text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px;}
+.footer-meta a:hover{color:var(--ink-muted);}
+.footer-coffee{font-family:var(--serif);font-size:0.95rem;color:var(--ink-muted);text-align:center;margin-bottom:12px;}
+.footer-coffee a{color:var(--proof);text-decoration:none;font-weight:500;}.footer-coffee a:hover{text-decoration:underline;}
+
+
+.feedback-details summary{font-family:var(--ui);font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:6px;}
+.feedback-details summary::-webkit-details-marker{display:none;}
+.feedback-details summary:hover{color:var(--ink);}
+.feedback-details summary::after{content:"+";font-family:var(--mono);font-size:16px;color:var(--proof);}
+.feedback-details[open] summary::after{content:"\2212";}
+.feedback{margin-top:16px;text-align:left;max-width:420px;margin-left:auto;margin-right:auto;}
+.feedback textarea{width:100%;min-height:70px;padding:10px 12px;font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink);background:var(--paper-soft);border:1px solid var(--rule);border-radius:0;resize:vertical;outline:none;transition:border-color 0.15s;box-sizing:border-box;}
+.feedback textarea:focus{border-color:var(--proof);}
+.feedback textarea::placeholder{color:var(--ink-faint);font-style:italic;}
+.feedback-row{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.feedback-row input[type="email"]{flex:1;padding:7px 0 8px;font-family:var(--serif);font-size:15px;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--ink);outline:none;transition:border-color 0.15s;border-radius:0;}
+.feedback-row input[type="email"]:focus{border-bottom-color:var(--proof);}
+.feedback-row input[type="email"]::placeholder{color:var(--ink-faint);font-style:italic;}
+.send-btn{padding:9px 18px;background:var(--ink-strong);color:var(--paper);border:none;border-radius:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
+.send-btn:hover{background:var(--proof);}
+.send-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.feedback-sent{display:none;text-align:center;padding:12px 0;font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--proof);}
+
+
+.animated-details{interpolate-size:allow-keywords;}
+.animated-details::details-content{overflow:hidden;height:0;opacity:0;transition:height 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease,content-visibility 0.4s allow-discrete;}
+.animated-details[open]::details-content{height:auto;opacity:1;}
+
+
+.privacy-banner summary .arrow{margin-left:auto;width:20px;height:20px;position:relative;flex-shrink:0;}
+.privacy-banner summary .arrow::before,.privacy-banner summary .arrow::after{content:"";position:absolute;top:50%;left:50%;width:14px;height:2px;background:var(--proof);border-radius:1px;transform:translate(-50%,-50%);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),opacity 0.25s ease;}
+.privacy-banner summary .arrow::before{transform:translate(-50%,-50%) rotate(90deg);}
+.privacy-banner[open] summary .arrow::before{transform:translate(-50%,-50%) rotate(0deg);opacity:0;}
+
+
+.open-source-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--ui);font-size:12px;color:var(--ink-faint);background:var(--paper-deep);border:1px solid var(--rule-soft);border-radius:var(--radius-pill);padding:3px 10px 3px 7px;margin-top:6px;transition:color 0.2s,border-color 0.2s;text-decoration:none;}
+.open-source-badge:hover{color:var(--ink-muted);border-color:var(--rule);}
+.open-source-badge svg{opacity:0.7;}
+</style>
+<link rel="stylesheet" href="assets/storybook.css">
+</head>
+<body>
+<script>
+(function() {
+  var s = localStorage.getItem("theme");
+  if (s) document.documentElement.setAttribute("data-theme", s);
+})();
+</script>
+<div class="page legal">
+  <header class="masthead">
+    <p class="name">
+      <span class="sr-only">Manuscript Reader</span>
+      <span class="word" aria-hidden="true"><span class="illum illum-m"></span>anuscript</span>
+      <span class="word" aria-hidden="true"><span class="illum illum-r"></span>eader</span>
+    </p>
+    <nav class="mast-nav" aria-label="Contents">
+      <div class="links">
+        <a href="index.html">Read Aloud</a>
+        <a href="lint.html">Prose Analysis</a>
+        <a href="query.html">Query Letter</a>
+      </div>
+    </nav>
+  </header>
+
+  <figure class="plate plate-small">
+    <div class="plate-frame"><img src="assets/plate-rose.png" alt="A girl picks a rose beneath a storm cloud"></div>
+  </figure>
+
+  <div class="doc-header">
+    <h1 class="doc-title">Terms of Use</h1>
+    <p class="doc-meta">Last updated: November 2026</p>
+  </div>
+
+  <p class="doc-intro">These tools are free. Using them means you agree to these terms.</p>
+
+  <h2>Your writing</h2>
+  <p>It&rsquo;s yours. We make no claim to it, and we never see it, because it never leaves your browser.</p>
+
+  <h2>Using the tools</h2>
+  <p>Use them for anything legal. Please don&rsquo;t use them on content that&rsquo;s illegal where you live or that infringes someone else&rsquo;s copyright.</p>
+
+  <h2>No guarantees</h2>
+  <p>The tools are provided as is, without warranty of any kind. The voices can mispronounce words or behave unexpectedly, and the site may not always be available.</p>
+
+  <h2>Liability</h2>
+  <p>To the extent the law allows, the operator of Manuscript Reader is not liable for any damages from your use of these tools, including lost data or interrupted work.</p>
+
+  <h2>Open source</h2>
+  <p>The voices use <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro</a> (Apache 2.0 licence) through <a href="https://github.com/hexgrad/kokoro-js" target="_blank" rel="noopener">kokoro-js</a>. <a href="https://github.com/AubreyHaskett/manuscriptreader.com" target="_blank" rel="noopener">This site&rsquo;s code</a> is open source too. Those licences are separate from these terms.</p>
+
+  <h2>Changes</h2>
+  <p>These terms may change. Using the tools after an update means you accept the new version.</p>
+
+  <h2>Contact</h2>
+  <p>Questions? Use the feedback form at the bottom of any page.</p>
+
+<div class="footer">
+  <p class="footer-coffee">If this helps your writing, you can <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.</p>
+  <div class="footer-meta"><a href="privacy.html">Privacy</a><span aria-hidden="true">&middot;</span><a href="terms.html">Terms</a><span aria-hidden="true">&middot;</span><details class="feedback-details animated-details">
+  <summary>Send feedback</summary>
+  <div class="feedback" id="feedbackForm">
+    <textarea id="feedbackText" placeholder="Found a bug? Have a suggestion?"></textarea>
+    <div class="feedback-row">
+      <input type="email" id="feedbackEmail" placeholder="Email (optional)">
+      <button class="send-btn" id="feedbackSend" onclick="sendFeedback()">Send</button>
+    </div>
+  </div>
+  <div class="feedback-sent" id="feedbackSent">✓ Thanks for your feedback!</div>
+</details></div>
+  <p class="colophon">Drawings by William Siegel from <cite>The Shepherd and the Dragon</cite>, a 1930 edition of Božena Němcová&rsquo;s fairy tales. Drawings and initials are public domain, via <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>.</p>
+</div>
+</div>
+<script>
+function sendFeedback() {
+  const text = document.getElementById("feedbackText").value.trim();
+  const email = document.getElementById("feedbackEmail").value.trim();
+  const btn = document.getElementById("feedbackSend");
+  if (!text) {
+    document.getElementById("feedbackText").focus();
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = "Sending…";
+  const ua = navigator.userAgent;
+  let os = "Unknown";
+  if (/Windows NT 10.0/.test(ua)) os = "Windows 10/11"; else if (/Mac OS X ([\d_]+)/.test(ua)) os = "macOS " + ua.match(/Mac OS X ([\d_]+)/)[1].replace(/_/g, "."); else if (/Android ([\d.]+)/.test(ua)) os = "Android " + ua.match(/Android ([\d.]+)/)[1]; else if (/iPhone OS ([\d_]+)/.test(ua)) os = "iOS " + ua.match(/iPhone OS ([\d_]+)/)[1].replace(/_/g, "."); else if (/Linux/.test(ua)) os = "Linux";
+  let browser = "Unknown";
+  if (/Edg\/([\d.]+)/.test(ua)) browser = "Edge " + ua.match(/Edg\/([\d.]+)/)[1]; else if (/Chrome\/([\d.]+)/.test(ua)) browser = "Chrome " + ua.match(/Chrome\/([\d.]+)/)[1]; else if (/Firefox\/([\d.]+)/.test(ua)) browser = "Firefox " + ua.match(/Firefox\/([\d.]+)/)[1]; else if (/Safari\/([\d.]+)/.test(ua) && !/Chrome/.test(ua)) browser = "Safari";
+  const diag = `OS: ${os} | Browser: ${browser} | Screen: ${window.screen.width}x${window.screen.height} | Viewport: ${window.innerWidth}x${window.innerHeight} | Cores: ${navigator.hardwareConcurrency || "?"} | RAM: ${navigator.deviceMemory || "?"}GB`;
+  const form = new FormData;
+  form.append("message", text + "\n\n---\n" + diag);
+  form.append("email", email || "(not provided)");
+  form.append("_subject", "Manuscript Reader Feedback");
+  form.append("_captcha", "false");
+  form.append("_template", "box");
+  fetch("https://formsubmit.co/ajax/manuscriptreadercontact@gmail.com", {
+    method: "POST",
+    body: form
+  }).then(r => r.json()).then(() => {
+    document.getElementById("feedbackForm").style.display = "none";
+    document.getElementById("feedbackSent").style.display = "block";
+  }).catch(() => {
+    const subject = encodeURIComponent("Manuscript Reader Feedback");
+    const body = encodeURIComponent(text + (email ? "\n\nFrom: " + email : ""));
+    window.open("mailto:manuscriptreadercontact@gmail.com?subject=" + subject + "&body=" + body);
+    btn.disabled = false;
+    btn.textContent = "Send";
+  });
+}
+</script>
+<script data-goatcounter="https://manuscriptreader.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
