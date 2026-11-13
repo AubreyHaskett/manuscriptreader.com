@@ -273,7 +273,15 @@ body::after {
   justify-content: center;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 6px 34px;
+  gap: 6px 28px;
+}
+
+/* Four links need more room than the narrow text pages give them, so on wider screens the menu extends past the text column and stays on one line. */
+@media (min-width: 760px) {
+  .mast-nav {
+    margin-left: -60px;
+    margin-right: -60px;
+  }
 }
 
 .mast-nav a {
@@ -492,12 +500,6 @@ body::after {
   font-size: 17px;
   letter-spacing: 0.04em;
   color: var(--ink);
-}
-
-.lint-settings summary::before {
-  content: "\2767";
-  color: var(--proof);
-  font-size: 18px;
 }
 
 .lint-settings summary .arrow::after {
