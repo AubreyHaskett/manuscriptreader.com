@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Query Letter — Manuscript Reader</title>
-<meta name="description" content="Build your query letter. Step-by-step form, live preview. Supports fiction and nonfiction. Free, private — your text never leaves your browser.">
+<meta name="description" content="Write a query letter one step at a time and watch it take shape as you type. It works for fiction and nonfiction. It's free, and your text never leaves your browser.">
 <meta property="og:title" content="Query Letter — Manuscript Reader">
-<meta property="og:description" content="Build your query letter free, in your browser. No AI. Your text never leaves your device.">
+<meta property="og:description" content="Write your query letter for free in your browser. No AI is involved, and your text never leaves your device.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://manuscriptreader.com/query.html">
 <link rel="canonical" href="https://manuscriptreader.com/query.html">
@@ -250,6 +250,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
         <a href="index.html">Read Aloud</a>
         <a href="lint.html">Prose Analysis</a>
         <a href="query.html" aria-current="page">Query Letter</a>
+        <a href="epub.html">Convert to EPUB</a>
       </div>
     </nav>
   </header>
@@ -259,7 +260,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   </figure>
 
   <h1 class="sr-only">Query Letter</h1>
-  <p class="chapter-sub">Fill in the blanks to draft your query letter.</p>
+  <p class="chapter-sub">Answer the questions one step at a time. Your letter builds in the preview as you type. When you&rsquo;re done, click Copy Letter and paste it into your email.</p>
   <p class="badge-line"><a href="https://github.com/AubreyHaskett/manuscriptreader.com" target="_blank" rel="noopener" class="open-source-badge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg> Open Source</a></p>
 
 <div class="type-bar-row">
@@ -267,7 +268,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 <button class="type-btn active" data-type="fiction" id="typeFiction">Fiction</button>
 <button class="type-btn" data-type="nonfiction" id="typeNonfiction">Nonfiction</button>
 </div>
-<span class="type-hint">Draft saves automatically in your browser.</span>
+<span class="type-hint">Your draft is saved in this browser automatically.</span>
 </div>
 
 <div class="workspace">
@@ -283,6 +284,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-f0">
     <div class="section-head"><h3>Personalization <span class="opt-tag">Optional</span></h3></div>
+    <div class="guidance">Say why you chose this agent, such as a book they represent or something they asked for in a wish-list post. If you don&rsquo;t have a specific reason, skip this step.</div>
     <div class="field">
       <label>Why this agent?</label>
       <textarea id="qPersonal" rows="2" placeholder="I read your MSWL post seeking fantasy with political stakes and unreliable maps…"></textarea>
@@ -292,6 +294,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-f1">
     <div class="section-head"><h3>The Pitch</h3></div>
+    <div class="guidance">Answer each question in a few words. The preview turns your answers into the pitch paragraph, and you can edit the wording later.</div>
     <div class="field">
       <label>Opening line <span class="sub">optional</span></label>
       <input type="text" id="fTagline" placeholder="In a city that erases its own history, some maps are worth dying for.">
@@ -321,11 +324,11 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
     <div class="field" style="margin-top:26px;">
       <label>World or setting <span class="sub">optional</span></label>
       <div class="guidance">Helpful for science fiction, fantasy, and horror.</div>
-      <input type="text" id="fSetting" placeholder="In a city where history is literally rewritten each decade, the maps are the only truth left.">
+      <input type="text" id="fSetting" placeholder="In a city where history is rewritten every decade, maps are the only record left.">
     </div>
     <div class="field">
       <label>What they want</label>
-      <input type="text" id="fWants" placeholder="to finally be recognised as a real mapmaker — not just an archivist of other people's work">
+      <input type="text" id="fWants" placeholder="to be recognized as a real mapmaker instead of an archivist of other people's work">
     </div>
     <div class="field" style="margin-top:26px;">
       <label>Inciting incident</label>
@@ -333,15 +336,15 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
     </div>
     <div class="field">
       <label>What they have to do</label>
-      <textarea id="fConflict" rows="2" placeholder="expose the truth before the memory-keepers destroy the map — and her with it"></textarea>
+      <textarea id="fConflict" rows="2" placeholder="expose the truth before the memory-keepers destroy the map and her with it"></textarea>
     </div>
     <div class="field">
       <label>What stands in their way</label>
-      <textarea id="fAntag" rows="2" placeholder="But the city's memory-keepers will do anything to stop her — including erasing her from the record entirely."></textarea>
+      <textarea id="fAntag" rows="2" placeholder="But the city's memory-keepers will do anything to stop her, even erase her from the record."></textarea>
     </div>
     <div class="field">
       <label>What makes it worse</label>
-      <textarea id="fMidpoint" rows="2" placeholder="When she discovers her own past has been altered, she realises she was never the investigator — she was the target."></textarea>
+      <textarea id="fMidpoint" rows="2" placeholder="When she finds out her own past has been altered, she realizes she was the target all along."></textarea>
     </div>
     <div class="field" style="margin-top:26px;">
       <label>Best outcome</label>
@@ -360,6 +363,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-f2">
     <div class="section-head"><h3>Book Details</h3></div>
+    <div class="guidance">Enter your title, genre and word count. Round the word count to the nearest thousand.</div>
     <div class="field">
       <label>Title</label>
       <input type="text" id="fTitle" placeholder="The Cartographer's Erasure">
@@ -423,6 +427,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-f3">
     <div class="section-head"><h3>Comp Titles</h3></div>
+    <div class="guidance">Name two or three books published in the last five years that your readers would also enjoy. Avoid huge bestsellers, because agents read that as a lack of research.</div>
     <div class="field">
       <label>A recent book like yours</label>
       <input type="text" id="fComp1" placeholder="The Bone Shard Daughter by Andrea Stewart">
@@ -444,18 +449,20 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-n1">
     <div class="section-head"><h3>The Hook</h3></div>
+    <div class="guidance">Explain in a few sentences why this book matters now and why you&rsquo;re the right person to write it.</div>
     <div class="field">
       <label>Why this book, and why you?</label>
-      <textarea id="nHook" class="tall" placeholder="Every year, thousands of writers finish a manuscript and then spend months wondering why their query letters aren't working. The problem is almost never the book."></textarea>
+      <textarea id="nHook" class="tall" placeholder="Every year, thousands of writers finish a manuscript and then spend months wondering why agents aren't responding. Usually the problem is the query letter, not the book."></textarea>
     </div>
   </div>
 
   
   <div class="form-section hidden" id="sec-n2">
     <div class="section-head"><h3>The Pitch</h3></div>
+    <div class="guidance">Describe what the book covers and what readers will get from it. Then say who those readers are.</div>
     <div class="field">
       <label>What it&rsquo;s about and what readers get</label>
-      <textarea id="nPitch" class="tall" placeholder="The Query Workshop is a step-by-step guide to writing, revising, and sending a query letter that agents actually read…"></textarea>
+      <textarea id="nPitch" class="tall" placeholder="The Query Workshop shows writers how to draft, revise and send a query letter, with examples of letters that got requests…"></textarea>
     </div>
     <div class="field">
       <label>Target audience</label>
@@ -466,6 +473,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-n3">
     <div class="section-head"><h3>Book Details</h3></div>
+    <div class="guidance">Enter your title, category and word count. Round the word count to the nearest thousand.</div>
     <div class="field">
       <label>Title</label>
       <input type="text" id="nTitle" placeholder="The Query Workshop">
@@ -496,7 +504,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
       <div class="field">
         <label>Word count</label>
         <input type="text" id="nWordCount" placeholder="75,000">
-        <div class="wc-note">Typically 60,000–80,000 words. Memoir can run longer.</div>
+        <div class="wc-note">Most are 60,000 to 80,000 words. Memoirs can be longer.</div>
       </div>
     </div>
   </div>
@@ -504,6 +512,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-n4">
     <div class="section-head"><h3>Comp Titles</h3></div>
+    <div class="guidance">Name two or three recent books in your category that your readers would also buy.</div>
     <div class="field">
       <label>A recent book like yours</label>
       <input type="text" id="nComp1" placeholder="Bird by Bird by Anne Lamott">
@@ -521,6 +530,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-n5">
     <div class="section-head"><h3>Your Platform</h3></div>
+    <div class="guidance">List what helps you reach readers, such as your work experience, newsletter, social media following or speaking events. Give numbers where you can.</div>
     <div class="field">
       <label>Why you, and how you&rsquo;ll reach readers</label>
       <textarea id="nPlatform" class="tall" placeholder="I have worked as a literary agent for ten years. My newsletter, The Submission Window, has 14,000 subscribers. I have spoken at AWP, Tin House, and the Sewanee Writers' Conference."></textarea>
@@ -530,15 +540,17 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-n6">
     <div class="section-head"><h3>Chapter Overview <span class="opt-tag">Optional</span></h3></div>
+    <div class="guidance">Summarize each chapter in a sentence or two. Some agents ask for this. If yours doesn&rsquo;t, you can skip this step.</div>
     <div class="field">
       <label>A sentence or two per chapter</label>
-      <textarea id="nChapters" class="xtall" placeholder="Chapter 1: Why queries fail — and why it's almost never the book.&#10;Chapter 2: The hook: the single sentence that opens every door.&#10;Chapter 3: The pitch paragraph — plotting your own story on the page.&#10;…"></textarea>
+      <textarea id="nChapters" class="xtall" placeholder="Chapter 1: Why most queries get rejected, and why the book is rarely the reason.&#10;Chapter 2: How to write an opening line that makes an agent keep reading.&#10;Chapter 3: How to sum up your plot in one paragraph.&#10;…"></textarea>
     </div>
   </div>
 
   
   <div class="form-section hidden" id="sec-bio">
     <div class="section-head"><h3>Author Bio</h3></div>
+    <div class="guidance">Mention writing credits, relevant experience or anything that connects you to the book. One to three sentences is enough. If you don&rsquo;t have writing credits, one sentence about yourself is fine.</div>
     <div class="field">
       <label>About you</label>
       <textarea id="qBio" class="tall" placeholder="I am a member of the Science Fiction and Fantasy Writers of America. My short fiction has appeared in Clarkesworld and Strange Horizons. I live in Edinburgh."></textarea>
@@ -548,6 +560,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   
   <div class="form-section hidden" id="sec-closing">
     <div class="section-head"><h3>Salutation &amp; Closing</h3></div>
+    <div class="guidance">Address the agent by name, and check the spelling.</div>
     <div class="field-row">
       <div class="field">
         <label>Agent name</label>
@@ -600,12 +613,12 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 
     <div class="advice-section">
       <h3>Length</h3>
-      <p>Aim for 250 to 350 words, with 150 to 200 of them on the pitch. Over 400? Trim the pitch.</p>
+      <p>Aim for 250 to 350 words, with 150 to 200 of them on the pitch. If your letter is over 400 words, shorten the pitch.</p>
     </div>
 
     <div class="advice-section">
       <h3>Be specific</h3>
-      <p>Vague pitches all sound alike. Use the details only your book has.</p>
+      <p>Vague pitches all sound alike. Use details that only your book has.</p>
       <div class="advice-example">✗ &ldquo;She must investigate the strange circumstances surrounding the murder.&rdquo;</div>
       <div class="advice-example">✓ &ldquo;She must find out why every victim has insect larvae burrowed into their skulls before the killer adds her name to the list.&rdquo;</div>
     </div>
@@ -613,11 +626,11 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
     <div class="advice-section">
       <h3>Cut</h3>
       <ul>
-        <li>Statements about theme, like &ldquo;a story about grief&rdquo;</li>
+        <li>Statements about theme, such as &ldquo;a story about grief&rdquo;</li>
         <li>Rhetorical questions</li>
-        <li>Flattering the agent</li>
-        <li>Mega-bestseller comps</li>
-        <li>Apologies of any kind</li>
+        <li>Flattery aimed at the agent</li>
+        <li>Comparisons to huge bestsellers</li>
+        <li>Apologies of any kind, such as for being a new writer</li>
       </ul>
     </div>
 
@@ -627,7 +640,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
         <li>Read archived queries on <a href="https://queryshark.blogspot.com" target="_blank" rel="noopener">Query Shark</a>.</li>
         <li>Find agents on <a href="https://querytracker.net" target="_blank" rel="noopener">QueryTracker</a> and <a href="https://www.manuscriptwishlist.com" target="_blank" rel="noopener">Manuscript Wishlist</a>.</li>
         <li>Finish the manuscript and polish the first ten pages.</li>
-        <li>Ask someone to read the query for clarity.</li>
+        <li>Ask someone who hasn&rsquo;t read your book to read the query and tell you if anything is unclear.</li>
         <li>More: <a href="https://manuscriptacademy.com/word-count-by-genre-literary-agents-2026" target="_blank" rel="noopener">word counts by genre</a>, <a href="https://thinkingthroughourfingers.com/2018/02/22/back-cover-blurbs-vs-query-letter-blurbs/" target="_blank" rel="noopener">blurbs vs. query pitches</a>, <a href="https://www.agentquery.com/writer_hq.aspx" target="_blank" rel="noopener">AgentQuery&rsquo;s guide</a>.</li>
       </ul>
     </div>
@@ -793,29 +806,29 @@ function genreLabel(g) {
 }
 
 const WC_GUIDE = {
-  "literary fiction": "80,000–110,000 words typical.",
-  "upmarket fiction": "75,000–100,000 words typical.",
-  "commercial fiction": "70,000–100,000 words typical.",
-  "women's fiction": "80,000–100,000 words typical.",
-  "historical fiction": "85,000–110,000 words typical.",
-  thriller: "70,000–90,000 words typical.",
-  mystery: "65,000–90,000 words typical.",
-  horror: "70,000–100,000 words typical.",
-  fantasy: "90,000–120,000 words typical.",
-  "epic fantasy": "90,000–150,000 words. Debut over 120k is a harder sell.",
-  "science fiction": "80,000–120,000 words typical.",
-  "speculative fiction": "80,000–110,000 words typical.",
-  romance: "75,000–100,000 words typical.",
-  "contemporary romance": "70,000–100,000 words typical.",
-  "historical romance": "80,000–100,000 words typical.",
-  "YA contemporary fiction": "55,000–85,000 words typical.",
-  "YA fantasy": "70,000–95,000 words typical.",
-  "YA thriller": "55,000–80,000 words typical.",
-  "YA romance": "55,000–80,000 words typical.",
-  "YA science fiction": "70,000–90,000 words typical.",
-  "YA historical fiction": "60,000–90,000 words typical.",
-  "middle grade fiction": "25,000–50,000 words typical.",
-  "middle grade fantasy": "30,000–55,000 words typical."
+  "literary fiction": "Most are 80,000 to 110,000 words.",
+  "upmarket fiction": "Most are 75,000 to 100,000 words.",
+  "commercial fiction": "Most are 70,000 to 100,000 words.",
+  "women's fiction": "Most are 80,000 to 100,000 words.",
+  "historical fiction": "Most are 85,000 to 110,000 words.",
+  thriller: "Most are 70,000 to 90,000 words.",
+  mystery: "Most are 65,000 to 90,000 words.",
+  horror: "Most are 70,000 to 100,000 words.",
+  fantasy: "Most are 90,000 to 120,000 words.",
+  "epic fantasy": "Most are 90,000 to 150,000 words. A debut over 120,000 words is harder to sell.",
+  "science fiction": "Most are 80,000 to 120,000 words.",
+  "speculative fiction": "Most are 80,000 to 110,000 words.",
+  romance: "Most are 75,000 to 100,000 words.",
+  "contemporary romance": "Most are 70,000 to 100,000 words.",
+  "historical romance": "Most are 80,000 to 100,000 words.",
+  "YA contemporary fiction": "Most are 55,000 to 85,000 words.",
+  "YA fantasy": "Most are 70,000 to 95,000 words.",
+  "YA thriller": "Most are 55,000 to 80,000 words.",
+  "YA romance": "Most are 55,000 to 80,000 words.",
+  "YA science fiction": "Most are 70,000 to 90,000 words.",
+  "YA historical fiction": "Most are 60,000 to 90,000 words.",
+  "middle grade fiction": "Most are 25,000 to 50,000 words.",
+  "middle grade fantasy": "Most are 30,000 to 55,000 words."
 };
 
 function seriesNote(val, name) {

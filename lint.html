@@ -142,6 +142,12 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 .section-body{display:none;padding:20px 18px;background:var(--paper-soft);border:1px solid var(--rule);border-top:none;border-radius:0 0 var(--radius) var(--radius);}
 .report-section.open .section-body{display:block;}
 
+.priorities{background:var(--paper-soft);border:1px solid var(--rule);border-left:3px solid var(--proof);padding:16px 20px;margin-bottom:28px;}
+.priorities h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink-strong);margin-bottom:10px;}
+.priorities ol{margin-left:20px;}
+.priorities li{font-size:0.92rem;line-height:1.55;color:var(--ink);margin-bottom:8px;cursor:pointer;}
+.priorities li .go{font-family:var(--ui);font-size:12px;color:var(--proof);text-decoration:underline;text-underline-offset:2px;white-space:nowrap;}
+.priorities p{font-size:0.9rem;color:var(--ink-muted);}
 .how-it-works{background:var(--paper-deep);border:1px solid var(--rule);border-left:3px solid var(--indigo);padding:12px 16px;margin-bottom:16px;font-size:0.8rem;line-height:1.6;color:var(--ink-muted);}
 .how-it-works strong{color:var(--indigo);font-weight:600;}
 
@@ -180,6 +186,9 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 .bar-value{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:0.68rem;color:var(--ink-faint);}
 @media(max-width:560px){.bar-row{grid-template-columns:100px 1fr 40px;}}
 
+.howto-steps{margin:0 0 28px 22px;font-size:0.95rem;line-height:1.6;color:var(--ink-muted);animation:fadeUp 0.6s ease 0.15s both;}
+.howto-steps li{margin-bottom:8px;padding-left:4px;}
+.howto-steps strong{color:var(--ink);font-weight:600;}
 .features{margin-bottom:28px;animation:fadeUp 0.6s ease 0.2s both;}
 .features h3{font-family:var(--serif);font-size:1.1rem;font-weight:600;text-align:center;margin-bottom:16px;color:var(--ink);}
 .feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);}
@@ -236,6 +245,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
 .feedback-sent{display:none;text-align:center;padding:12px 0;font-family:var(--ui);font-size:13px;letter-spacing:normal;text-transform:none;color:var(--proof);}
 </style>
 <link rel="stylesheet" href="assets/storybook.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" integrity="sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz" crossorigin="anonymous" defer></script>
 </head>
 <body>
 <script>
@@ -257,6 +267,7 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
         <a href="index.html">Read Aloud</a>
         <a href="lint.html" aria-current="page">Prose Analysis</a>
         <a href="query.html">Query Letter</a>
+        <a href="epub.html">Convert to EPUB</a>
       </div>
     </nav>
   </header>
@@ -269,24 +280,30 @@ a{color:var(--proof);text-decoration:none;}a:hover{text-decoration:underline;}
   <p class="chapter-sub">Find the words and phrases you lean on too often. Your manuscript never leaves your computer.</p>
   <p class="badge-line"><a href="https://github.com/AubreyHaskett/manuscriptreader.com" target="_blank" rel="noopener" class="open-source-badge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg> Open Source</a></p>
 
+<ol class="howto-steps">
+<li><strong>Have your manuscript ready as a Word (.docx) or plain text (.txt) file.</strong> If you write in Google Docs, choose File &gt; Download &gt; Microsoft Word (.docx).</li>
+<li><strong>Check the settings.</strong> Open Settings if your chapters don&rsquo;t start with &ldquo;Chapter&rdquo;, &ldquo;Prologue&rdquo; or &ldquo;Epilogue&rdquo;, or if you use a different scene break symbol.</li>
+<li><strong>Add your file.</strong> Drop it in the box below or click the box to choose it.</li>
+<li><strong>Read the report.</strong> Start with the sections that have the most flags. Every flag is a suggestion, so read each one in context before you change anything.</li>
+</ol>
 <div class="features" id="featurePreview">
 <h3>What it checks</h3>
 <div class="feature-grid">
-<div class="feature-card"><div class="feature-num">1</div><div><h4>Pacing</h4><p>Chapter and scene lengths, plus a pacing heatmap.</p></div></div>
-<div class="feature-card"><div class="feature-num">2</div><div><h4>Tired phrases</h4><p>Over 40 patterns that editors flag.</p></div></div>
-<div class="feature-card"><div class="feature-num">3</div><div><h4>Crutch words</h4><p>Your most-used words, filler like &ldquo;just,&rdquo; and adverbs.</p></div></div>
-<div class="feature-card"><div class="feature-num">4</div><div><h4>Repetition</h4><p>Distinctive words used twice on the same page.</p></div></div>
-<div class="feature-card"><div class="feature-num">5</div><div><h4>Dialogue</h4><p>How much is dialogue, and how often you use &ldquo;said.&rdquo;</p></div></div>
-<div class="feature-card"><div class="feature-num">6</div><div><h4>Your own list</h4><p>Flag the words you know you overuse.</p></div></div>
+<div class="feature-card"><div class="feature-num">1</div><div><h4>Pacing</h4><p>Shows how long each chapter and scene is, with a chart for comparing chapters.</p></div></div>
+<div class="feature-card"><div class="feature-num">2</div><div><h4>Tired phrases</h4><p>Finds more than 40 phrases and patterns that editors often flag.</p></div></div>
+<div class="feature-card"><div class="feature-num">3</div><div><h4>Crutch words</h4><p>Lists your most-used words, filler words like &ldquo;just,&rdquo; and adverbs.</p></div></div>
+<div class="feature-card"><div class="feature-num">4</div><div><h4>Repetition</h4><p>Finds distinctive words you use twice within about a page.</p></div></div>
+<div class="feature-card"><div class="feature-num">5</div><div><h4>Dialogue</h4><p>Shows how much of each chapter is dialogue and how often you use &ldquo;said.&rdquo;</p></div></div>
+<div class="feature-card"><div class="feature-num">6</div><div><h4>Your own list</h4><p>Flags any words you add in Settings, such as ones you know you overuse.</p></div></div>
 </div>
 </div>
 <details class="lint-settings" id="lintSettings"><summary>Settings<span class="arrow">▸</span></summary><div class="settings-body">
-<div class="setting-group"><label>Chapters</label><select id="chapterMode"><option value="keyword">Lines starting with "Chapter", "Prologue", or "Epilogue" (case-insensitive)</option><option value="markdown">Markdown headings (# Chapter Title)</option><option value="break">Triple line breaks between major sections</option><option value="none">Don't split into chapters</option></select></div>
-<div class="setting-group"><label>Scene breaks</label><select id="sceneMode"><option value="asterisks">*** or * * * (any spacing)</option><option value="hash">### or ---</option><option value="blank">Double blank lines</option><option value="none">Don't detect scene breaks</option></select></div>
-<div class="setting-group"><label>Words to flag</label><p>One per line. Saved in this browser.</p><textarea id="customWords" placeholder="e.g.&#10;suddenly&#10;seemed to&#10;couldn't help but&#10;the fact that"></textarea></div>
+<div class="setting-group"><label>Chapters</label><select id="chapterMode"><option value="keyword">Lines that start with Chapter, Prologue or Epilogue</option><option value="markdown">Lines that start with # (Markdown headings)</option><option value="break">Two blank lines between chapters</option><option value="none">Don't split into chapters</option></select></div>
+<div class="setting-group"><label>Scene breaks</label><select id="sceneMode"><option value="asterisks">*** or * * * (any spacing)</option><option value="hash">### or ---</option><option value="blank">A blank line between scenes</option><option value="none">Don't detect scene breaks</option></select></div>
+<div class="setting-group"><label>Words to flag</label><p>Enter one word or phrase per line. Your list is saved in this browser.</p><textarea id="customWords" placeholder="e.g.&#10;suddenly&#10;seemed to&#10;couldn't help but&#10;the fact that"></textarea></div>
 </div></details>
-<div class="upload-area" id="uploadArea"><h3>Drop your manuscript here</h3><p>or click to choose a .txt file</p><input type="file" id="fileInput" accept=".txt"></div>
-<div class="progress-area" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Parsing chapters...</div></div>
+<div class="upload-area" id="uploadArea"><h3>Drop your manuscript here</h3><p>or click to choose a Word (.docx) or plain text (.txt) file</p><input type="file" id="fileInput" accept=".docx,.txt"></div>
+<div class="progress-area" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Finding chapters...</div></div>
 <div class="results" id="results"></div>
 <div class="footer"><p class="footer-coffee">If this helps your writing, you can <a href="https://buymeacoffee.com/manuscriptreader" target="_blank" rel="noopener">buy me a coffee</a>.</p>
   <div class="footer-meta"><a href="privacy.html">Privacy</a><span aria-hidden="true">&middot;</span><a href="terms.html">Terms</a><span aria-hidden="true">&middot;</span><details class="feedback-details">
@@ -359,7 +376,7 @@ const ADVERB_DENYLIST = new Set([ "ally", "bully", "belly", "family", "fly", "fo
 
 const BANNED_WORDS = [ "delve", "delved", "delving", "tapestry", "tapestried", "tapestries", "mayhaps", "methinks", "'tis", "'twas", "realm", "beacon", "crucible", "testament", "furthermore", "moreover", "interplay", "multifaceted", "nuanced", "landscape", "pivotal", "amongst", "whilst", "unto", "henceforth", "wherein", "thereof", "whereupon" ];
 
-const AI_PHRASE_PATTERNS = [ [ /\bwoven\b(?!\s+(?:cloth|fabric|basket|blanket|wool|linen|cloak|mantle))/gi, "Textile metaphor ('woven' not literal)", "Stale" ], [ /\bthreads?\s+of\s+\w+/gi, "Textile metaphor ('threads of [concept]')", "Stale" ], [ /\b(?:magic|power|energy)\s+(?:thrummed|pulsed|hummed|sang|crackled|vibrated|resonated)/gi, "Magic as background music", "Stale" ], [ /\b(?:thrummed|pulsed|hummed)\s+(?:through|in|with|beneath)/gi, "Thrumming/pulsing/humming through", "Stale" ], [ /\bthe\s+(?:very\s+)?air\s+(?:crackled|hummed|thrummed|pulsed|vibrated)/gi, "'The air crackled/hummed with...'", "Stale" ], [ /\b(?:destiny|fate)\s+(?:called|beckoned|whispered|demanded|awaited)/gi, "Destiny/fate personification", "Stale" ], [ /\b(?:ghost|shadow|whisper|echo|specter|spectre)\s+of\s+(?:a\s+)?(?:smile|laugh|memory|thought|feeling|emotion|doubt|fear|hope|sadness|grief|pain|anger|joy)/gi, "'Ghost/shadow/whisper of [emotion]'", "Stale" ], [ /\blandscape\s+of\s+(?:her|his|their|the)\s+(?:mind|soul|heart|emotion|feeling|grief|pain|memory)/gi, "'Landscape of [abstract concept]'", "Stale" ], [ /\bintricate\s+(?:web|dance|ballet|tapestry|mosaic)\s+of/gi, "'Intricate web/dance/ballet of...'", "Stale" ], [ /\bold\s+as\s+time\b/gi, "'Old as time'", "Stale" ], [ /\b(?:darkness|light|shadow|hope|fear|doubt)\s+(?:warred|battled|fought)\s+(?:within|inside|in)\b/gi, "'X warred within'", "Stale" ], [ /\ba\s+(?:\w+,?\s+){0,2}(?:bright|searing|white|dark|cold|hot|sharp|dull|wordless|nameless|terrible|beautiful|awful|monstrous|ancient|living|burning|bleeding|broken|shattered|hollow|raw|wild|savage|quiet|silent|still|small|vast|enormous|heavy|weightless)\s+(?:and\s+\w+\s+)?thing\b/gi, "'A [adjective] thing' construction", "Stale" ], [ /\bnot\s+\w+(?:\s+\w+){0,3},?\s+but\s+/gi, "'Not X, but Y' — definition by negation", "Style" ], [ /(?:she|he|they)\s+did\s+not\s+(?:say|speak|mention|ask|tell)[^.]*(?:she|he|they)\s+did\s+not\s+(?:need|have)\s+to/gi, "'Did not say X. Did not need to.'", "Style" ], [ /\b(?:they|we)\s+both\s+knew\b/gi, "'They both knew'", "Style" ], [ /\bneither\s+(?:of\s+them|one)\s+(?:said|spoke|mentioned|needed)/gi, "'Neither of them said it'", "Style" ], [ /\bsomething\s+(?:was|felt|seemed)\s+wrong\b/gi, "'Something was wrong' — tell not show", "Style" ], [ /,\s*but\s+wrong\b/gi, "'...but wrong' — atmospheric shorthand", "Style" ], [ /\b\w+\s+and\s+\w+\s+and\s+(?:the\s+)?\w+\b/gi, "Three-beat list (X and Y and Z)", "Style" ], [ /\b(?:the|her|his)\s+(?:whole\s+)?world\s+(?:came\s+apart|shattered|broke|collapsed|tilted|shifted|stopped|fell\s+away|went\s+(?:dark|white|silent|still))/gi, "Declaration of magnitude", "Style" ], [ /\bfor\s+(?:a|one)\s+(?:terrible|horrible|awful|dreadful|sickening|endless|infinite|eternal|frozen)\s+(?:moment|second|instant|heartbeat)/gi, "'For a terrible moment'", "Style" ], [ /\b(?:joints?|shoulders?|muscles?|bones?|arms?|legs?|knees?|back)\s+(?:screaming|screamed|shrieking|shrieked|howling|howled)/gi, "Stock pain language", "Style" ], [ /\b(?:white\s+)?fire\s+(?:down|through|along|up)\s+(?:her|his|the)\s+(?:arm|leg|spine|back|side|body|limb)/gi, "Stock pain language ('fire down her arm')", "Style" ], [ /\ba\s+sound\s+(?:she|he)\s+felt\s+more\s+than\s+heard/gi, "'A sound she felt more than heard'", "Style" ], [ /\bsomething\s+(?:she|he)\s+(?:couldn't|could\s+not)\s+(?:name|identify|describe)/gi, "'Something she couldn't name'", "Style" ], [ /\b(?:torque|axis|centrifuge|centrifugal|trajectory|velocity|momentum|adrenaline|cortisol|psychological|neurological|traumatic|therapeutic|infrastructure)\b/gi, "Modern/clinical vocabulary", "Style" ], [ /[a-z]\s*:\s*['""\u2018\u2019\u201c\u201d]/g, "Colon before dialogue", "Style" ], [ /\.\s+(?:This|That|It|These|Those)\s+(?:was|were|is|had been|meant|signified|revealed|showed|suggested|indicated|demonstrated|proved)/gi, "'This was/meant/revealed...' — likely over-explanation", "Style" ], [ /\bthe\s+way\s+(?:a|an|the|one)\s+\w+/gi, "'The way a...' — verbose simile (prefer 'like')", "Style" ], [ /\bthe\s+particular\s+\w+\s+of\b/gi, "'The particular X of Y' — empty filler", "Style" ], [ /\bthe\s+kind\s+of\s+\w+\s+(?:that|meant|designed|built|made)\b/gi, "'The kind of X that...' — narrator commentary", "Style" ], [ /[\u201d"]\s*(?:,\s*)?(?:she|he|they|[A-Z]\w+)\s+said\s+(?:it\s+)?(?:the\s+way|as\s+(?:if|though)|like)\b/gi, "Redundant attribution after dialogue — let the line speak", "Style" ], [ /[\u201d"]\s*(?:,\s*)?(?:she|he|they|[A-Z]\w+)\s+said\s+(?:plainly|quietly|softly|gently|firmly|flatly|simply|evenly|carefully|slowly|coldly)/gi, "Redundant attribution — adverb after said", "Style" ], [ /\b(?:she|he)\s+(?:was|were)\s+not\s+(?:a\s+)?(?:person|human|woman|man|girl|boy|child|creature)\b/gi, "Philosophical self-reflection ('was not a person')", "Style" ], [ /\b(?:she|he)\s+(?:was|were)\s+not\s+\w+ing\.\s+(?:she|he)\s+(?:was|were)\s+\w+ing\b/gi, "'Was not X-ing. Was Y-ing.' — definition by negation", "Style" ], [ /\bhalf\s+to\s+\w+(?:,\s*|\s+and\s+)half\s+to\b/gi, "'Half to X, half to Y' — tidy symmetry", "Style" ], [ /\b(?:heavy\s+lifting|filed\s+away|double(?:d)?\s+down|lean(?:ed|ing)?\s+into|unpack(?:ed|ing)?\s+(?:that|this|the|what)|at\s+the\s+end\s+of\s+the\s+day|deep\s+dive|bandwidth|circle(?:d)?\s+back|touch(?:ed)?\s+base)\b/gi, "Modern idiom — essay/TED talk register", "Style" ], [ /\b(?:she|he)\s+had\s+told\s+\w+\s+(?:pieces|parts|bits|some|stories|enough)\s+of\s+this\b/gi, "Narration framing ('had told X pieces') — prefer character memory", "Style" ], [ /\b(?:she|he|they)\s+(?:could|would)\s+(?:tell|see|feel|sense|hear)\s+(?:that\s+)?(?:she|he|they|it)\s+(?:was|were|had)\b/gi, "Telling through filter ('could tell that she was') — show instead", "Style" ], [ /\b(?:comfort|kindness|mercy|pity|sympathy)\s+(?:was|were)\s+not\s+what\s+(?:was|were)\s+needed\b/gi, "Over-explaining restraint — the action already shows it", "Style" ], [ /\b(?:she|he)\s+knew\s+(?:it\s+)?(?:was|were)\s+not\s+real\b/gi, "'Knew it was not real' — compress or cut", "Style" ], [ /\ba\s+(?:full|savage|complete|terrible|violent|sickening)\s*,?\s*(?:full|savage|complete|terrible|violent|sickening)?\s*(?:rotation|revolution|spin|turn|wrench|twist)\b/gi, "Declaration of magnitude in action", "Style" ], [ /\b(?:her|his)\s+(?:own\s+)?(?:limbs|arms|legs|body|hands)\s+(?:were|felt\s+like|became|had\s+become)\s+(?:foreign|alien|strange|someone\s+else'?s)\b/gi, "Philosophical self-reflection during physical crisis", "Style" ] ];
+const AI_PHRASE_PATTERNS = [ [ /\bwoven\b(?!\s+(?:cloth|fabric|basket|blanket|wool|linen|cloak|mantle))/gi, "Textile metaphor ('woven' not literal)", "Stale" ], [ /\bthreads?\s+of\s+\w+/gi, "Textile metaphor ('threads of [concept]')", "Stale" ], [ /\b(?:magic|power|energy)\s+(?:thrummed|pulsed|hummed|sang|crackled|vibrated|resonated)/gi, "Magic as background music", "Stale" ], [ /\b(?:thrummed|pulsed|hummed)\s+(?:through|in|with|beneath)/gi, "Thrumming/pulsing/humming through", "Stale" ], [ /\bthe\s+(?:very\s+)?air\s+(?:crackled|hummed|thrummed|pulsed|vibrated)/gi, "'The air crackled/hummed with...'", "Stale" ], [ /\b(?:destiny|fate)\s+(?:called|beckoned|whispered|demanded|awaited)/gi, "Destiny/fate personification", "Stale" ], [ /\b(?:ghost|shadow|whisper|echo|specter|spectre)\s+of\s+(?:a\s+)?(?:smile|laugh|memory|thought|feeling|emotion|doubt|fear|hope|sadness|grief|pain|anger|joy)/gi, "'Ghost/shadow/whisper of [emotion]'", "Stale" ], [ /\blandscape\s+of\s+(?:her|his|their|the)\s+(?:mind|soul|heart|emotion|feeling|grief|pain|memory)/gi, "'Landscape of [abstract concept]'", "Stale" ], [ /\bintricate\s+(?:web|dance|ballet|tapestry|mosaic)\s+of/gi, "'Intricate web/dance/ballet of...'", "Stale" ], [ /\bold\s+as\s+time\b/gi, "'Old as time'", "Stale" ], [ /\b(?:darkness|light|shadow|hope|fear|doubt)\s+(?:warred|battled|fought)\s+(?:within|inside|in)\b/gi, "'X warred within'", "Stale" ], [ /\ba\s+(?:\w+,?\s+){0,2}(?:bright|searing|white|dark|cold|hot|sharp|dull|wordless|nameless|terrible|beautiful|awful|monstrous|ancient|living|burning|bleeding|broken|shattered|hollow|raw|wild|savage|quiet|silent|still|small|vast|enormous|heavy|weightless)\s+(?:and\s+\w+\s+)?thing\b/gi, "'A [adjective] thing' construction", "Stale" ], [ /\bnot\s+(?:a\s+|an\s+|the\s+)?\w+(?:\s+\w+){0,2},\s+but\s+(?!(?:i|you|he|she|it|we|they|there|then|still|instead|also|now|when|if|as)\b)/gi, "'Not X, but Y' (describing something by what it isn't)", "Style" ], [ /(?:she|he|they)\s+did\s+not\s+(?:say|speak|mention|ask|tell)[^.]*(?:she|he|they)\s+did\s+not\s+(?:need|have)\s+to/gi, "'Did not say X. Did not need to.'", "Style" ], [ /\b(?:they|we)\s+both\s+knew\b/gi, "'They both knew'", "Style" ], [ /\bneither\s+(?:of\s+them|one)\s+(?:said|spoke|mentioned|needed)/gi, "'Neither of them said it'", "Style" ], [ /\bsomething\s+(?:was|felt|seemed)\s+wrong\b/gi, "'Something was wrong' — tell not show", "Style" ], [ /,\s*but\s+wrong\b/gi, "'...but wrong' — atmospheric shorthand", "Style" ], [ /\b\w+\s+and\s+\w+\s+and\s+(?:the\s+)?\w+\b/gi, "Three-beat list (X and Y and Z)", "Style" ], [ /\b(?:the|her|his)\s+(?:whole\s+)?world\s+(?:came\s+apart|shattered|broke|collapsed|tilted|shifted|stopped|fell\s+away|went\s+(?:dark|white|silent|still))/gi, "Declaration of magnitude", "Style" ], [ /\bfor\s+(?:a|one)\s+(?:terrible|horrible|awful|dreadful|sickening|endless|infinite|eternal|frozen)\s+(?:moment|second|instant|heartbeat)/gi, "'For a terrible moment'", "Style" ], [ /\b(?:joints?|shoulders?|muscles?|bones?|arms?|legs?|knees?|back)\s+(?:screaming|screamed|shrieking|shrieked|howling|howled)/gi, "Stock pain language", "Style" ], [ /\b(?:white\s+)?fire\s+(?:down|through|along|up)\s+(?:her|his|the)\s+(?:arm|leg|spine|back|side|body|limb)/gi, "Stock pain language ('fire down her arm')", "Style" ], [ /\ba\s+sound\s+(?:she|he)\s+felt\s+more\s+than\s+heard/gi, "'A sound she felt more than heard'", "Style" ], [ /\bsomething\s+(?:she|he)\s+(?:couldn't|could\s+not)\s+(?:name|identify|describe)/gi, "'Something she couldn't name'", "Style" ], [ /\b(?:torque|axis|centrifuge|centrifugal|trajectory|velocity|momentum|adrenaline|cortisol|psychological|neurological|traumatic|therapeutic|infrastructure)\b/gi, "Modern/clinical vocabulary", "Style" ], [ /[a-z]\s*:\s*['""\u2018\u2019\u201c\u201d]/g, "Colon before dialogue", "Style" ], [ /\.\s+(?:This|That|These|Those)\s+(?:meant|signified|revealed|showed|suggested|indicated|demonstrated|proved|(?:was|is|were)\s+(?:why|how|what|because|the\s+(?:moment|reason|point|truth|thing)))\b/gi, "'This meant…' or 'That was why…' after a sentence (may be over-explaining)", "Style" ], [ /\bthe\s+way\s+(?:a|an|the|one)\s+\w+/gi, "'The way a...' — verbose simile (prefer 'like')", "Style" ], [ /\bthe\s+particular\s+\w+\s+of\b/gi, "'The particular X of Y' — empty filler", "Style" ], [ /\bthe\s+kind\s+of\s+\w+\s+(?:that|meant|designed|built|made)\b/gi, "'The kind of X that...' — narrator commentary", "Style" ], [ /[\u201d"]\s*(?:,\s*)?(?:she|he|they|[A-Z]\w+)\s+said\s+(?:it\s+)?(?:the\s+way|as\s+(?:if|though)|like)\b/gi, "Redundant attribution after dialogue — let the line speak", "Style" ], [ /[\u201d"]\s*(?:,\s*)?(?:she|he|they|[A-Z]\w+)\s+said\s+(?:plainly|quietly|softly|gently|firmly|flatly|simply|evenly|carefully|slowly|coldly)/gi, "Redundant attribution — adverb after said", "Style" ], [ /\b(?:she|he)\s+(?:was|were)\s+not\s+(?:a\s+)?(?:person|human|woman|man|girl|boy|child|creature)\b/gi, "Philosophical self-reflection ('was not a person')", "Style" ], [ /\b(?:she|he)\s+(?:was|were)\s+not\s+\w+ing\.\s+(?:she|he)\s+(?:was|were)\s+\w+ing\b/gi, "'Was not X-ing. Was Y-ing.' — definition by negation", "Style" ], [ /\bhalf\s+to\s+\w+(?:,\s*|\s+and\s+)half\s+to\b/gi, "'Half to X, half to Y' — tidy symmetry", "Style" ], [ /\b(?:heavy\s+lifting|filed\s+away|double(?:d)?\s+down|lean(?:ed|ing)?\s+into|unpack(?:ed|ing)?\s+(?:that|this|the|what)|at\s+the\s+end\s+of\s+the\s+day|deep\s+dive|bandwidth|circle(?:d)?\s+back|touch(?:ed)?\s+base)\b/gi, "Modern idiom — essay/TED talk register", "Style" ], [ /\b(?:she|he)\s+had\s+told\s+\w+\s+(?:pieces|parts|bits|some|stories|enough)\s+of\s+this\b/gi, "Narration framing ('had told X pieces') — prefer character memory", "Style" ], [ /\b(?:she|he|they)\s+(?:could|would)\s+(?:tell|see|feel|sense|hear)\s+(?:that\s+)?(?:she|he|they|it)\s+(?:was|were|had)\b/gi, "Telling through filter ('could tell that she was') — show instead", "Style" ], [ /\b(?:comfort|kindness|mercy|pity|sympathy)\s+(?:was|were)\s+not\s+what\s+(?:was|were)\s+needed\b/gi, "Over-explaining restraint — the action already shows it", "Style" ], [ /\b(?:she|he)\s+knew\s+(?:it\s+)?(?:was|were)\s+not\s+real\b/gi, "'Knew it was not real' — compress or cut", "Style" ], [ /\ba\s+(?:full|savage|complete|terrible|violent|sickening)\s*,?\s*(?:full|savage|complete|terrible|violent|sickening)?\s*(?:rotation|revolution|spin|turn|wrench|twist)\b/gi, "Declaration of magnitude in action", "Style" ], [ /\b(?:her|his)\s+(?:own\s+)?(?:limbs|arms|legs|body|hands)\s+(?:were|felt\s+like|became|had\s+become)\s+(?:foreign|alien|strange|someone\s+else'?s)\b/gi, "Philosophical self-reflection during physical crisis", "Style" ] ];
 
 function getWords(t) {
   return t.toLowerCase().match(/\b[a-z]+(?:'[a-z]+)?\b/g) || [];
@@ -799,7 +816,7 @@ async function runAnalysis(text, filename) {
   const sceneMode = document.getElementById("sceneMode").value;
   const customRaw = document.getElementById("customWords").value;
   const customWords = customRaw.split("\n").map(w => w.trim().toLowerCase()).filter(Boolean);
-  setProgress(15, "Parsing chapters...");
+  setProgress(15, "Finding chapters...");
   await tick();
   const chapters = parseChapters(text, mode);
   setProgress(25, "Analyzing structure...");
@@ -817,10 +834,10 @@ async function runAnalysis(text, filename) {
   setProgress(65, "Detecting repeated starts...");
   await tick();
   const repeatedStarts = analyzeRepeatedStarts(chapters);
-  setProgress(75, "Scanning repetition proximity...");
+  setProgress(75, "Finding repeated words...");
   await tick();
   const proximity = analyzeProximity(chapters);
-  setProgress(88, "Scanning for overworked patterns...");
+  setProgress(88, "Finding tired phrases...");
   await tick();
   const aiData = analyzeAIPatterns(chapters, customWords);
   setProgress(95, "Building report...");
@@ -853,11 +870,21 @@ async function runAnalysis(text, filename) {
 }
 
 async function handleFile(file) {
-  if (!file.name.endsWith(".txt")) {
-    alert("Please upload a .txt file.");
+  const isDocx = /\.docx$/i.test(file.name), isTxt = /\.(txt|text|md)$/i.test(file.name);
+  if (!isDocx && !isTxt) {
+    alert(/\.doc$/i.test(file.name) ? "Older .doc files can't be read. In Word, choose Save As, pick Word Document (.docx), and upload that file." : "Please upload a Word (.docx) or plain text (.txt) file.");
     return;
   }
-  const text = await file.text();
+  let text;
+  if (isDocx) {
+    if (!window.mammoth) { alert("The Word file reader didn't load. Check your connection and reload the page."); return; }
+    try {
+      text = (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
+    } catch (e) {
+      alert("This Word file couldn't be read. Try saving it as a plain text (.txt) file and uploading that instead.");
+      return;
+    }
+  } else text = await file.text();
   try {
     sessionStorage.setItem("lint_text", text);
     sessionStorage.setItem("lint_filename", file.name);
@@ -877,27 +904,28 @@ function renderResults(data) {
   const tw = freq.totalWords;
   let html = "";
   html += '<div class="results-header"><div><h2>Analysis Report</h2><div class="results-meta">' + esc(filename) + " · " + num(tw) + " words · " + chapters.length + " chapter" + (chapters.length !== 1 ? "s" : "") + '</div></div><div class="btn-row"><button class="btn" onclick="downloadMarkdown()">↓ Download .md</button><button class="btn" onclick="resetUpload()">Analyze another</button></div></div>';
-  html += '<div class="summary-grid"><div class="summary-card"><div class="label">Words</div><div class="value">' + num(tw) + '</div><div class="detail">' + num(freq.uniqueWords) + ' unique</div></div><div class="summary-card"><div class="label">Chapters</div><div class="value">' + chapters.length + '</div><div class="detail">' + num(Math.round(avg(structure.map(s => s.wordCount)))) + ' avg/ch</div></div><div class="summary-card ' + (aiIsmCount > 10 ? "alert" : aiIsmCount > 0 ? "warn" : "good") + '" data-section="sec_patterns" style="cursor:pointer"><div class="label">Stale Phrases</div><div class="value">' + aiIsmCount + '</div><div class="detail">review & likely cut</div></div><div class="summary-card ' + (styleCount > 20 ? "warn" : "") + '" data-section="sec_patterns" style="cursor:pointer"><div class="label">Style Flags</div><div class="value">' + styleCount + '</div><div class="detail">check context</div></div><div class="summary-card ' + (proximity.length > 50 ? "warn" : "") + '" data-section="sec_proximity" style="cursor:pointer"><div class="label">Word Echoes</div><div class="value">' + proximity.length + '</div><div class="detail">close repeats</div></div>' + (customCount ? '<div class="summary-card warn"><div class="label">Custom Flags</div><div class="value">' + customCount + '</div><div class="detail">your word list</div></div>' : "") + "</div>";
+  html += '<div class="summary-grid"><div class="summary-card"><div class="label">Words</div><div class="value">' + num(tw) + '</div><div class="detail">' + num(freq.uniqueWords) + ' different words</div></div><div class="summary-card"><div class="label">Chapters</div><div class="value">' + chapters.length + '</div><div class="detail">' + num(Math.round(avg(structure.map(s => s.wordCount)))) + ' words per chapter on average</div></div><div class="summary-card ' + (aiIsmCount > 10 ? "alert" : aiIsmCount > 0 ? "warn" : "good") + '" data-section="sec_patterns" style="cursor:pointer"><div class="label">Tired phrases</div><div class="value">' + aiIsmCount + '</div><div class="detail">Review these first. Many can be cut.</div></div><div class="summary-card ' + (styleCount > 20 ? "warn" : "") + '" data-section="sec_patterns" style="cursor:pointer"><div class="label">Style flags</div><div class="value">' + styleCount + '</div><div class="detail">Check each one in context.</div></div><div class="summary-card ' + (proximity.length > 50 ? "warn" : "") + '" data-section="sec_proximity" style="cursor:pointer"><div class="label">Word echoes</div><div class="value">' + proximity.length + '</div><div class="detail">Words repeated close together.</div></div>' + (customCount ? '<div class="summary-card warn"><div class="label">Custom Flags</div><div class="value">' + customCount + '</div><div class="detail">your word list</div></div>' : "") + "</div>";
+  html += renderPriorities(data);
   const modeLabels = {
-    keyword: 'Lines matching "Chapter X", "Prologue", or "Epilogue"',
-    markdown: "Markdown headings (# ...)",
-    break: "Triple line breaks between sections",
-    none: "No splitting — entire file as one chapter"
+    keyword: "Lines that start with Chapter, Prologue or Epilogue",
+    markdown: "Lines that start with # (Markdown headings)",
+    break: "Two blank lines between chapters",
+    none: "Not split; the whole file is one chapter"
   };
   const sceneLabels = {
     asterisks: "*** or * * * (any spacing)",
     hash: "### or ---",
-    blank: "Double blank lines",
+    blank: "A blank line between scenes",
     none: "Not detecting scene breaks"
   };
-  html += renderSection("sec_structure", "1. Structure & Pacing", chapters.length + " chapters", function() {
+  html += renderSection("sec_structure", "1. Chapter length and pacing", chapters.length + " chapters", function() {
     let s = "";
     if (structure.length > 1) {
       const maxWc = Math.max(...structure.map(c => c.wordCount));
       const wca = structure.map(c => c.wordCount);
       const wm = avg(wca);
       const ws = stddev(wca);
-      s += '<div class="subsection" style="margin-top:0;padding-top:0;border-top:none"><h4>Pacing Heatmap</h4><p style="font-size:0.8rem;color:var(--ink-muted);margin-bottom:8px">Each bar is one chapter. Height = word count. Color = paragraph density (darker = longer paragraphs on average).</p><div class="heatmap">';
+      s += '<div class="subsection" style="margin-top:0;padding-top:0;border-top:none"><h4>Pacing Heatmap</h4><p style="font-size:0.8rem;color:var(--ink-muted);margin-bottom:8px">Each bar is one chapter. Taller bars are longer chapters. Darker bars have longer paragraphs on average.</p><div class="heatmap">';
       structure.forEach(function(c) {
         const h = Math.max(12, Math.round(c.wordCount / maxWc * 60));
         const intensity = Math.min(1, c.avgParaLength / 120);
@@ -906,7 +934,7 @@ function renderResults(data) {
         const b = Math.round(45 * intensity + 92 * (1 - intensity));
         s += '<div class="heatmap-bar" style="height:' + h + "px;flex:1;background:rgba(" + r + "," + g + "," + b + ',0.7)"><span class="heatmap-tip">' + esc(c.title) + ": " + num(c.wordCount) + " words, avg para " + c.avgParaLength + "w</span></div>";
       });
-      s += '</div><div class="heatmap-legend"><span><span class="heatmap-legend-swatch" style="background:rgba(58,125,92,0.7)"></span>Short paragraphs (punchy)</span><span><span class="heatmap-legend-swatch" style="background:rgba(180,74,45,0.7)"></span>Long paragraphs (dense)</span></div></div>';
+      s += '</div><div class="heatmap-legend"><span><span class="heatmap-legend-swatch" style="background:rgba(58,125,92,0.7)"></span>Shorter paragraphs</span><span><span class="heatmap-legend-swatch" style="background:rgba(180,74,45,0.7)"></span>Longer paragraphs</span></div></div>';
       const outliers = structure.filter(c => ws > 100 && Math.abs(c.wordCount - wm) > 1.5 * ws);
       if (outliers.length) {
         s += '<div class="how-it-works" style="margin-top:12px"><strong>Chapter length check ↕:</strong> ';
@@ -918,16 +946,16 @@ function renderResults(data) {
       }
     }
     s += '<div class="how-it-works" style="margin-top:12px"><strong>How chapters were detected:</strong> <em>' + modeLabels[mode] + "</em>. Scene breaks: <em>" + sceneLabels[sceneMode] + "</em>. Change both in Settings.</div>";
-    s += '<div class="subsection"><h4>Chapter Detail</h4><table class="data-table"><thead><tr><th>Chapter</th><th class="num">Words</th><th class="num">Scenes</th><th class="num">Paras</th><th class="num">Avg Para</th><th class="num">Max Para</th></tr></thead><tbody>';
+    s += '<div class="subsection"><h4>Chapter Detail</h4><table class="data-table"><thead><tr><th>Chapter</th><th class="num">Words</th><th class="num">Scenes</th><th class="num">Paragraphs</th><th class="num">Avg paragraph (words)</th><th class="num">Longest paragraph (words)</th></tr></thead><tbody>';
     structure.forEach(function(c) {
       s += "<tr><td>" + esc(c.title) + '</td><td class="num">' + num(c.wordCount) + '</td><td class="num">' + c.scenes + '</td><td class="num">' + c.paragraphs + '</td><td class="num">' + c.avgParaLength + '</td><td class="num' + (c.maxParaLength > 200 ? " flag" : "") + '">' + c.maxParaLength + "</td></tr>";
     });
     s += "</tbody></table></div>";
     return s;
   });
-  html += renderSection("sec_sentences", "2. Sentence Metrics", "", function() {
+  html += renderSection("sec_sentences", "2. Sentence length", "", function() {
     let s = '<div class="how-it-works"><strong>For reference:</strong> commercial fiction averages 12 to 18 words a sentence; thrillers and YA run shorter, literary fiction longer. Keep one-line paragraphs to two or three a scene, and watch for three sentences in a row that start with the same word.</div>';
-    s += '<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Sentences</th><th class="num">Avg</th><th class="num">Median</th><th class="num">StdDev</th><th class="num">Longest</th></tr></thead><tbody>';
+    s += '<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Sentences</th><th class="num">Avg length (words)</th><th class="num">Median</th><th class="num">Variation</th><th class="num">Longest</th></tr></thead><tbody>';
     sentences.forEach(function(c) {
       s += "<tr><td>" + esc(c.title) + '</td><td class="num">' + c.totalSentences + '</td><td class="num">' + c.avgLength.toFixed(1) + '</td><td class="num">' + c.medianLength + '</td><td class="num">' + c.stdev.toFixed(1) + '</td><td class="num">' + c.maxLength + "</td></tr>";
     });
@@ -937,14 +965,14 @@ function renderResults(data) {
         chapter: ch.title,
         text: p
       }))).slice(0, 20);
-      s += '<div class="subsection"><h4>One-Line Paragraphs (' + totalSSP + ')</h4><ul class="instance-list">';
+      s += '<div class="subsection"><h4>One-line paragraphs (' + totalSSP + ')</h4><ul class="instance-list">';
       examples.forEach(function(e) {
         s += '<li><div class="instance-loc">' + esc(e.chapter) + '</div><div class="instance-ctx">' + esc(e.text) + "</div></li>";
       });
       s += "</ul></div>";
     }
     if (repeatedStarts.length) {
-      s += '<div class="subsection"><h4>Repeated Sentence Starts (' + repeatedStarts.length + ')</h4><p>Three or more consecutive sentences starting with the same word.</p><ul class="instance-list">';
+      s += '<div class="subsection"><h4>Repeated sentence starts (' + repeatedStarts.length + ')</h4><p>These are places where three or more sentences in a row start with the same word.</p><ul class="instance-list">';
       repeatedStarts.slice(0, 15).forEach(function(f) {
         s += '<li><div class="instance-loc">' + esc(f.chapter) + ' — starts with "' + f.word + '"</div><div class="instance-ctx">' + f.sentences.map(x => esc(x) + "...").join("<br>") + "</div></li>";
       });
@@ -952,7 +980,7 @@ function renderResults(data) {
     }
     return s;
   });
-  html += renderSection("sec_dialogue", "3. Dialogue Analysis", "", function() {
+  html += renderSection("sec_dialogue", "3. Dialogue", "", function() {
     let s = "<div class=\"how-it-works\"><strong>For reference:</strong> genre fiction is usually 30 to 50% dialogue, literary fiction 15 to 30%. Readers skim right past &ldquo;said&rdquo; and &ldquo;asked.&rdquo; If they make up less than 60% of your tags, look for showy ones.</div>";
     s += '<table class="data-table"><thead><tr><th>Chapter</th><th class="num">Dialogue %</th><th class="num">Dialogue</th><th class="num">Prose</th></tr></thead><tbody>';
     dialogue.forEach(function(d) {
@@ -972,7 +1000,7 @@ function renderResults(data) {
     }
     return s;
   });
-  html += renderSection("sec_words", "4. Word & Phrase Frequency", "", function() {
+  html += renderSection("sec_words", "4. Most-used words and phrases", "", function() {
     let s = '<div class="how-it-works"><strong>For reference:</strong> published fiction uses crutch words like &ldquo;just&rdquo; and &ldquo;really&rdquo; under 1.5 times per 1,000 words, and adverbs 5 to 15 times. Filter verbs (&ldquo;she felt,&rdquo; &ldquo;he noticed&rdquo;) can usually go.</div>';
     s += '<div class="subsection"><h4>Top 50 Words</h4><div class="bar-chart">';
     const mxW = freq.topWords[0] ? freq.topWords[0][1] : 1;
@@ -981,21 +1009,21 @@ function renderResults(data) {
     });
     s += "</div></div>";
     if (freq.topBigrams.length) {
-      s += '<div class="subsection"><h4>Top Bigrams</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';
+      s += '<div class="subsection"><h4>Most common two-word phrases</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';
       freq.topBigrams.slice(0, 25).forEach(function([p, c]) {
         s += "<tr><td>" + esc(p) + '</td><td class="num">' + c + "</td></tr>";
       });
       s += "</tbody></table></div>";
     }
     if (freq.topTrigrams.length) {
-      s += '<div class="subsection"><h4>Top Trigrams</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';
+      s += '<div class="subsection"><h4>Most common three-word phrases</h4><table class="data-table"><thead><tr><th>Phrase</th><th class="num">Count</th></tr></thead><tbody>';
       freq.topTrigrams.slice(0, 20).forEach(function([p, c]) {
         s += "<tr><td>" + esc(p) + '</td><td class="num">' + c + "</td></tr>";
       });
       s += "</tbody></table></div>";
     }
     if (freq.filterWords.length) {
-      s += '<div class="subsection"><h4>Crutch / Filter Words</h4><table class="data-table"><thead><tr><th>Word</th><th class="num">Count</th><th class="num">Per 1k</th></tr></thead><tbody>';
+      s += '<div class="subsection"><h4>Crutch words</h4><table class="data-table"><thead><tr><th>Word</th><th class="num">Count</th><th class="num">Per 1,000 words</th></tr></thead><tbody>';
       freq.filterWords.forEach(function([w, c]) {
         const p = (c / tw * 1e3).toFixed(1);
         s += "<tr><td>" + w + '</td><td class="num">' + c + '</td><td class="num' + (p > 2 ? " flag" : "") + '">' + p + "</td></tr>";
@@ -1003,7 +1031,7 @@ function renderResults(data) {
       s += "</tbody></table></div>";
     }
     if (freq.sensoryFilters.length) {
-      s += '<div class="subsection"><h4>Sensory Filter Verbs</h4><table class="data-table"><thead><tr><th>Verb</th><th class="num">Count</th><th class="num">Per 1k</th></tr></thead><tbody>';
+      s += '<div class="subsection"><h4>Filter verbs (felt, saw, realized and similar)</h4><table class="data-table"><thead><tr><th>Verb</th><th class="num">Count</th><th class="num">Per 1,000 words</th></tr></thead><tbody>';
       freq.sensoryFilters.forEach(function([w, c]) {
         s += "<tr><td>" + w + '</td><td class="num">' + c + '</td><td class="num">' + (c / tw * 1e3).toFixed(1) + "</td></tr>";
       });
@@ -1020,9 +1048,9 @@ function renderResults(data) {
     s += "</div>";
     return s;
   });
-  html += renderSection("sec_proximity", "5. Repetition Proximity", proximity.length + " echoes", function() {
+  html += renderSection("sec_proximity", "5. Words repeated close together", proximity.length + " echoes", function() {
     let s = '<div class="how-it-works"><strong>For reference:</strong> 300 words is about one printed page, so echoes this close tend to get noticed. Some are on purpose. Check the smallest gaps first.</div>';
-    if (!proximity.length) return s + "<p>No close-proximity repetitions detected.</p>";
+    if (!proximity.length) return s + "<p>No words were repeated close together.</p>";
     s += '<table class="data-table"><thead><tr><th>Word</th><th class="num">Gap</th><th>First</th><th>Second</th></tr></thead><tbody>';
     proximity.slice(0, 100).forEach(function(f) {
       s += "<tr><td>" + esc(f.word) + '</td><td class="num">' + f.gap + "</td><td>" + esc(f.ch1) + " ~" + f.line1 + "</td><td>" + esc(f.ch2) + " ~" + f.line2 + "</td></tr>";
@@ -1031,7 +1059,7 @@ function renderResults(data) {
     if (proximity.length > 100) s += '<p style="font-size:0.78rem;color:var(--ink-faint);margin-top:8px">Showing 100 of ' + proximity.length + "</p>";
     return s;
   });
-  html += renderSection("sec_patterns", "6. Overworked & Style Patterns", aiIsmCount + styleCount + customCount + " flags", function() {
+  html += renderSection("sec_patterns", "6. Tired phrases and style patterns", aiIsmCount + styleCount + customCount + " flags", function() {
     let s = '<div class="how-it-works"><strong>For reference:</strong> stale words (realm, tapestry, delve) and stock patterns (&ldquo;a strange thing,&rdquo; &ldquo;not X, but Y&rdquo;) stand out when they pile up. None are automatic cuts, so read each one in context. Your own words from Settings are checked here too.</div>';
     if (!aiData.banned.length && !aiData.phrases.length) return s + "<p>No flags detected.</p>";
     [ "Stale", "Style", "Custom" ].forEach(function(cat) {
@@ -1081,6 +1109,34 @@ function renderResults(data) {
     });
   });
   window._lintData = data;
+}
+
+// A short, ranked list of the few things most worth fixing, so the report has a clear starting point.
+function renderPriorities(data) {
+  const { freq, dialogue, proximity, repeatedStarts, aiIsmCount, styleCount } = data;
+  const tw = freq.totalWords || 1, per1k = n => n / tw * 1e3, items = [];
+  if (aiIsmCount > 0) items.push({ score: 1 + per1k(aiIsmCount) * 2, sec: "sec_patterns",
+    text: "You have " + num(aiIsmCount) + " tired phrase" + (aiIsmCount === 1 ? "" : "s") + ". Start with these, because they are usually the easiest to cut." });
+  const crutch = (freq.filterWords || []).map(([w, c]) => [w, c, per1k(c)]).filter(x => x[2] > 1.5).sort((a, b) => b[2] - a[2])[0];
+  if (crutch) items.push({ score: crutch[2] / 1.5, sec: "sec_words",
+    text: "You use “" + esc(crutch[0]) + "” " + num(crutch[1]) + " times, or about " + crutch[2].toFixed(1) + " times per 1,000 words. Published fiction usually stays under 1.5." });
+  if (freq.adverbPer1k > 15) items.push({ score: freq.adverbPer1k / 15, sec: "sec_words",
+    text: "You use about " + freq.adverbPer1k.toFixed(0) + " adverbs per 1,000 words. Published fiction usually has 5 to 15." });
+  const tags = {}; (dialogue || []).forEach(d => Object.entries(d.tags || {}).forEach(([t, c]) => { tags[t] = (tags[t] || 0) + c; }));
+  const tagTotal = Object.values(tags).reduce((a, b) => a + b, 0), plainTags = (tags.said || 0) + (tags.asked || 0);
+  if (tagTotal >= 10 && plainTags / tagTotal < 0.6) items.push({ score: 1 + (0.6 - plainTags / tagTotal) * 3, sec: "sec_dialogue",
+    text: "Only " + Math.round(plainTags / tagTotal * 100) + "% of your dialogue tags are “said” or “asked.” Readers skim past those two, so other tags stand out more." });
+  if (repeatedStarts && repeatedStarts.length >= 3) items.push({ score: 0.8 + repeatedStarts.length / 20, sec: "sec_sentences",
+    text: "In " + num(repeatedStarts.length) + " places, three or more sentences in a row start with the same word." });
+  if (proximity && per1k(proximity.length) > 2) items.push({ score: per1k(proximity.length) / 2, sec: "sec_proximity",
+    text: num(proximity.length) + " distinctive words are repeated within about a page of each other." });
+  if (per1k(styleCount) > 1) items.push({ score: 0.6 + per1k(styleCount) / 4, sec: "sec_patterns",
+    text: num(styleCount) + " style patterns were flagged. Many are fine in context, so read them after the items above." });
+  const top = items.filter(i => i.score >= 1).sort((a, b) => b.score - a.score).slice(0, 4);
+  let h = '<div class="priorities"><h3>Where to start</h3>';
+  if (!top.length) return h + "<p>Nothing stands out. Your numbers are within the usual ranges for published fiction. The sections below have the details.</p></div>";
+  h += "<ol>" + top.map(i => '<li data-section="' + i.sec + '">' + i.text + ' <span class="go">See details</span></li>').join("") + "</ol></div>";
+  return h;
 }
 
 function renderSection(sid, title, countText, contentFn) {

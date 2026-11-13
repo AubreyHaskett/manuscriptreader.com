@@ -1399,33 +1399,16 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-if (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|OPR|Brave/.test(navigator.userAgent)) {
-  document.addEventListener("DOMContentLoaded", function() {
-    var el = document.getElementById("safariWarning");
-    if (el) el.style.display = "block";
-  });
-}
-
-(function() {
-  var ua = navigator.userAgent;
-  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-  var isSafari = /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR|Brave/.test(ua);
-  if (isMobile && !isSafari) {
-    document.addEventListener("DOMContentLoaded", function() {
-      var el = document.getElementById("mobileWarning");
-      if (el) el.style.display = "block";
-    });
-  }
-})();
+// The browser warning is always shown, so everyone knows Chrome on a Mac works best.
+document.addEventListener("DOMContentLoaded", function() {
+  var el = document.getElementById("mobileWarning");
+  if (el) el.style.display = "block";
+});
 </script>
 <div class="app">
-  <div class="safari-warning" id="safariWarning">
-    <button class="dismiss-btn" onclick="document.getElementById('safariWarning').style.display='none'" aria-label="Dismiss">&times;</button>
-    This tool isn&rsquo;t gonna work well on a mobile device or some browsers. It requires hardware to process the voices that some devices and browsers don&rsquo;t have. A Mac using Chrome is best.
-  </div>
 
   <div class="mobile-warning" id="mobileWarning">
-    This tool isn&rsquo;t gonna work well on a mobile device or some browsers. It requires hardware to process the voices that some devices and browsers don&rsquo;t have. A Mac using Chrome is best.
+    Read Aloud works best in Chrome on a Mac. It may not work on phones, tablets or some other browsers, because the voices need hardware that not every device has.
   </div>
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
     <svg id="themeIcon" viewBox="0 0 24 24"></svg>
@@ -1441,6 +1424,7 @@ if (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|OPR|Brave/.test(
         <a href="index.html" aria-current="page">Read Aloud</a>
         <a href="lint.html">Prose Analysis</a>
         <a href="query.html">Query Letter</a>
+        <a href="epub.html">Convert to EPUB</a>
       </div>
     </nav>
   </header>
